@@ -955,12 +955,29 @@ export default function Detail(props) {
                     
                     {/* 节点列表 - 带连接线 */}
                     <div className="relative">
-                      {/* 垂直连接线 - 只在完成时显示绿色连接线 */}
-                      {day.completed && day.activities.length > 1 && <div className="absolute left-[11px] top-3 bottom-3 w-0.5 bg-green-500" />}
+                      {/* 垂直连接线 - 根据节点状态显示不同颜色 */}
+                      {day.activities.length > 1 && (() => {
+                  // 检查所有节点的状态
+                  const hasCompleted = day.activities.some(a => a.status === 'completed');
+                  const hasOverdue = day.activities.some(a => a.status === 'overdue');
+                  const hasPending = day.activities.some(a => a.status === 'pending');
+
+                  // 优先显示最紧急的状态
+                  let lineColor = 'bg-gray-300'; // 默认灰色
+                  if (hasOverdue) {
+                    lineColor = 'bg-red-500'; // 有过期节点，显示红色
+                  } else if (hasCompleted) {
+                    lineColor = 'bg-green-500'; // 有完成节点，显示绿色
+                  }
+                  return <div className={`absolute left-[11px] top-3 bottom-3 w-0.5 ${lineColor}`} />;
+                })()}
                       
                       <div className="space-y-1 mb-3">
                         {day.activities.map((activity, index) => <div key={activity.id} className="relative">
-                            <ItineraryNodeEditor node={activity} dayId={day.id} dayCompleted={day.completed} onTimeChange={(nodeId, newTime) => handleNodeTimeChange(day.id, nodeId, newTime)} onNameChange={(nodeId, newName) => handleNodeNameChange(day.id, nodeId, newName)} onDestinationChange={(nodeId, destinationInfo) => handleNodeDestinationChange(day.id, nodeId, destinationInfo)} onDelete={nodeId => handleDeleteNode(day.id, nodeId)} onNavigate={handleNavigateToDestination} showTime={true} />
+                            <ItineraryNodeEditor node={{
+                      ...activity,
+                      status: activity.status || 'pending'
+                    }} dayId={day.id} dayCompleted={day.completed} onTimeChange={(nodeId, newTime) => handleNodeTimeChange(day.id, nodeId, newTime)} onNameChange={(nodeId, newName) => handleNodeNameChange(day.id, nodeId, newName)} onDestinationChange={(nodeId, destinationInfo) => handleNodeDestinationChange(day.id, nodeId, destinationInfo)} onDelete={nodeId => handleDeleteNode(day.id, nodeId)} onNavigate={handleNavigateToDestination} showTime={true} />
                             {/* 添加节点按钮 - 在最后一个节点右侧，避免与删除符号重叠 */}
                             {index === day.activities.length - 1 && <button onClick={() => handleAddNode(day.id)} className="absolute right-0 top-full mt-1 w-8 h-8 bg-[#4ECDC4] hover:bg-[#3DBDB5] text-white rounded-full flex items-center justify-center shadow-lg transition-colors z-10" title="添加节点">
                                 <Plus className="w-4 h-4" />

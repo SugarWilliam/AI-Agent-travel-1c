@@ -150,3 +150,14 @@ async function refreshAllNodeStatus(itinerary, plan) {
     };
   });
 }
+
+// 模拟节点状态数据（用于测试）
+function getMockNodeStatus() {
+  const now = new Date();
+  const mockStatuses = ['pending', 'overdue', 'completed'];
+  
+  return {
+    status: mockStatuses[Math.floor(Math.random() * mockStatuses.length)],
+    lastUpdated: now.toISOString()
+  };
+}

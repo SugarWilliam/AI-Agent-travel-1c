@@ -312,21 +312,21 @@ export default function ItineraryNodeEditor({
               <XCircle className="w-3 h-3 text-white" />
             </div> : <div className="flex-shrink-0 w-2 h-2 bg-gray-400 rounded-full" />}
 
-          {/* 时间显示 */}
-          {showTime && <div className={`flex items-center gap-1 text-xs flex-shrink-0 ${nodeStatus === 'completed' ? 'text-green-500' : nodeStatus === 'overdue' ? 'text-red-500' : 'text-gray-500'}`}>
+          {/* 时间显示 - 统一颜色 */}
+          {showTime && <div className="flex items-center gap-1 text-xs flex-shrink-0 text-gray-500">
               <Clock className="w-3 h-3" />
               <span>{node.time || '09:00'}</span>
             </div>}
 
-          {/* 节点名称 */}
-          <span className={`text-sm flex-1 ${nodeStatus === 'completed' ? 'text-green-500' : nodeStatus === 'overdue' ? 'text-red-500' : 'text-gray-700'}`} style={{
+          {/* 节点名称 - 统一颜色 */}
+          <span className="text-sm flex-1 text-gray-700" style={{
         fontFamily: 'Quicksand, sans-serif'
       }}>
             {node.name}
           </span>
 
-          {/* 目的地信息 */}
-          {node.destination && <div className={`flex items-center gap-1 text-xs flex-shrink-0 ${nodeStatus === 'completed' ? 'text-green-500' : nodeStatus === 'overdue' ? 'text-red-500' : 'text-gray-500'}`}>
+          {/* 目的地信息 - 统一颜色 */}
+          {node.destination && <div className="flex items-center gap-1 text-xs flex-shrink-0 text-gray-500">
               <MapPin className="w-3 h-3" />
               <span className="max-w-20 truncate">{node.destination}</span>
             </div>}
