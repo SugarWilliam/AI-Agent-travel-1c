@@ -808,6 +808,8 @@ export default function Detail(props) {
       console.error('发送同伴通知失败:', error);
     }
   };
+  
+  // 加载状态
   if (!plan) {
     return <div className="min-h-screen bg-[#FFF9F0] flex items-center justify-center">
         <div className="text-center">
@@ -816,6 +818,7 @@ export default function Detail(props) {
         </div>
       </div>;
   }
+  
   return <div className="min-h-screen bg-[#FFF9F0] pb-24">
       {/* Header Image */}
       <div className="relative h-64">
@@ -1182,7 +1185,8 @@ export default function Detail(props) {
               <X className="w-5 h-5" />
             </button>
           </div>
-        </div>}
+        </div>
+      )}
 
       {/* TabBar */}
       {/* 分享弹窗 */}
