@@ -1,0 +1,56 @@
+{
+  "name": "companion_relations",
+  "title": "同伴关系",
+  "schemas": [
+    {
+      "name": "userId",
+      "title": "用户ID",
+      "type": "String"
+    },
+    {
+      "name": "companionId",
+      "title": "同伴ID",
+      "type": "String"
+    },
+    {
+      "name": "companionName",
+      "title": "同伴姓名",
+      "type": "String"
+    },
+    {
+      "name": "companionAvatar",
+      "title": "同伴头像",
+      "type": "Image"
+    },
+    {
+      "name": "companionEmail",
+      "title": "同伴邮箱",
+      "type": "Email"
+    },
+    {
+      "name": "companionPhone",
+      "title": "同伴手机号",
+      "type": "String"
+    },
+    {
+      "name": "status",
+      "title": "关联状态",
+      "type": "String"
+    },
+    {
+      "name": "joinDate",
+      "title": "加入时间",
+      "type": "Date"
+    },
+    {
+      "name": "inviteCode",
+      "title": "邀请码",
+      "type": "String"
+    },
+    {
+      "name": "permissions",
+      "title": "分享权限",
+      "type": "Object"
+    }
+  ]
+}

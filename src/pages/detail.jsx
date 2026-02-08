@@ -1,9 +1,9 @@
 // @ts-ignore;
 import React, { useState, useEffect } from 'react';
 // @ts-ignore;
-import { ArrowLeft, MapPin, Calendar, DollarSign, Users, Edit, Download, Share2, Sparkles, Plus, Trash2, CheckCircle } from 'lucide-react';
+import { ArrowLeft, MapPin, Calendar, DollarSign, Users, Edit, Download, Share2, Sparkles, Plus, Trash2, CheckCircle, X, UserCheck } from 'lucide-react';
 // @ts-ignore;
-import { useToast, Button, Textarea } from '@/components/ui';
+import { useToast, Button, Textarea, Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui';
 
 import TabBar from '@/components/TabBar';
 export default function Detail(props) {
@@ -18,6 +18,7 @@ export default function Detail(props) {
   const [newGuideContent, setNewGuideContent] = useState('');
   const [showAddGuide, setShowAddGuide] = useState(false);
   const [showAddItinerary, setShowAddItinerary] = useState(false);
+  const [showShareDialog, setShowShareDialog] = useState(false);
   const [newItineraryTitle, setNewItineraryTitle] = useState('');
   const [newItineraryActivities, setNewItineraryActivities] = useState('');
   const [notes, setNotes] = useState([{
@@ -93,12 +94,79 @@ export default function Detail(props) {
       variant: 'default'
     });
   };
-  const handleShare = () => {
-    toast({
-      title: '分享链接已复制',
-      description: '可以分享给好友一起规划',
-      variant: 'default'
-    });
+  const handleShare = async () => {
+    // 加载同伴列表
+    try {
+      const userId = props.$w.auth.currentUser?.userId || 'user_001';
+      const result = await props.$w.cloud.callDataSource({
+        dataSourceName: 'companion_relations',
+        methodName: 'wedaGetRecordsV2',
+        params: {
+          filter: {
+            where: {
+              $and: [{
+                userId: {
+                  $eq: userId
+                }
+              }, {
+                status: {
+                  $eq: 'active'
+                }
+              }]
+            }
+          },
+          select: {
+            $master: true
+          }
+        }
+      });
+      if (result && result.records) {
+        const mappedCompanions = result.records.map(record => ({
+          id: record._id,
+          name: record.companionName,
+          avatar: record.companionAvatar,
+          shared: false // 默认不分享，用户可以选择
+        }));
+        setCompanions(mappedCompanions);
+      }
+    } catch (error) {
+      console.error('加载同伴列表失败:', error);
+      toast({
+        title: '加载失败',
+        description: error.message || '无法加载同伴列表',
+        variant: 'destructive'
+      });
+    }
+    setShowShareDialog(true);
+  };
+  const [companions, setCompanions] = useState([]);
+  const handleToggleShare = companionId => {
+    setCompanions(companions.map(c => c.id === companionId ? {
+      ...c,
+      shared: !c.shared
+    } : c));
+  };
+  const handleSaveShares = async () => {
+    try {
+      const sharedCount = companions.filter(c => c.shared).length;
+
+      // 这里可以添加实际的分享逻辑，例如创建分享记录
+      // 目前只是显示成功提示
+
+      toast({
+        title: '分享成功',
+        description: `已分享给 ${sharedCount} 位同伴`,
+        variant: 'default'
+      });
+      setShowShareDialog(false);
+    } catch (error) {
+      console.error('分享失败:', error);
+      toast({
+        title: '分享失败',
+        description: error.message || '无法分享计划',
+        variant: 'destructive'
+      });
+    }
   };
   const handleAddNote = () => {
     if (!newNote.trim()) return;
@@ -453,6 +521,38 @@ export default function Detail(props) {
           </div>
         </div>
       </div>
+
+      {/* Share Dialog */}
+      <Dialog open={showShareDialog} onOpenChange={setShowShareDialog}>
+        <DialogContent className="rounded-2xl">
+          <DialogHeader>
+            <DialogTitle className="text-xl" style={{
+            fontFamily: 'Nunito, sans-serif'
+          }}>分享给同伴</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3">
+            {companions.map(companion => <div key={companion.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-xl">
+                <div className="flex items-center gap-3">
+                  <img src={companion.avatar} alt={companion.name} className="w-10 h-10 rounded-full object-cover" />
+                  <span className="font-medium text-gray-800">{companion.name}</span>
+                </div>
+                <Button size="sm" variant={companion.shared ? 'default' : 'outline'} onClick={() => handleToggleShare(companion.id)} className={companion.shared ? 'bg-[#FF6B6B] hover:bg-[#FF5252]' : ''}>
+                  {companion.shared ? <><UserCheck className="w-4 h-4 mr-1" />已分享</> : '分享'}
+                </Button>
+              </div>)}
+          </div>
+          <div className="flex gap-2 mt-4">
+            <Button variant="outline" onClick={() => setShowShareDialog(false)} className="flex-1 rounded-xl">
+              <X className="w-4 h-4 mr-2" />
+              取消
+            </Button>
+            <Button onClick={handleSaveShares} className="flex-1 bg-[#FF6B6B] hover:bg-[#FF5252] text-white rounded-xl">
+              <UserCheck className="w-4 h-4 mr-2" />
+              确认分享
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       {/* TabBar */}
       <TabBar activeTab="home" onNavigate={props.$w.utils.navigateTo} />

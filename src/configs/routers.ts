@@ -9,6 +9,9 @@ import AI_OUTPUT from '../pages/ai-output.jsx';
 import AGENT_LIST from '../pages/agent-list.jsx';
 import AGENT_LOGS from '../pages/agent-logs.jsx';
 import MY_PLANS from '../pages/my-plans.jsx';
+import COMPANIONS from '../pages/companions.jsx';
+import COMPANION_SETTINGS from '../pages/companion-settings.jsx';
+import REMINDER_SETTINGS from '../pages/reminder-settings.jsx';
 export const routers = [{
   id: "home",
   component: HOME
@@ -42,4 +45,13 @@ export const routers = [{
 }, {
   id: "my-plans",
   component: MY_PLANS
+}, {
+  id: "companions",
+  component: COMPANIONS
+}, {
+  id: "companion-settings",
+  component: COMPANION_SETTINGS
+}, {
+  id: "reminder-settings",
+  component: REMINDER_SETTINGS
 }]

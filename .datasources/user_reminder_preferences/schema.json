@@ -1,0 +1,26 @@
+{
+  "name": "user_reminder_preferences",
+  "title": "用户提醒偏好",
+  "schemas": [
+    {
+      "name": "userId",
+      "title": "用户ID",
+      "type": "String"
+    },
+    {
+      "name": "allEnabled",
+      "title": "全局开关",
+      "type": "Boolean"
+    },
+    {
+      "name": "reminderTypes",
+      "title": "提醒类型配置",
+      "type": "Object"
+    },
+    {
+      "name": "notificationMethods",
+      "title": "通知方式配置",
+      "type": "Object"
+    }
+  ]
+}

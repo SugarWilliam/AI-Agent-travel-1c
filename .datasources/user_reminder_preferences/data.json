@@ -1,0 +1,97 @@
+[
+  {
+    "_id": "1",
+    "userId": "user_001",
+    "allEnabled": true,
+    "reminderTypes": {
+      "sound": true,
+      "leftBehind": true,
+      "queue": true,
+      "traffic": true,
+      "attention": true,
+      "weather": true
+    },
+    "notificationMethods": {
+      "push": true,
+      "wechat": true
+    },
+    "createdAt": 1738992000000,
+    "updatedAt": 1738992000000
+  },
+  {
+    "_id": "2",
+    "userId": "user_002",
+    "allEnabled": true,
+    "reminderTypes": {
+      "sound": true,
+      "leftBehind": true,
+      "queue": false,
+      "traffic": true,
+      "attention": true,
+      "weather": false
+    },
+    "notificationMethods": {
+      "push": true,
+      "wechat": false
+    },
+    "createdAt": 1738992000000,
+    "updatedAt": 1738992000000
+  },
+  {
+    "_id": "3",
+    "userId": "user_003",
+    "allEnabled": false,
+    "reminderTypes": {
+      "sound": false,
+      "leftBehind": false,
+      "queue": false,
+      "traffic": false,
+      "attention": false,
+      "weather": false
+    },
+    "notificationMethods": {
+      "push": false,
+      "wechat": false
+    },
+    "createdAt": 1738992000000,
+    "updatedAt": 1738992000000
+  },
+  {
+    "_id": "4",
+    "userId": "user_004",
+    "allEnabled": true,
+    "reminderTypes": {
+      "sound": false,
+      "leftBehind": true,
+      "queue": true,
+      "traffic": true,
+      "attention": true,
+      "weather": true
+    },
+    "notificationMethods": {
+      "push": true,
+      "wechat": true
+    },
+    "createdAt": 1738992000000,
+    "updatedAt": 1738992000000
+  },
+  {
+    "_id": "5",
+    "userId": "user_005",
+    "allEnabled": true,
+    "reminderTypes": {
+      "sound": true,
+      "leftBehind": false,
+      "queue": true,
+      "traffic": false,
+      "attention": true,
+      "weather": true
+    },
+    "notificationMethods": {
+      "push": false,
+      "wechat": true
+    },
+    "createdAt": 1738992000000,
+    "updatedAt": 1738992000000
+  }
+]

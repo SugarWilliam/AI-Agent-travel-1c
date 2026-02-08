@@ -1,0 +1,61 @@
+{
+  "name": "reminder_messages",
+  "title": "提醒消息",
+  "schemas": [
+    {
+      "name": "userId",
+      "title": "目标用户ID",
+      "type": "String"
+    },
+    {
+      "name": "messageType",
+      "title": "消息类型",
+      "type": "String"
+    },
+    {
+      "name": "title",
+      "title": "提醒标题",
+      "type": "String"
+    },
+    {
+      "name": "content",
+      "title": "提醒内容",
+      "type": "String"
+    },
+    {
+      "name": "sendMethod",
+      "title": "发送方式",
+      "type": "String"
+    },
+    {
+      "name": "sendStatus",
+      "title": "发送状态",
+      "type": "String"
+    },
+    {
+      "name": "sendTime",
+      "title": "发送时间",
+      "type": "DateTime"
+    },
+    {
+      "name": "readStatus",
+      "title": "阅读状态",
+      "type": "String"
+    },
+    {
+      "name": "readTime",
+      "title": "阅读时间",
+      "type": "DateTime"
+    },
+    {
+      "name": "relatedPlanId",
+      "title": "关联计划ID",
+      "type": "String"
+    },
+    {
+      "name": "relatedItineraryId",
+      "title": "关联行程ID",
+      "type": "String"
+    }
+  ]
+}

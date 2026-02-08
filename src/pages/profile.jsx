@@ -1,7 +1,7 @@
 // @ts-ignore;
 import React, { useState } from 'react';
 // @ts-ignore;
-import { Settings, LogOut, MapPin, Calendar, TrendingUp, Award, ChevronRight } from 'lucide-react';
+import { Settings, LogOut, MapPin, Calendar, TrendingUp, Award, ChevronRight, Users, Bell } from 'lucide-react';
 // @ts-ignore;
 import { useToast, Button, Avatar, AvatarFallback, AvatarImage } from '@/components/ui';
 
@@ -41,6 +41,15 @@ export default function Profile(props) {
     label: '我的计划',
     icon: MapPin,
     count: 12
+  }, {
+    id: 'companions',
+    label: '我的同伴',
+    icon: Users,
+    count: 3
+  }, {
+    id: 'reminder-settings',
+    label: '提醒设置',
+    icon: Bell
   }, {
     id: 'my-guides',
     label: '我的攻略',
