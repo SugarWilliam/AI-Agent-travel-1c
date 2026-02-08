@@ -1,0 +1,59 @@
+{
+  "name": "plan",
+  "fields": [
+    {
+      "name": "title",
+      "type": "string",
+      "required": true,
+      "description": "The title of the plan"
+    },
+    {
+      "name": "description",
+      "type": "string",
+      "required": false,
+      "description": "Detailed description of the plan"
+    },
+    {
+      "name": "startDate",
+      "type": "date",
+      "required": true,
+      "description": "The start date of the plan"
+    },
+    {
+      "name": "endDate",
+      "type": "date",
+      "required": true,
+      "description": "The end date of the plan"
+    },
+    {
+      "name": "status",
+      "type": "enum",
+      "options": ["pending", "active", "completed", "cancelled"],
+      "required": true,
+      "description": "The current status of the plan"
+    },
+    {
+      "name": "tasks",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "fields": [
+          {
+            "name": "name",
+            "type": "string",
+            "required": true,
+            "description": "The name of the task"
+          },
+          {
+            "name": "completed",
+            "type": "boolean",
+            "required": true,
+            "description": "Whether the task is completed"
+          }
+        ]
+      },
+      "required": false,
+      "description": "List of tasks associated with the plan"
+    }
+  ]
+}
