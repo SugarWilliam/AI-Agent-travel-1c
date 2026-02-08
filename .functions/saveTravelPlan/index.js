@@ -39,100 +39,107 @@ exports.main = async (event, context) => {
 };
 
 async function createPlan(plan, userId) {
-  const now = new Date().toISOString();
-  const newPlan = {
-    ...plan,
-    userId,
-    status: plan.status || 'draft',
-    createdAt: now,
-    updatedAt: now
-  };
-
-  const result = await db.collection('Trip').add(newPlan);
-
-  return {
-    success: true,
-    planId: result.id,
-    plan: { ...newPlan, _id: result.id }
-  };
+  try {
+    const result = await db.collection('Trip').add({
+      ...plan,
+      userId: userId || 'anonymous',
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    });
+    
+    return {
+      success: true,
+      planId: result.id,
+      message: '计划创建成功'
+    };
+  } catch (error) {
+    console.error('创建计划失败:', error);
+    return {
+      success: false,
+      error: error.message || '创建计划失败'
+    };
+  }
 }
 
 async function updatePlan(planId, plan, userId) {
-  const now = new Date().toISOString();
-  const updateData = {
-    ...plan,
-    updatedAt: now
-  };
-
-  const result = await db.collection('Trip')
-    .where({
-      _id: planId,
-      userId
-    })
-    .update(updateData);
-
-  if (result.updated === 0) {
+  try {
+    const result = await db.collection('Trip').doc(planId).update({
+      ...plan,
+      updatedAt: new Date().toISOString()
+    });
+    
+    return {
+      success: true,
+      message: '计划更新成功'
+    };
+  } catch (error) {
+    console.error('更新计划失败:', error);
     return {
       success: false,
-      error: '计划不存在或无权修改'
+      error: error.message || '更新计划失败'
     };
   }
-
-  return {
-    success: true,
-    plan: { ...updateData, _id: planId }
-  };
 }
 
 async function deletePlan(planId, userId) {
-  const result = await db.collection('Trip')
-    .where({
-      _id: planId,
-      userId
-    })
-    .remove();
-
-  if (result.removed === 0) {
+  try {
+    await db.collection('Trip').doc(planId).remove();
+    
+    return {
+      success: true,
+      message: '计划删除成功'
+    };
+  } catch (error) {
+    console.error('删除计划失败:', error);
     return {
       success: false,
-      error: '计划不存在或无权删除'
+      error: error.message || '删除计划失败'
     };
   }
-
-  return {
-    success: true
-  };
 }
 
 async function getPlan(planId, userId) {
-  const result = await db.collection('Trip')
-    .where({
-      _id: planId,
-      userId
-    })
-    .get();
-
-  if (result.data.length === 0) {
+  try {
+    const result = await db.collection('Trip').doc(planId).get();
+    
+    if (!result.data || result.data.length === 0) {
+      return {
+        success: false,
+        error: '计划不存在'
+      };
+    }
+    
+    return {
+      success: true,
+      plan: result.data[0]
+    };
+  } catch (error) {
+    console.error('获取计划失败:', error);
     return {
       success: false,
-      error: '计划不存在'
+      error: error.message || '获取计划失败'
     };
   }
-
-  return {
-    success: true,
-    plan: result.data[0]
-  };
 }
 
 async function listPlans(userId) {
-  const result = await db.collection('Trip')
-    .where({ userId })
-    .orderBy('createdAt', 'desc')
-    .get();
-
-  return {
-    success: true,
-    plans: result.data
-  };
+  try {
+    const result = await db.collection('Trip')
+      .where({
+        userId: userId || 'anonymous'
+      })
+      .orderBy('createdAt', 'desc')
+      .get();
+    
+    return {
+      success: true,
+      plans: result.data || []
+    };
+  } catch (error) {
+    console.error('获取计划列表失败:', error);
+    return {
+      success: false,
+      error: error.message || '获取计划列表失败'
+    };
+  }
 }

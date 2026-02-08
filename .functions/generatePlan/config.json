@@ -3,9 +3,6 @@
   "version": "1.0.0",
   "description": "AI旅行计划生成云函数",
   "main": "index.js",
-  "dependencies": {
-    "@cloudbase/node-sdk": "latest"
-  },
   "timeout": 60,
   "memorySize": 128,
   "environment": {

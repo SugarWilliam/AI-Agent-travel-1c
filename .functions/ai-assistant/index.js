@@ -49,326 +49,413 @@ exports.main = async (event, context) => {
 };
 
 async function callAgent(agentType, input, userId, currentPlan) {
-  let response = '';
-  let data = null;
+  try {
+    const agents = {
+      itinerary: {
+        name: '行程规划 Agent',
+        model: 'GPT-4',
+        skills: ['行程规划', '时间安排', '景点推荐'],
+        rules: ['考虑用户偏好', '合理安排时间', '避免行程过紧'],
+        ragConfig: {
+          enabled: true,
+          knowledgeBase: 'travel_guide'
+        }
+      },
+      weather: {
+        name: '天气查询 Agent',
+        model: 'GPT-3.5',
+        skills: ['天气查询', '天气预报', '出行建议'],
+        rules: ['提供准确天气信息', '给出出行建议'],
+        ragConfig: {
+          enabled: true,
+          knowledgeBase: 'weather_data'
+        }
+      },
+      guide: {
+        name: '攻略生成 Agent',
+        model: 'GPT-4',
+        skills: ['攻略生成', '景点介绍', '美食推荐'],
+        rules: ['内容详实', '结构清晰', '实用性强'],
+        ragConfig: {
+          enabled: true,
+          knowledgeBase: 'travel_guide'
+        }
+      },
+      photo: {
+        name: '拍照指导 Agent',
+        model: 'GPT-3.5',
+        skills: ['拍照指导', '景点拍照', '构图建议'],
+        rules: ['提供实用建议', '考虑光线和角度'],
+        ragConfig: {
+          enabled: true,
+          knowledgeBase: 'photography_guide'
+        }
+      },
+      outfit: {
+        name: '穿搭建议 Agent',
+        model: 'GPT-3.5',
+        skills: ['穿搭建议', '天气适配', '风格推荐'],
+        rules: ['考虑天气因素', '推荐合适风格'],
+        ragConfig: {
+          enabled: true,
+          knowledgeBase: 'fashion_guide'
+        }
+      }
+    };
 
-  switch (agentType) {
-    case 'itinerary':
-      response = await callItineraryAgent(input, currentPlan);
-      break;
-    case 'weather':
-      data = await callWeatherAgent(input);
-      response = `已为您查询${input.query}的天气信息。`;
-      break;
-    case 'guide':
-      response = await callGuideAgent(input);
-      break;
-    case 'photo':
-      response = await callPhotoAgent(input);
-      break;
-    case 'outfit':
-      response = await callOutfitAgent(input);
-      break;
-    case 'generatePlan':
-      data = await generatePlan(input, userId);
-      response = '已为您生成完整的旅行计划！';
-      break;
-    case 'generateGuide':
-      response = await generateGuide(input, userId);
-      break;
-    default:
-      response = '我理解您的需求，让我为您提供帮助。';
+    const agent = agents[agentType];
+    if (!agent) {
+      return {
+        success: false,
+        error: '未知的 Agent 类型'
+      };
+    }
+
+    const response = await simulateAgentResponse(agent, input, currentPlan);
+    
+    return {
+      success: true,
+      agentType,
+      agentName: agent.name,
+      response
+    };
+  } catch (error) {
+    console.error('调用 Agent 失败:', error);
+    return {
+      success: false,
+      error: error.message || '调用 Agent 失败'
+    };
   }
+}
 
-  return {
-    success: true,
-    response,
-    data
+async function simulateAgentResponse(agent, input, currentPlan) {
+  const responses = {
+    itinerary: {
+      title: `${input.destination}行程安排`,
+      days: [
+        {
+          day: 1,
+          date: input.startDate,
+          activities: [
+            {
+              time: '09:00',
+              activity: '抵达机场',
+              location: '机场',
+              duration: '1小时',
+              notes: '办理入境手续'
+            },
+            {
+              time: '10:30',
+              activity: '前往酒店',
+              location: '市中心酒店',
+              duration: '1小时',
+              notes: '办理入住手续'
+            },
+            {
+              time: '14:00',
+              activity: '游览市中心',
+              location: '市中心广场',
+              duration: '3小时',
+              notes: '参观主要景点'
+            }
+          ]
+        },
+        {
+          day: 2,
+          date: '2026-02-10',
+          activities: [
+            {
+              time: '08:00',
+              activity: '早餐',
+              location: '酒店餐厅',
+              duration: '1小时',
+              notes: '享用当地特色早餐'
+            },
+            {
+              time: '09:30',
+              activity: '参观博物馆',
+              location: '国家博物馆',
+              duration: '3小时',
+              notes: '了解当地历史文化'
+            }
+          ]
+        }
+      ]
+    },
+    weather: {
+      title: `${input.destination}天气预报`,
+      location: input.destination,
+      forecast: [
+        {
+          date: input.startDate,
+          temperature: '18°C - 25°C',
+          condition: '晴',
+          humidity: '60%',
+          wind: '东北风 3级',
+          advice: '适合户外活动'
+        },
+        {
+          date: '2026-02-10',
+          temperature: '19°C - 26°C',
+          condition: '多云',
+          humidity: '65%',
+          wind: '东南风 2级',
+          advice: '注意防晒'
+        }
+      ]
+    },
+    guide: {
+      overview: `${input.destination}是一个充满魅力的旅游目的地，拥有丰富的历史文化和自然景观。建议安排3-5天的行程，充分体验当地的风土人情。`,
+      highlights: [
+        '市中心广场：感受城市的脉搏',
+        '国家博物馆：了解历史文化',
+        '美食街：品尝当地特色美食'
+      ],
+      tips: [
+        '建议提前预订热门景点门票',
+        '注意当地天气变化，携带合适衣物',
+        '学习几句当地语言，方便交流'
+      ]
+    },
+    photo: {
+      bestSpots: [
+        {
+          location: '市中心广场',
+          bestTime: '早晨 7-9 点',
+          tips: '利用早晨柔和的光线，拍摄广场全景',
+          equipment: '广角镜头'
+        },
+        {
+          location: '国家博物馆',
+          bestTime: '下午 2-4 点',
+          tips: '利用侧光拍摄建筑细节',
+          equipment: '标准镜头'
+        }
+      ]
+    },
+    outfit: {
+      recommendations: [
+        {
+          day: 1,
+          weather: '晴',
+          temperature: '18°C - 25°C',
+          suggestions: '轻薄长袖 + 长裤，舒适运动鞋',
+          accessories: '太阳帽、墨镜'
+        },
+        {
+          day: 2,
+          weather: '多云',
+          temperature: '19°C - 26°C',
+          suggestions: '短袖 + 薄外套，休闲鞋',
+          accessories: '轻便雨伞'
+        }
+      ]
+    }
   };
-}
 
-async function callItineraryAgent(input, currentPlan) {
-  const { query } = input;
-  
-  // 模拟行程规划响应
-  return `根据您的需求，我为您规划了以下行程：\n\n📅 **行程安排**\n\n**上午**\n• 09:00 - 10:30：参观著名景点\n• 10:30 - 12:00：游览历史文化区\n\n**下午**\n• 14:00 - 16:00：体验当地特色活动\n• 16:00 - 18:00：自由活动时间\n\n**晚上**\n• 19:00 - 20:30：品尝当地美食\n• 20:30 - 22:00：夜景观赏\n\n💡 **温馨提示**\n• 建议提前预订门票\n• 注意防晒和补水\n• 保持手机畅通`;
-}
-
-async function callWeatherAgent(input) {
-  const { query } = input;
-  
-  // 模拟天气数据
-  return {
-    location: query || '目的地',
-    forecast: [
-      { date: '2026-02-10', temperature: '25°C', condition: '晴', icon: '☀️' },
-      { date: '2026-02-11', temperature: '24°C', condition: '多云', icon: '⛅' },
-      { date: '2026-02-12', temperature: '23°C', condition: '小雨', icon: '🌧️' }
-    ]
-  };
-}
-
-async function callGuideAgent(input) {
-  const { query } = input;
-  
-  // 模拟攻略生成
-  return `为您生成的旅行攻略：\n\n🌟 **${query || '目的地'}旅行攻略**\n\n## 景点推荐\n\n1. **著名景点A**\n   - 评分：4.8/5\n   - 建议游玩时间：2-3小时\n   - 门票：免费\n\n2. **著名景点B**\n   - 评分：4.7/5\n   - 建议游玩时间：1-2小时\n   - 门票：50元\n\n## 美食推荐\n\n1. **特色美食A**\n   - 推荐餐厅：XX餐厅\n   - 人均消费：100元\n\n2. **特色美食B**\n   - 推荐餐厅：YY餐厅\n   - 人均消费：80元\n\n## 交通指南\n\n- 机场到市区：地铁/出租车\n- 市内交通：公交/地铁/共享单车\n\n## 注意事项\n\n- 提前预订门票\n- 注意天气变化\n- 保持环保意识`;
-}
-
-async function callPhotoAgent(input) {
-  const { query } = input;
-  
-  // 模拟拍照指导
-  return `为您提供的拍照指导：\n\n📸 **拍照技巧**\n\n## 最佳拍摄地点\n\n1. **景点A**\n   - 最佳时间：日出/日落\n   - 推荐角度：正面全景\n   - 设备建议：广角镜头\n\n2. **景点B**\n   - 最佳时间：上午9-11点\n   - 推荐角度：侧面特写\n   - 设备建议：长焦镜头\n\n## 拍摄技巧\n\n- 使用三分法构图\n- 注意光线方向\n- 保持画面简洁\n- 多角度尝试\n\n## 设备建议\n\n- 相机：单反/微单\n- 镜头：广角+长焦\n- 配件：三脚架、滤镜`;
-}
-
-async function callOutfitAgent(input) {
-  const { query } = input;
-  
-  // 模拟穿搭建议
-  return `为您提供的穿搭建议：\n\n👕 **穿搭指南**\n\n## 每日穿搭\n\n### 第1天\n- **上装**：T恤 + 薄外套\n- **下装**：牛仔裤\n- **鞋子**：运动鞋\n- **配饰**：帽子、墨镜\n\n### 第2天\n- **上装**：衬衫\n- **下装**：休闲裤\n- **鞋子**：休闲鞋\n- **配饰**：围巾\n\n### 第3天\n- **上装**：薄毛衣\n- **下装**：短裤\n- **鞋子**：凉鞋\n- **配饰**：太阳镜\n\n## 穿搭建议\n\n- 根据天气调整\n- 舒适为主\n- 颜色搭配\n- 备用衣物`;
+  return responses[agentType] || {};
 }
 
 async function generatePlan(input, userId) {
-  const { destination, startDate, endDate, days, budget, travelers, preferences } = input;
+  try {
+    const itinerary = await callAgent('itinerary', input, userId);
+    const weather = await callAgent('weather', input, userId);
+    const guide = await callAgent('guide', input, userId);
+    const photo = await callAgent('photo', input, userId);
+    const outfit = await callAgent('outfit', input, userId);
 
-  const plan = {
-    title: `${destination}${days}日游`,
-    destination,
-    startDate,
-    endDate,
-    days,
-    budget,
-    travelers,
-    preferences,
-    description: `这是一份为您精心设计的${destination}${days}日游计划。`,
-    itinerary: [
-      {
-        day: 1,
-        date: startDate,
-        title: '抵达与探索',
-        activities: [
-          { time: '09:00', title: '抵达机场', location: '机场', type: 'transport' },
-          { time: '10:00', title: '入住酒店', location: '酒店', type: 'accommodation' },
-          { time: '14:00', title: '游览市中心', location: '市中心', type: 'sightseeing' },
-          { time: '18:00', title: '晚餐', location: '餐厅', type: 'dining' }
-        ]
-      },
-      {
-        day: 2,
-        date: getNextDay(startDate, 1),
-        title: '深度游览',
-        activities: [
-          { time: '08:00', title: '早餐', location: '酒店', type: 'dining' },
-          { time: '09:00', title: '参观著名景点', location: '景点', type: 'sightseeing' },
-          { time: '12:00', title: '午餐', location: '景点附近', type: 'dining' },
-          { time: '14:00', title: '体验当地文化', location: '文化中心', type: 'culture' },
-          { time: '18:00', title: '自由活动', location: '市区', type: 'free' }
-        ]
-      },
-      {
-        day: 3,
-        date: getNextDay(startDate, 2),
-        title: '返程',
-        activities: [
-          { time: '09:00', title: '早餐', location: '酒店', type: 'dining' },
-          { time: '10:00', title: '购买纪念品', location: '商店', type: 'shopping' },
-          { time: '14:00', title: '前往机场', location: '机场', type: 'transport' }
-        ]
+    return {
+      success: true,
+      plan: {
+        title: `${input.destination}旅行计划`,
+        destination: input.destination,
+        startDate: input.startDate,
+        endDate: input.endDate,
+        days: input.days,
+        budget: input.budget,
+        travelers: input.travelers,
+        preferences: input.preferences,
+        itinerary: itinerary.response,
+        weather: weather.response,
+        guide: guide.response,
+        photoTips: photo.response,
+        outfitTips: outfit.response
       }
-    ],
-    weather: [
-      { date: startDate, temperature: '25°C', condition: '晴', icon: '☀️' },
-      { date: getNextDay(startDate, 1), temperature: '24°C', condition: '多云', icon: '⛅' },
-      { date: getNextDay(startDate, 2), temperature: '23°C', condition: '小雨', icon: '🌧️' }
-    ],
-    guide: {
-      overview: `${destination}是一个充满魅力的旅游目的地，拥有丰富的历史文化和自然景观。`,
-      highlights: ['著名景点', '特色美食', '文化体验'],
-      tips: ['注意防晒', '保持环保', '尊重当地文化']
-    },
-    photoTips: {
-      bestSpots: ['景点A', '景点B', '景点C'],
-      tips: ['最佳拍摄时间：早晨和傍晚', '使用广角镜头拍摄风景', '注意构图和光线']
-    },
-    outfitTips: {
-      recommendations: [
-        { day: 1, outfit: '休闲装', items: ['T恤', '牛仔裤', '运动鞋'] },
-        { day: 2, outfit: '舒适装', items: ['衬衫', '长裤', '休闲鞋'] },
-        { day: 3, outfit: '轻便装', items: ['T恤', '短裤', '凉鞋'] }
-      ]
-    },
-    status: 'draft',
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString()
-  };
-
-  return {
-    success: true,
-    plan
-  };
+    };
+  } catch (error) {
+    console.error('生成计划失败:', error);
+    return {
+      success: false,
+      error: error.message || '生成计划失败'
+    };
+  }
 }
 
 async function generateGuide(input, userId) {
-  const { destination, days } = input;
-  
-  const guide = {
-    overview: `${destination}是一个充满魅力的旅游目的地，拥有丰富的历史文化和自然景观。`,
-    highlights: ['著名景点', '特色美食', '文化体验'],
-    tips: ['注意防晒', '保持环保', '尊重当地文化'],
-    content: `为您生成的${destination}${days}日游攻略：\n\n## 景点推荐\n\n1. **著名景点A**\n   - 评分：4.8/5\n   - 建议游玩时间：2-3小时\n   - 门票：免费\n\n2. **著名景点B**\n   - 评分：4.7/5\n   - 建议游玩时间：1-2小时\n   - 门票：50元\n\n## 美食推荐\n\n1. **特色美食A**\n   - 推荐餐厅：XX餐厅\n   - 人均消费：100元\n\n2. **特色美食B**\n   - 推荐餐厅：YY餐厅\n   - 人均消费：80元\n\n## 交通指南\n\n- 机场到市区：地铁/出租车\n- 市内交通：公交/地铁/共享单车\n\n## 注意事项\n\n- 提前预订门票\n- 注意天气变化\n- 保持环保意识`
-  };
-
-  return {
-    success: true,
-    guide
-  };
+  return await callAgent('guide', input, userId);
 }
 
 async function photoGuide(input, userId) {
-  const { destination } = input;
-  
-  const photoTips = {
-    bestSpots: ['景点A', '景点B', '景点C'],
-    tips: ['最佳拍摄时间：早晨和傍晚', '使用广角镜头拍摄风景', '注意构图和光线'],
-    content: `为您提供的${destination}拍照指导：\n\n## 最佳拍摄地点\n\n1. **景点A**\n   - 最佳时间：日出/日落\n   - 推荐角度：正面全景\n   - 设备建议：广角镜头\n\n2. **景点B**\n   - 最佳时间：上午9-11点\n   - 推荐角度：侧面特写\n   - 设备建议：长焦镜头\n\n## 拍摄技巧\n\n- 使用三分法构图\n- 注意光线方向\n- 保持画面简洁\n- 多角度尝试\n\n## 设备建议\n\n- 相机：单反/微单\n- 镜头：广角+长焦\n- 配件：三脚架、滤镜`
-  };
-
-  return {
-    success: true,
-    photoTips
-  };
+  return await callAgent('photo', input, userId);
 }
 
 async function outfitGuide(input, userId) {
-  const { destination, days } = input;
-  
-  const outfitTips = {
-    recommendations: [
-      { day: 1, outfit: '休闲装', items: ['T恤', '牛仔裤', '运动鞋'] },
-      { day: 2, outfit: '舒适装', items: ['衬衫', '长裤', '休闲鞋'] },
-      { day: 3, outfit: '轻便装', items: ['T恤', '短裤', '凉鞋'] }
-    ],
-    content: `为您提供的${destination}${days}日游穿搭建议：\n\n## 每日穿搭\n\n### 第1天\n- **上装**：T恤 + 薄外套\n- **下装**：牛仔裤\n- **鞋子**：运动鞋\n- **配饰**：帽子、墨镜\n\n### 第2天\n- **上装**：衬衫\n- **下装**：休闲裤\n- **鞋子**：休闲鞋\n- **配饰**：围巾\n\n### 第3天\n- **上装**：薄毛衣\n- **下装**：短裤\n- **鞋子**：凉鞋\n- **配饰**：太阳镜\n\n## 穿搭建议\n\n- 根据天气调整\n- 舒适为主\n- 颜色搭配\n- 备用衣物`
-  };
-
-  return {
-    success: true,
-    outfitTips
-  };
+  return await callAgent('outfit', input, userId);
 }
 
 async function saveConversation(event) {
-  const { userId, messages } = event;
-  
-  const now = new Date().toISOString();
-  const conversation = {
-    userId,
-    messages,
-    createdAt: now,
-    updatedAt: now
-  };
-
-  const result = await db.collection('Conversation').add(conversation);
-
-  return {
-    success: true,
-    conversationId: result.id
-  };
+  try {
+    const { userId, messages, title } = event;
+    
+    const result = await db.collection('Conversation').add({
+      userId: userId || 'anonymous',
+      title: title || '新对话',
+      messages: messages || [],
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    });
+    
+    return {
+      success: true,
+      conversationId: result.id,
+      message: '对话保存成功'
+    };
+  } catch (error) {
+    console.error('保存对话失败:', error);
+    return {
+      success: false,
+      error: error.message || '保存对话失败'
+    };
+  }
 }
 
 async function getConversation(event) {
-  const { userId, conversationId } = event;
-  
-  let query = db.collection('Conversation').where({ userId });
-  
-  if (conversationId) {
-    query = query.where({ _id: conversationId });
-  }
-  
-  const result = await query.orderBy('createdAt', 'desc').limit(1).get();
-
-  if (result.data.length === 0) {
+  try {
+    const { conversationId } = event;
+    
+    const result = await db.collection('Conversation').doc(conversationId).get();
+    
+    if (!result.data || result.data.length === 0) {
+      return {
+        success: false,
+        error: '对话不存在'
+      };
+    }
+    
+    return {
+      success: true,
+      conversation: result.data[0]
+    };
+  } catch (error) {
+    console.error('获取对话失败:', error);
     return {
       success: false,
-      error: '对话不存在'
+      error: error.message || '获取对话失败'
     };
   }
-
-  return {
-    success: true,
-    conversation: result.data[0]
-  };
 }
 
 async function getWeather(input) {
-  const { location } = input;
-  
-  // 模拟天气数据
-  return {
-    success: true,
-    weather: {
-      location: location || '目的地',
-      forecast: [
-        { date: '2026-02-10', temperature: '25°C', condition: '晴', icon: '☀️' },
-        { date: '2026-02-11', temperature: '24°C', condition: '多云', icon: '⛅' },
-        { date: '2026-02-12', temperature: '23°C', condition: '小雨', icon: '🌧️' }
-      ]
-    }
-  };
+  return await callAgent('weather', input, null, null);
 }
 
 async function suggestTimeAdjustment(input) {
-  const { currentItinerary, weatherCondition } = input;
-  
-  const suggestions = [
-    {
-      nodeId: 'node1',
-      originalTime: '09:00',
-      suggestedTime: '10:00',
-      reason: '根据天气预报，上午9点可能有雨，建议推迟1小时',
-      impact: 'low'
-    },
-    {
-      nodeId: 'node2',
-      originalTime: '14:00',
-      suggestedTime: '15:00',
-      reason: '下午2点阳光强烈，建议避开高温时段',
-      impact: 'medium'
-    }
-  ];
-
-  return {
-    success: true,
-    suggestions
-  };
+  try {
+    const { currentPlan, weatherData } = input;
+    
+    const suggestions = {
+      success: true,
+      suggestions: [
+        {
+          nodeId: 'node-1',
+          originalTime: '09:00',
+          suggestedTime: '10:00',
+          reason: '根据天气预报，上午9点可能有阵雨，建议推迟1小时',
+          confidence: 0.85
+        },
+        {
+          nodeId: 'node-3',
+          originalTime: '14:00',
+          suggestedTime: '15:30',
+          reason: '下午2点光线较强，不适合拍照，建议推迟到下午3点半',
+          confidence: 0.92
+        }
+      ]
+    };
+    
+    return suggestions;
+  } catch (error) {
+    console.error('生成时间调整建议失败:', error);
+    return {
+      success: false,
+      error: error.message || '生成时间调整建议失败'
+    };
+  }
 }
 
 async function refreshNodeStatus(input) {
-  const { planId, nodeId } = input;
-  
-  // 模拟节点状态刷新
-  const nodeStatus = {
-    nodeId,
-    status: 'active',
-    weather: {
-      temperature: '25°C',
+  try {
+    const { planId, nodeId } = input;
+    
+    const result = await db.collection('Trip').doc(planId).get();
+    
+    if (!result.data || result.data.length === 0) {
+      return {
+        success: false,
+        error: '计划不存在'
+      };
+    }
+    
+    const plan = result.data[0];
+    const itinerary = plan.itinerary || {};
+    const days = itinerary.days || [];
+    
+    let targetNode = null;
+    for (const day of days) {
+      const activities = day.activities || [];
+      const node = activities.find(a => a.id === nodeId);
+      if (node) {
+        targetNode = node;
+        break;
+      }
+    }
+    
+    if (!targetNode) {
+      return {
+        success: false,
+        error: '节点不存在'
+      };
+    }
+    
+    const weatherData = {
+      date: targetNode.date,
+      temperature: '18°C - 25°C',
       condition: '晴',
-      icon: '☀️'
-    },
-    crowdLevel: 'medium',
-    recommendedTime: '09:00-11:00',
-    tips: ['建议提前预订', '注意防晒', '保持手机畅通']
-  };
-
-  return {
-    success: true,
-    nodeStatus
-  };
-}
-
-function getNextDay(dateStr, days) {
-  const date = new Date(dateStr);
-  date.setDate(date.getDate() + days);
-  return date.toISOString().split('T')[0];
+      humidity: '60%',
+      wind: '东北风 3级',
+      advice: '适合户外活动'
+    };
+    
+    return {
+      success: true,
+      nodeId,
+      node: targetNode,
+      weather: weatherData,
+      suggestions: [
+        {
+          nodeId: nodeId,
+          originalTime: targetNode.time,
+          suggestedTime: targetNode.time,
+          reason: '当前时间安排合理，无需调整',
+          confidence: 0.95
+        }
+      ]
+    };
+  } catch (error) {
+    console.error('刷新节点状态失败:', error);
+    return {
+      success: false,
+      error: error.message || '刷新节点状态失败'
+    };
+  }
 }
