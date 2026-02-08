@@ -42,7 +42,7 @@
     {
       "name": "description",
       "title": "行程简介",
-      "type": "String"
+      "type": "MultiLineString"
     },
     {
       "name": "coverImage",
@@ -88,7 +88,7 @@
     {
       "name": "preferences",
       "title": "旅行偏好",
-      "type": "String"
+      "type": "MultiLineString"
     }
   ]
 }

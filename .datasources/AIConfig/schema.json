@@ -40,7 +40,7 @@
     {
       "name": "systemPrompt",
       "title": "系统提示词",
-      "type": "String"
+      "type": "MultiLineString"
     },
     {
       "name": "capabilities",

@@ -29,7 +29,7 @@
     {
       "name": "lastMessage",
       "title": "最后消息",
-      "type": "String"
+      "type": "MultiLineString"
     },
     {
       "name": "messageCount",

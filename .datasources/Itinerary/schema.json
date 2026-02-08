@@ -34,12 +34,12 @@
     {
       "name": "summary",
       "title": "当日总结",
-      "type": "String"
+      "type": "MultiLineString"
     },
     {
       "name": "notes",
       "title": "备注",
-      "type": "String"
+      "type": "MultiLineString"
     },
     {
       "name": "status",

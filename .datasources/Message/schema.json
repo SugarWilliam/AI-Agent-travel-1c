@@ -20,7 +20,7 @@
     {
       "name": "content",
       "title": "消息内容",
-      "type": "String"
+      "type": "MultiLineString"
     },
     {
       "name": "timestamp",
