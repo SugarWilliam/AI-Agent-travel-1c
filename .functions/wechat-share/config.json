@@ -1,0 +1,14 @@
+{
+  "name": "wechat-share",
+  "version": "1.0.0",
+  "description": "微信分享云函数，生成小程序码和分享链接",
+  "main": "index.js",
+  "dependencies": {
+    "@cloudbase/node-sdk": "latest"
+  },
+  "timeout": 60,
+  "memorySize": 128,
+  "environment": {
+    "NODE_ENV": "production"
+  }
+}

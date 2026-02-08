@@ -1,0 +1,50 @@
+{
+  "name": "Conversation",
+  "title": "对话记录",
+  "schemas": [
+    {
+      "name": "userId",
+      "title": "用户ID",
+      "type": "String"
+    },
+    {
+      "name": "title",
+      "title": "对话标题",
+      "type": "String"
+    },
+    {
+      "name": "participants",
+      "title": "参与者",
+      "type": "Array",
+      "items": {
+        "type": "String"
+      }
+    },
+    {
+      "name": "lastMessageAt",
+      "title": "最后消息时间",
+      "type": "DateTime",
+      "format": "timestamp-ms"
+    },
+    {
+      "name": "lastMessage",
+      "title": "最后消息",
+      "type": "String"
+    },
+    {
+      "name": "messageCount",
+      "title": "消息数量",
+      "type": "Number"
+    },
+    {
+      "name": "planId",
+      "title": "关联计划ID",
+      "type": "String"
+    },
+    {
+      "name": "context",
+      "title": "对话上下文",
+      "type": "Object"
+    }
+  ]
+}

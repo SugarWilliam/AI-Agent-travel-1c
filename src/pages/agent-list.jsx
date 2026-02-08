@@ -1,7 +1,7 @@
 // @ts-ignore;
 import React, { useState, useEffect } from 'react';
 // @ts-ignore;
-import { ArrowLeft, Plus, Edit, Copy, Trash2, Power, PowerOff, Search, Filter, MoreVertical, Bot, Sparkles, Zap, Shield, Database, Globe } from 'lucide-react';
+import { ArrowLeft, Plus, Edit, Copy, Trash2, Power, PowerOff, Search, Filter, MoreVertical, Bot, Sparkles, Zap, Shield, Database, Globe, Route, Cloud, Camera, Shirt, BookOpen, RefreshCw } from 'lucide-react';
 // @ts-ignore;
 import { useToast, Button } from '@/components/ui';
 
@@ -45,49 +45,103 @@ export default function AgentList(props) {
       if (result.data && result.data.length > 0) {
         setAgents(result.data);
       } else {
-        // 如果没有数据，使用模拟数据
+        // 如果没有数据，使用默认的AI Agent列表
         setAgents([{
           _id: '1',
-          name: '旅行规划助手',
-          description: '专业的旅行规划助手，帮助用户制定详细的旅行计划',
+          name: '行程规划 Agent',
+          description: '专业的行程规划助手，根据用户需求生成详细的旅行行程安排',
           model: 'GPT-4',
-          skills: ['旅行规划', '景点推荐', '美食推荐'],
-          rules: ['安全优先', '预算控制'],
+          skills: ['行程规划', '路线优化', '时间安排'],
+          rules: ['安全优先', '时间合理', '交通便利'],
           ragEnabled: true,
-          ragSources: ['旅行攻略数据库'],
+          ragSources: ['旅行攻略数据库', '景点数据库'],
           mcpServers: [],
-          outputFormats: ['文本', 'PDF'],
+          outputFormats: ['文本', 'JSON'],
           status: 'active',
           usageCount: 156,
+          icon: Route,
+          color: 'from-orange-500 to-pink-500',
           createdAt: '2024-01-15T10:00:00.000Z'
         }, {
           _id: '2',
-          name: '美食推荐助手',
-          description: '根据用户喜好推荐当地美食和餐厅',
+          name: '天气查询 Agent',
+          description: '实时获取目的地天气信息，提供穿衣和活动建议',
           model: 'GPT-3.5',
-          skills: ['美食推荐', '餐厅查询'],
-          rules: ['健康优先'],
+          skills: ['天气查询', '天气预报', '穿衣建议'],
+          rules: ['数据准确', '实时更新'],
           ragEnabled: true,
-          ragSources: ['美食数据库'],
+          ragSources: ['天气数据库'],
           mcpServers: [],
-          outputFormats: ['文本'],
+          outputFormats: ['文本', 'JSON'],
           status: 'active',
-          usageCount: 89,
+          usageCount: 234,
+          icon: Cloud,
+          color: 'from-blue-500 to-cyan-500',
           createdAt: '2024-01-20T14:30:00.000Z'
         }, {
           _id: '3',
-          name: '文化解说助手',
-          description: '提供景点文化背景和历史解说',
-          model: 'Claude-3',
-          skills: ['文化解说', '历史介绍'],
-          rules: ['准确优先'],
+          name: '攻略生成 Agent',
+          description: '生成详细的旅行攻略，包含景点介绍、美食推荐、实用信息等',
+          model: 'GPT-4',
+          skills: ['攻略生成', '景点介绍', '美食推荐'],
+          rules: ['内容丰富', '信息准确'],
           ragEnabled: true,
-          ragSources: ['文化数据库'],
+          ragSources: ['攻略数据库', '美食数据库'],
           mcpServers: [],
-          outputFormats: ['文本', '音频'],
-          status: 'inactive',
-          usageCount: 45,
+          outputFormats: ['文本', 'Markdown', 'PDF'],
+          status: 'active',
+          usageCount: 189,
+          icon: BookOpen,
+          color: 'from-yellow-500 to-orange-500',
           createdAt: '2024-02-01T09:15:00.000Z'
+        }, {
+          _id: '4',
+          name: '拍照指导 Agent',
+          description: '提供专业的拍照建议和技巧，帮助用户拍出更好的旅行照片',
+          model: 'GPT-3.5',
+          skills: ['拍照技巧', '构图建议', '光线运用'],
+          rules: ['实用性强', '易于理解'],
+          ragEnabled: true,
+          ragSources: ['摄影数据库'],
+          mcpServers: [],
+          outputFormats: ['文本', '图片'],
+          status: 'active',
+          usageCount: 98,
+          icon: Camera,
+          color: 'from-purple-500 to-pink-500',
+          createdAt: '2024-02-10T11:20:00.000Z'
+        }, {
+          _id: '5',
+          name: '穿搭建议 Agent',
+          description: '根据天气和目的地提供合适的穿搭建议',
+          model: 'GPT-3.5',
+          skills: ['穿搭建议', '搭配技巧', '季节适应'],
+          rules: ['舒适实用', '时尚美观'],
+          ragEnabled: true,
+          ragSources: ['穿搭数据库'],
+          mcpServers: [],
+          outputFormats: ['文本', '图片'],
+          status: 'active',
+          usageCount: 145,
+          icon: Shirt,
+          color: 'from-teal-500 to-green-500',
+          createdAt: '2024-02-15T16:45:00.000Z'
+        }, {
+          _id: '6',
+          name: '天气刷新 Agent',
+          description: '实时刷新天气信息，确保数据的时效性',
+          model: 'GPT-3.5',
+          skills: ['天气刷新', '实时更新', '数据同步'],
+          rules: ['实时性', '准确性'],
+          ragEnabled: true,
+          ragSources: ['天气API'],
+          mcpServers: [],
+          outputFormats: ['JSON'],
+          status: 'active',
+          usageCount: 312,
+          icon: RefreshCw,
+          color: 'from-cyan-500 to-blue-500',
+          createdAt: '2024-02-20T08:30:00.000Z'
         }]);
       }
     } catch (error) {
@@ -217,7 +271,7 @@ export default function AgentList(props) {
                 <h1 className="text-2xl font-bold text-gray-800" style={{
                 fontFamily: 'Nunito, sans-serif'
               }}>
-                  Agent 列表
+                  AI Agent 列表
                 </h1>
                 <p className="text-sm text-gray-500" style={{
                 fontFamily: 'Quicksand, sans-serif'
@@ -288,11 +342,11 @@ export default function AgentList(props) {
           </div> : <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredAgents.map(agent => <div key={agent._id} className="bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all overflow-hidden group">
                 {/* Card Header */}
-                <div className="bg-gradient-to-r from-orange-500 to-pink-500 p-6">
+                <div className={`bg-gradient-to-r ${agent.color || 'from-orange-500 to-pink-500'} p-6`}>
                   <div className="flex items-start justify-between">
                     <div className="flex items-center gap-3">
                       <div className="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center">
-                        <Bot className="w-6 h-6 text-white" />
+                        {agent.icon ? <agent.icon className="w-6 h-6 text-white" /> : <Bot className="w-6 h-6 text-white" />}
                       </div>
                       <div>
                         <h3 className="text-lg font-bold text-white" style={{

@@ -74,12 +74,38 @@ export default function Create(props) {
     }
     setShowAISuggestions(true);
     setAISuggestions([]);
+    try {
+      // 调用 AI 助手云函数生成建议
+      const result = await props.$w.cloud.callFunction({
+        name: 'ai-assistant',
+        data: {
+          action: 'callAgent',
+          agentType: 'guide',
+          input: {
+            destination,
+            days: Math.ceil((new Date(form.getValues('endDate')) - new Date(form.getValues('startDate'))) / (1000 * 60 * 60 * 24)) || 3
+          },
+          userId: props.$w.auth.currentUser?.userId || 'anonymous'
+        }
+      });
+      if (result && result.success && result.guide) {
+        const suggestions = [...result.guide.highlights, ...result.guide.tips];
+        setAISuggestions(suggestions);
+      } else {
+        throw new Error(result?.error || 'AI建议生成失败');
+      }
+    } catch (error) {
+      console.error('AI建议生成失败:', error);
+      toast({
+        title: 'AI建议生成失败',
+        description: error.message || '请稍后重试',
+        variant: 'destructive'
+      });
 
-    // 模拟AI生成建议
-    setTimeout(() => {
-      const suggestions = ['推荐在3-4月或9-11月出行，气候宜人', '建议提前1-2个月预订机票和酒店', '推荐体验当地特色美食和文化活动', '建议购买旅游保险，保障行程安全', '可以下载当地交通APP，方便出行'];
-      setAISuggestions(suggestions);
-    }, 1500);
+      // 失败时使用默认建议
+      const defaultSuggestions = ['推荐在3-4月或9-11月出行，气候宜人', '建议提前1-2个月预订机票和酒店', '推荐体验当地特色美食和文化活动', '建议购买旅游保险，保障行程安全', '可以下载当地交通APP，方便出行'];
+      setAISuggestions(defaultSuggestions);
+    }
   };
   const handleApplySuggestion = suggestion => {
     const currentDescription = form.getValues('description') || '';
@@ -92,20 +118,22 @@ export default function Create(props) {
   };
   const onSubmit = async data => {
     try {
-      // 调用云数据库保存数据
+      // 调用 saveTravelPlan 云函数保存数据
       const result = await props.$w.cloud.callFunction({
-        name: 'database',
+        name: 'saveTravelPlan',
         data: {
-          action: 'add',
-          collection: 'Trip',
-          doc: {
+          action: isEditing ? 'update' : 'create',
+          planId: isEditing ? planId : undefined,
+          plan: {
             ...data,
             coverImage,
-            userId: props.$w.auth.currentUser?.userId || '',
-            createdAt: new Date().toISOString(),
-            updatedAt: new Date().toISOString(),
+            startDate: new Date(data.startDate).toISOString(),
+            endDate: new Date(data.endDate).toISOString(),
+            budget: Number(data.budget),
+            travelers: Number(data.travelers),
             status: 'planning'
-          }
+          },
+          userId: props.$w.auth.currentUser?.userId || 'anonymous'
         }
       });
       if (result && result.success) {
@@ -116,7 +144,7 @@ export default function Create(props) {
         });
         setTimeout(() => {
           props.$w.utils.navigateTo({
-            pageId: 'home',
+            pageId: 'my-plans',
             params: {}
           });
         }, 1000);
@@ -124,6 +152,7 @@ export default function Create(props) {
         throw new Error(result?.error || '保存失败');
       }
     } catch (error) {
+      console.error('保存计划失败:', error);
       toast({
         title: '保存失败',
         description: error.message || '请稍后重试',

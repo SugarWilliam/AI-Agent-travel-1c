@@ -1,0 +1,40 @@
+[
+  {
+    "_id": "conv_001",
+    "userId": "user_001",
+    "title": "东京旅行规划",
+    "participants": ["user_001", "user_002"],
+    "lastMessageAt": 1739078400000,
+    "lastMessage": "请问东京有哪些必去的景点？",
+    "messageCount": 15,
+    "planId": "trip_001",
+    "context": {
+      "destination": "东京",
+      "startDate": "2026-03-15",
+      "days": 7,
+      "intent": "travel_planning"
+    },
+    "createdAt": 1739078400000,
+    "updatedAt": 1739078400000,
+    "_openid": "user_001"
+  },
+  {
+    "_id": "conv_002",
+    "userId": "user_001",
+    "title": "大理旅行咨询",
+    "participants": ["user_001"],
+    "lastMessageAt": 1739164800000,
+    "lastMessage": "大理的天气怎么样？",
+    "messageCount": 8,
+    "planId": "trip_002",
+    "context": {
+      "destination": "大理",
+      "startDate": "2026-04-01",
+      "days": 5,
+      "intent": "weather_query"
+    },
+    "createdAt": 1739164800000,
+    "updatedAt": 1739164800000,
+    "_openid": "user_001"
+  }
+]

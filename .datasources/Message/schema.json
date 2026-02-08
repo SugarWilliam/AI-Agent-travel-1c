@@ -1,0 +1,55 @@
+{
+  "name": "Message",
+  "title": "消息记录",
+  "schemas": [
+    {
+      "name": "conversationId",
+      "title": "对话ID",
+      "type": "String"
+    },
+    {
+      "name": "userId",
+      "title": "用户ID",
+      "type": "String"
+    },
+    {
+      "name": "role",
+      "title": "角色",
+      "type": "String"
+    },
+    {
+      "name": "content",
+      "title": "消息内容",
+      "type": "String"
+    },
+    {
+      "name": "timestamp",
+      "title": "时间戳",
+      "type": "DateTime",
+      "format": "timestamp-ms"
+    },
+    {
+      "name": "attachments",
+      "title": "附件",
+      "type": "Array",
+      "items": {
+        "type": "Object"
+      }
+    },
+    {
+      "name": "intent",
+      "title": "意图类型",
+      "type": "String"
+    },
+    {
+      "name": "agentType",
+      "title": "调用的Agent类型",
+      "type": "String"
+    },
+    {
+      "name": "metadata",
+      "title": "元数据",
+      "type": "Object"
+    }
+  ]
+}

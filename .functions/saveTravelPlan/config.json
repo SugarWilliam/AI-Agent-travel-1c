@@ -1,0 +1,14 @@
+{
+  "name": "saveTravelPlan",
+  "version": "1.0.0",
+  "description": "旅行计划保存云函数，支持创建、更新、删除和查询计划",
+  "main": "index.js",
+  "dependencies": {
+    "@cloudbase/node-sdk": "latest"
+  },
+  "timeout": 60,
+  "memorySize": 128,
+  "environment": {
+    "NODE_ENV": "production"
+  }
+}

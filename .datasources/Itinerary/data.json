@@ -1,0 +1,146 @@
+[
+  {
+    "_id": "itinerary_001",
+    "tripId": "trip_001",
+    "userId": "user_001",
+    "day": 1,
+    "date": "2026-03-15",
+    "summary": "抵达东京，入住新宿酒店",
+    "activities": [
+      {
+        "id": "day1-act1",
+        "name": "抵达成田机场",
+        "type": "transport",
+        "time": "14:00",
+        "duration": 2,
+        "location": "成田机场",
+        "description": "乘坐机场快线前往新宿",
+        "status": "completed",
+        "tips": "建议提前购买西瓜卡"
+      },
+      {
+        "id": "day1-act2",
+        "name": "入住新宿酒店",
+        "type": "accommodation",
+        "time": "16:00",
+        "duration": 1,
+        "location": "新宿",
+        "description": "办理入住手续，休息调整",
+        "status": "completed",
+        "tips": "酒店提供免费Wi-Fi"
+      },
+      {
+        "id": "day1-act3",
+        "name": "新宿夜景游览",
+        "type": "sightseeing",
+        "time": "19:00",
+        "duration": 3,
+        "location": "新宿",
+        "description": "探索新宿繁华夜景",
+        "status": "pending",
+        "tips": "推荐前往歌舞伎町"
+      }
+    ],
+    "notes": "第一天主要是抵达和休息，不要太累",
+    "status": "in_progress",
+    "createdAt": 1739078400000,
+    "updatedAt": 1739078400000,
+    "_openid": "user_001"
+  },
+  {
+    "_id": "itinerary_002",
+    "tripId": "trip_001",
+    "userId": "user_001",
+    "day": 2,
+    "date": "2026-03-16",
+    "summary": "浅草寺周边游览",
+    "activities": [
+      {
+        "id": "day2-act1",
+        "name": "浅草寺参观",
+        "type": "sightseeing",
+        "time": "09:00",
+        "duration": 3,
+        "location": "浅草寺",
+        "description": "参观东京最古老的寺庙",
+        "status": "pending",
+        "tips": "建议早上前往，避开人流"
+      },
+      {
+        "id": "day2-act2",
+        "name": "仲见世商店街购物",
+        "type": "shopping",
+        "time": "12:00",
+        "duration": 2,
+        "location": "仲见世商店街",
+        "description": "购买传统纪念品和小吃",
+        "status": "pending",
+        "tips": "推荐尝试人形烧"
+      },
+      {
+        "id": "day2-act3",
+        "name": "晴空塔观景",
+        "type": "sightseeing",
+        "time": "15:00",
+        "duration": 3,
+        "location": "晴空塔",
+        "description": "登上晴空塔俯瞰东京全景",
+        "status": "pending",
+        "tips": "建议购买快速通道票"
+      }
+    ],
+    "notes": "浅草寺和晴空塔是必去景点",
+    "status": "pending",
+    "createdAt": 1739078400000,
+    "updatedAt": 1739078400000,
+    "_openid": "user_001"
+  },
+  {
+    "_id": "itinerary_003",
+    "tripId": "trip_002",
+    "userId": "user_001",
+    "day": 1,
+    "date": "2026-04-01",
+    "summary": "抵达大理，入住古城客栈",
+    "activities": [
+      {
+        "id": "day1-act1",
+        "name": "抵达大理机场",
+        "type": "transport",
+        "time": "14:00",
+        "duration": 1,
+        "location": "大理机场",
+        "description": "乘坐机场大巴前往古城",
+        "status": "completed",
+        "tips": "机场大巴约1小时"
+      },
+      {
+        "id": "day1-act2",
+        "name": "入住古城客栈",
+        "type": "accommodation",
+        "time": "16:00",
+        "duration": 1,
+        "location": "大理古城",
+        "description": "办理入住，休息调整",
+        "status": "completed",
+        "tips": "推荐选择有庭院的客栈"
+      },
+      {
+        "id": "day1-act3",
+        "name": "古城漫步",
+        "type": "sightseeing",
+        "time": "18:00",
+        "duration": 3,
+        "location": "大理古城",
+        "description": "漫步古城，品尝当地美食",
+        "status": "pending",
+        "tips": "推荐尝试乳扇和饵块"
+      }
+    ],
+    "notes": "第一天主要是抵达和休息，不要太累",
+    "status": "in_progress",
+    "createdAt": 1739164800000,
+    "updatedAt": 1739164800000,
+    "_openid": "user_001"
+  }
+]

@@ -1,0 +1,51 @@
+{
+  "name": "AIConfig",
+  "title": "AI配置",
+  "schemas": [
+    {
+      "name": "userId",
+      "title": "用户ID",
+      "type": "String"
+    },
+    {
+      "name": "modelId",
+      "title": "模型ID",
+      "type": "String"
+    },
+    {
+      "name": "modelName",
+      "title": "模型名称",
+      "type": "String"
+    },
+    {
+      "name": "provider",
+      "title": "提供商",
+      "type": "String"
+    },
+    {
+      "name": "isDefault",
+      "title": "是否默认",
+      "type": "Boolean"
+    },
+    {
+      "name": "temperature",
+      "title": "温度参数",
+      "type": "Number"
+    },
+    {
+      "name": "maxTokens",
+      "title": "最大令牌数",
+      "type": "Number"
+    },
+    {
+      "name": "systemPrompt",
+      "title": "系统提示词",
+      "type": "String"
+    },
+    {
+      "name": "capabilities",
+      "title": "能力配置",
+      "type": "Object"
+    }
+  ]
+}

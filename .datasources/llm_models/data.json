@@ -1,0 +1,154 @@
+[
+  {
+    "_id": "model_001",
+    "modelId": "gpt-4",
+    "modelName": "GPT-4",
+    "provider": "OpenAI",
+    "description": "推荐",
+    "isRecommended": true,
+    "capabilities": {
+      "imageRecognition": true,
+      "documentParsing": true,
+      "webScraping": true,
+      "multimodal": true
+    },
+    "costLevel": "high",
+    "maxTokens": 8192,
+    "status": "active",
+    "createdAt": 1739078400000,
+    "updatedAt": 1739078400000
+  },
+  {
+    "_id": "model_002",
+    "modelId": "gpt-4-turbo",
+    "modelName": "GPT-4 Turbo",
+    "provider": "OpenAI",
+    "description": "更快的响应速度",
+    "isRecommended": false,
+    "capabilities": {
+      "imageRecognition": true,
+      "documentParsing": true,
+      "webScraping": true,
+      "multimodal": true
+    },
+    "costLevel": "high",
+    "maxTokens": 128000,
+    "status": "active",
+    "createdAt": 1739078400000,
+    "updatedAt": 1739078400000
+  },
+  {
+    "_id": "model_003",
+    "modelId": "gpt-3.5-turbo",
+    "modelName": "GPT-3.5 Turbo",
+    "provider": "OpenAI",
+    "description": "经济实惠",
+    "isRecommended": false,
+    "capabilities": {
+      "imageRecognition": false,
+      "documentParsing": true,
+      "webScraping": true,
+      "multimodal": false
+    },
+    "costLevel": "low",
+    "maxTokens": 4096,
+    "status": "active",
+    "createdAt": 1739078400000,
+    "updatedAt": 1739078400000
+  },
+  {
+    "_id": "model_004",
+    "modelId": "claude-3",
+    "modelName": "Claude 3",
+    "provider": "Anthropic",
+    "description": "强大的推理能力",
+    "isRecommended": false,
+    "capabilities": {
+      "imageRecognition": true,
+      "documentParsing": true,
+      "webScraping": true,
+      "multimodal": true
+    },
+    "costLevel": "high",
+    "maxTokens": 200000,
+    "status": "active",
+    "createdAt": 1739078400000,
+    "updatedAt": 1739078400000
+  },
+  {
+    "_id": "model_005",
+    "modelId": "claude-2",
+    "modelName": "Claude 2",
+    "provider": "Anthropic",
+    "description": "稳定可靠",
+    "isRecommended": false,
+    "capabilities": {
+      "imageRecognition": false,
+      "documentParsing": true,
+      "webScraping": true,
+      "multimodal": false
+    },
+    "costLevel": "medium",
+    "maxTokens": 100000,
+    "status": "active",
+    "createdAt": 1739078400000,
+    "updatedAt": 1739078400000
+  },
+  {
+    "_id": "model_006",
+    "modelId": "gemini-pro",
+    "modelName": "Gemini Pro",
+    "provider": "Google",
+    "description": "多模态能力强",
+    "isRecommended": false,
+    "capabilities": {
+      "imageRecognition": true,
+      "documentParsing": true,
+      "webScraping": true,
+      "multimodal": true
+    },
+    "costLevel": "medium",
+    "maxTokens": 32000,
+    "status": "active",
+    "createdAt": 1739078400000,
+    "updatedAt": 1739078400000
+  },
+  {
+    "_id": "model_007",
+    "modelId": "qwen-max",
+    "modelName": "通义千问 Max",
+    "provider": "阿里云",
+    "description": "中文优化",
+    "isRecommended": false,
+    "capabilities": {
+      "imageRecognition": true,
+      "documentParsing": true,
+      "webScraping": true,
+      "multimodal": true
+    },
+    "costLevel": "medium",
+    "maxTokens": 8000,
+    "status": "active",
+    "createdAt": 1739078400000,
+    "updatedAt": 1739078400000
+  },
+  {
+    "_id": "model_008",
+    "modelId": "ernie-bot",
+    "modelName": "文心一言",
+    "provider": "百度",
+    "description": "中文理解能力强",
+    "isRecommended": false,
+    "capabilities": {
+      "imageRecognition": true,
+      "documentParsing": true,
+      "webScraping": true,
+      "multimodal": true
+    },
+    "costLevel": "medium",
+    "maxTokens": 2000,
+    "status": "active",
+    "createdAt": 1739078400000,
+    "updatedAt": 1739078400000
+  }
+]

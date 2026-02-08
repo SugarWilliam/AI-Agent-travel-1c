@@ -1,7 +1,7 @@
 // @ts-ignore;
 import React, { useState, useRef, useEffect } from 'react';
 // @ts-ignore;
-import { ArrowLeft, Send, Sparkles, Bot, User, ThumbsUp, ThumbsDown, Copy, Image as ImageIcon, FileText, Link2, Download, Share2, X, Plus, Settings, FileClock, Mic, MicOff } from 'lucide-react';
+import { ArrowLeft, Send, Sparkles, Bot, User, ThumbsUp, ThumbsDown, Copy, Image as ImageIcon, FileText, Link2, Download, Share2, X, Plus, Settings, FileClock, Mic, MicOff, MapPin, Calendar, Camera, Shirt, Cloud, BookOpen, Route, RefreshCw } from 'lucide-react';
 // @ts-ignore;
 import { useToast, Button, Textarea } from '@/components/ui';
 
@@ -13,7 +13,7 @@ export default function AIAssistant(props) {
   const [messages, setMessages] = useState([{
     id: '1',
     role: 'assistant',
-    content: '你好！我是你的AI旅行助手 🌍✈️\n\n我可以帮你：\n• 规划旅行路线和行程\n• 推荐景点和美食\n• 提供交通和住宿建议\n• 解答旅行相关问题\n• 识别图片中的景点\n• 解析旅行文档\n• 生成旅行攻略文档\n• 创建可分享的小程序链接\n• 语音输入对话\n\n你想去哪里旅行呢？',
+    content: '你好！我是你的AI旅行助手 🌍✈️\n\n我可以帮你：\n• 📋 生成完整旅行攻略\n• 🗺️ 规划详细行程路线\n• 🌤️ 实时天气查询和建议\n• 📍 行程节点智能安排\n• 📸 专业拍照指导\n• 👕 穿搭建议\n• 🎯 识别图片中的景点\n• 📄 解析旅行文档\n• 🔗 生成可分享的小程序链接\n• 🎤 语音输入对话\n\n你想去哪里旅行呢？',
     timestamp: new Date().toISOString()
   }]);
   const [input, setInput] = useState('');
@@ -23,6 +23,7 @@ export default function AIAssistant(props) {
   const [showOutputOptions, setShowOutputOptions] = useState(false);
   const [selectedMessageId, setSelectedMessageId] = useState(null);
   const [isRecording, setIsRecording] = useState(false);
+  const [currentPlan, setCurrentPlan] = useState(null);
   const recognitionRef = useRef(null);
   const messagesEndRef = useRef(null);
   const scrollToBottom = () => {
@@ -102,6 +103,32 @@ export default function AIAssistant(props) {
       setIsRecording(true);
     }
   };
+
+  // 检测用户意图并调用相应的Agent
+  const detectIntent = userInput => {
+    const input = userInput.toLowerCase();
+    if (input.includes('生成攻略') || input.includes('攻略') || input.includes('计划')) {
+      return 'generateGuide';
+    }
+    if (input.includes('行程') || input.includes('路线') || input.includes('安排')) {
+      return 'itinerary';
+    }
+    if (input.includes('天气') || input.includes('气温') || input.includes('下雨')) {
+      return 'weather';
+    }
+    if (input.includes('拍照') || input.includes('摄影') || input.includes('照片')) {
+      return 'photo';
+    }
+    if (input.includes('穿搭') || input.includes('衣服') || input.includes('穿什么')) {
+      return 'outfit';
+    }
+    if (input.includes('生成计划') || input.includes('完整计划')) {
+      return 'generatePlan';
+    }
+    return 'guide';
+  };
+
+  // 调用云函数生成AI响应
   const handleSend = async () => {
     if (!input.trim() && uploadedImages.length === 0 && uploadedFiles.length === 0) return;
     const userMessage = {
@@ -117,20 +144,65 @@ export default function AIAssistant(props) {
     setUploadedImages([]);
     setUploadedFiles([]);
     setIsLoading(true);
+    try {
+      const intent = detectIntent(input);
+      console.log('检测到的意图:', intent);
 
-    // 模拟AI响应（实际应该调用云函数）
-    setTimeout(() => {
+      // 调用云函数
+      const result = await props.$w.cloud.callFunction({
+        name: 'ai-assistant',
+        data: {
+          action: 'callAgent',
+          agentType: intent,
+          input: {
+            query: input,
+            images: uploadedImages,
+            files: uploadedFiles
+          },
+          userId: props.$w.auth.currentUser?.userId || 'anonymous',
+          currentPlan: currentPlan
+        }
+      });
+      if (result.success) {
+        const aiResponse = {
+          id: (Date.now() + 1).toString(),
+          role: 'assistant',
+          content: result.response || result.data?.content || '处理完成',
+          data: result.data,
+          timestamp: new Date().toISOString()
+        };
+        setMessages(prev => [...prev, aiResponse]);
+
+        // 如果生成了计划，保存到状态
+        if (result.data?.plan) {
+          setCurrentPlan(result.data.plan);
+        }
+      } else {
+        throw new Error(result.error || 'AI响应失败');
+      }
+    } catch (error) {
+      console.error('AI调用失败:', error);
+      toast({
+        title: 'AI响应失败',
+        description: error.message || '请稍后重试',
+        variant: 'destructive'
+      });
+
+      // 失败时使用本地响应
       const aiResponse = {
         id: (Date.now() + 1).toString(),
         role: 'assistant',
-        content: generateAIResponse(input, uploadedImages, uploadedFiles),
+        content: generateLocalResponse(input, uploadedImages, uploadedFiles),
         timestamp: new Date().toISOString()
       };
       setMessages(prev => [...prev, aiResponse]);
+    } finally {
       setIsLoading(false);
-    }, 2000);
+    }
   };
-  const generateAIResponse = (userInput, images, files) => {
+
+  // 本地响应生成（备用方案）
+  const generateLocalResponse = (userInput, images, files) => {
     const input = userInput.toLowerCase();
     let response = '';
 
@@ -161,10 +233,6 @@ export default function AIAssistant(props) {
       response += '巴黎，浪漫之都！🗼\n\n必去景点：\n1. 埃菲尔铁塔 - 日落时分最美\n2. 卢浮宫 - 艺术宝库\n3. 凯旋门 - 登顶看香榭丽舍大街\n4. 塞纳河 - 游船夜游\n5. 蒙马特高地 - 艺术家聚集地\n\n美食推荐：\n• 法式可颂\n• 马卡龙\n• 法式洋葱汤\n• 鹅肝\n\n需要我帮你规划具体行程吗？';
     } else if (input.includes('生成文档') || input.includes('导出')) {
       response += '我可以为你生成以下格式的文档：\n\n📄 移动端文档：\n• PDF格式 - 适合打印和分享\n• Word格式 - 方便编辑\n• Markdown格式 - 适合技术文档\n\n🔗 小程序链接：\n• 生成可分享的小程序链接\n• 支持二维码分享\n• 可设置访问权限\n\n🖼️ 图片生成：\n• 旅行攻略海报\n• 行程时间线图\n• 景点地图标注\n\n请告诉我你需要哪种格式？';
-    } else if (input.includes('预算') || input.includes('多少钱')) {
-      response += '预算规划很重要！💰\n\n一般来说：\n• 国内游：人均3000-8000元/周\n• 东南亚：人均5000-10000元/周\n• 日韩：人均8000-15000元/周\n• 欧洲：人均15000-30000元/周\n\n省钱小贴士：\n1. 提前预订机票和酒店\n2. 选择淡季出行\n3. 使用当地公共交通\n4. 尝试街头美食\n\n你想去哪里？我可以给你更具体的预算建议！';
-    } else if (input.includes('签证') || input.includes('护照')) {
-      response += '签证信息很重要！📋\n\n热门目的地签证：\n• 日本：电子签证，约5-7个工作日\n• 韩国：电子签证，约3-5个工作日\n• 欧洲（申根）：需面签，约15个工作日\n• 泰国：免签（2024年起）\n• 新加坡：免签（2024年起）\n\n建议：\n1. 至少提前1个月准备\n2. 确保护照有效期6个月以上\n3. 准备好行程单和酒店预订\n\n需要了解具体国家的签证要求吗？';
     } else if (!response) {
       response = '很高兴为你提供帮助！✨\n\n我可以帮你：\n• 推荐旅行目的地\n• 制定详细行程计划\n• 提供景点和美食推荐\n• 解答签证和交通问题\n• 给出预算建议\n• 识别图片中的景点\n• 解析旅行文档\n• 生成旅行攻略文档\n• 创建可分享的小程序链接\n\n告诉我你想去哪里，或者有什么旅行问题，我会尽力帮你解答！';
     }
@@ -226,7 +294,10 @@ export default function AIAssistant(props) {
       setShowOutputOptions(false);
       props.$w.utils.navigateTo({
         pageId: 'ai-output',
-        params: {}
+        params: {
+          type: 'document',
+          format
+        }
       });
     }, 1500);
   };
@@ -240,7 +311,9 @@ export default function AIAssistant(props) {
       setShowOutputOptions(false);
       props.$w.utils.navigateTo({
         pageId: 'ai-output',
-        params: {}
+        params: {
+          type: 'miniprogram'
+        }
       });
     }, 1500);
   };
@@ -254,13 +327,42 @@ export default function AIAssistant(props) {
       setShowOutputOptions(false);
       props.$w.utils.navigateTo({
         pageId: 'ai-output',
-        params: {}
+        params: {
+          type: 'image'
+        }
       });
     }, 2000);
   };
   const handleBack = () => {
     props.$w.utils.navigateBack();
   };
+
+  // 快捷操作按钮
+  const quickActions = [{
+    icon: BookOpen,
+    label: '生成攻略',
+    action: '生成一份详细的旅行攻略'
+  }, {
+    icon: Route,
+    label: '行程规划',
+    action: '帮我规划详细的行程路线'
+  }, {
+    icon: Cloud,
+    label: '天气查询',
+    action: '查询目的地的天气情况'
+  }, {
+    icon: Camera,
+    label: '拍照指导',
+    action: '给我一些拍照的建议和技巧'
+  }, {
+    icon: Shirt,
+    label: '穿搭建议',
+    action: '推荐适合的穿搭'
+  }, {
+    icon: RefreshCw,
+    label: '刷新天气',
+    action: '刷新最新的天气信息'
+  }];
   return <div className="min-h-screen bg-[#FFF9F0] flex flex-col">
       {/* Header */}
       <div className="bg-gradient-to-r from-[#FF6B6B] to-[#4ECDC4] p-4 pt-12">
@@ -301,6 +403,20 @@ export default function AIAssistant(props) {
         </div>
       </div>
 
+      {/* Quick Actions */}
+      <div className="max-w-2xl mx-auto px-4 py-3">
+        <div className="flex gap-2 overflow-x-auto pb-2">
+          {quickActions.map((action, idx) => <button key={idx} onClick={() => setInput(action.action)} className="flex items-center gap-2 bg-white rounded-full px-4 py-2 shadow-md hover:shadow-lg transition-all whitespace-nowrap">
+              <action.icon className="w-4 h-4 text-[#FF6B6B]" />
+              <span className="text-sm font-medium text-gray-700" style={{
+            fontFamily: 'Quicksand, sans-serif'
+          }}>
+                {action.label}
+              </span>
+            </button>)}
+        </div>
+      </div>
+
       {/* Messages */}
       <div className="flex-1 overflow-y-auto p-4 max-w-2xl mx-auto w-full">
         <div className="space-y-4">
@@ -325,6 +441,24 @@ export default function AIAssistant(props) {
                 }}>
                       {message.content}
                     </p>
+                    {/* 显示结构化数据 */}
+                    {message.data && message.data.itinerary && <div className="mt-3 pt-3 border-t border-gray-100">
+                        <div className="text-xs font-semibold text-gray-500 mb-2">📅 行程安排</div>
+                        {message.data.itinerary.map((day, idx) => <div key={idx} className="bg-gray-50 rounded-lg p-2 mb-2">
+                            <div className="font-medium text-sm text-gray-700">第{day.day}天</div>
+                            <div className="text-xs text-gray-500 mt-1">{day.summary}</div>
+                          </div>)}
+                      </div>}
+                    {message.data && message.data.weather && <div className="mt-3 pt-3 border-t border-gray-100">
+                        <div className="text-xs font-semibold text-gray-500 mb-2">🌤️ 天气预报</div>
+                        <div className="flex gap-2 overflow-x-auto">
+                          {message.data.weather.map((day, idx) => <div key={idx} className="bg-gray-50 rounded-lg p-2 min-w-[80px]">
+                              <div className="text-xs text-gray-500">{day.date}</div>
+                              <div className="text-lg">{day.icon}</div>
+                              <div className="text-sm font-medium">{day.temperature}</div>
+                            </div>)}
+                        </div>
+                      </div>}
                   </div>
                 </div>
 
@@ -353,7 +487,8 @@ export default function AIAssistant(props) {
                     <div className="w-2 h-2 bg-[#FF6B6B] rounded-full animate-bounce" />
                     <div className="w-2 h-2 bg-[#4ECDC4] rounded-full animate-bounce" style={{
                   animationDelay: '0.1s'
-                }} />\n                    <div className="w-2 h-2 bg-[#FFE66D] rounded-full animate-bounce" style={{
+                }} />
+                    <div className="w-2 h-2 bg-[#FFE66D] rounded-full animate-bounce" style={{
                   animationDelay: '0.2s'
                 }} />
                   </div>
@@ -411,8 +546,7 @@ export default function AIAssistant(props) {
             e.preventDefault();
             handleSend();
           }
-        }} className="min-h-[60px] max-h-[120px] resize-none" />
-          <Button onClick={handleSend} disabled={!input.trim() && uploadedImages.length === 0 && uploadedFiles.length === 0} isLoading={isLoading} className="bg-[#FF6B6B] hover:bg-[#FF5252] text-white rounded-xl px-4">
+        }} className="min-h-[60px] max-h-[120px] resize-none" />\n          <Button onClick={handleSend} disabled={!input.trim() && uploadedImages.length === 0 && uploadedFiles.length === 0} isLoading={isLoading} className="bg-[#FF6B6B] hover:bg-[#FF5252] text-white rounded-xl px-4">
             <Send className="w-5 h-5" />
           </Button>
         </div>
@@ -468,8 +602,5 @@ export default function AIAssistant(props) {
             </div>
           </div>
         </div>}
-
-      {/* TabBar */}
-      <TabBar activeTab="ai" onNavigate={props.$w.utils.navigateTo} />
     </div>;
 }

@@ -3,11 +3,6 @@
   "title": "旅行计划",
   "schemas": [
     {
-      "name": "userId",
-      "title": "用户ID",
-      "type": "String"
-    },
-    {
       "name": "title",
       "title": "计划标题",
       "type": "String"
@@ -19,13 +14,20 @@
     },
     {
       "name": "startDate",
-      "title": "开始日期",
-      "type": "Date"
+      "title": "出发日期",
+      "type": "Date",
+      "format": "date"
     },
     {
       "name": "endDate",
-      "title": "结束日期",
-      "type": "Date"
+      "title": "返回日期",
+      "type": "Date",
+      "format": "date"
+    },
+    {
+      "name": "days",
+      "title": "天数",
+      "type": "Number"
     },
     {
       "name": "budget",
@@ -34,7 +36,7 @@
     },
     {
       "name": "travelers",
-      "title": "旅行人数",
+      "title": "出行人数",
       "type": "Number"
     },
     {
@@ -55,17 +57,38 @@
     {
       "name": "itinerary",
       "title": "行程安排",
+      "type": "Array",
+      "items": {
+        "type": "Object"
+      }
+    },
+    {
+      "name": "weather",
+      "title": "天气预报",
+      "type": "Array",
+      "items": {
+        "type": "Object"
+      }
+    },
+    {
+      "name": "guide",
+      "title": "旅游攻略",
       "type": "Object"
     },
     {
-      "name": "createdAt",
-      "title": "创建时间",
-      "type": "Date"
+      "name": "photoTips",
+      "title": "拍照指导",
+      "type": "Object"
     },
     {
-      "name": "updatedAt",
-      "title": "更新时间",
-      "type": "Date"
+      "name": "outfitTips",
+      "title": "穿搭建议",
+      "type": "Object"
+    },
+    {
+      "name": "preferences",
+      "title": "旅行偏好",
+      "type": "String"
     }
   ]
 }

@@ -14,6 +14,8 @@ import SHARE_SETTINGS from '../pages/share-settings.jsx';
 import REMINDER_SETTINGS from '../pages/reminder-settings.jsx';
 import PHOTO_GUIDE from '../pages/photo-guide.jsx';
 import PHOTO_GUIDE-DETAIL from '../pages/photo-guide-detail.jsx';
+import AI_TEST from '../pages/ai-test.jsx';
+import PLAN_GENERATOR from '../pages/plan-generator.jsx';
 export const routers = [{
   id: "home",
   component: HOME
@@ -62,4 +64,10 @@ export const routers = [{
 }, {
   id: "photo-guide-detail",
   component: PHOTO_GUIDE-DETAIL
+}, {
+  id: "ai-test",
+  component: AI_TEST
+}, {
+  id: "plan-generator",
+  component: PLAN_GENERATOR
 }]
