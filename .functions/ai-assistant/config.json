@@ -1,0 +1,14 @@
+{
+  "name": "ai-assistant",
+  "version": "1.0.0",
+  "description": "AI助手云函数，提供天气查询和时间调整建议",
+  "main": "index.js",
+  "dependencies": {
+    "@cloudbase/node-sdk": "latest"
+  },
+  "timeout": 60,
+  "memorySize": 128,
+  "environment": {
+    "NODE_ENV": "production"
+  }
+}

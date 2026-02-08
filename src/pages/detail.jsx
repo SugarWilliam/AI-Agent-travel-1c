@@ -1,7 +1,7 @@
 // @ts-ignore;
 import React, { useState, useEffect } from 'react';
 // @ts-ignore;
-import { ArrowLeft, MapPin, Calendar, DollarSign, Users, Edit, Download, Share2, Sparkles, Plus, Trash2, CheckCircle, Camera, Navigation, Clock, AlertTriangle, Bell, UserPlus, X, Cloud, Sun, CloudRain, CloudSnow, Wind, Thermometer } from 'lucide-react';
+import { ArrowLeft, MapPin, Calendar, DollarSign, Users, Edit, Download, Share2, Sparkles, Plus, Trash2, CheckCircle, Camera, Navigation, Clock, AlertTriangle, Bell, UserPlus, X } from 'lucide-react';
 // @ts-ignore;
 import { useToast, Button, Textarea } from '@/components/ui';
 
@@ -32,58 +32,17 @@ export default function Detail(props) {
     date: '2026-02-03'
   }]);
   const [photoGuides, setPhotoGuides] = useState([]);
-  const [itinerary, setItinerary] = useState([]);
-  const [weatherData, setWeatherData] = useState({});
-  
-  // 计算每一天的日期
-  const getDayDate = (dayNumber) => {
-    if (!plan || !plan.startDate) return '';
-    const startDate = new Date(plan.startDate);
-    const targetDate = new Date(startDate);
-    targetDate.setDate(startDate.getDate() + (dayNumber - 1));
-    
-    const year = targetDate.getFullYear();
-    const month = String(targetDate.getMonth() + 1).padStart(2, '0');
-    const day = String(targetDate.getDate()).padStart(2, '0');
-    const weekdays = ['周日', '周一', '周二', '周三', '周四', '周五', '周六'];
-    const weekday = weekdays[targetDate.getDay()];
-    
-    return `${year}.${month}.${day} ${weekday}`;
-  };
-  
-  // 获取天气图标组件
-  const getWeatherIcon = (weatherType) => {
-    switch (weatherType) {
-      case 'sunny':
-        return <Sun className="w-4 h-4 text-yellow-500" />;
-      case 'cloudy':
-        return <Cloud className="w-4 h-4 text-gray-500" />;
-      case 'rainy':
-        return <CloudRain className="w-4 h-4 text-blue-500" />;
-      case 'snowy':
-        return <CloudSnow className="w-4 h-4 text-blue-300" />;
-      case 'windy':
-        return <Wind className="w-4 h-4 text-gray-400" />;
-      default:
-        return <Sun className="w-4 h-4 text-yellow-500" />;
-    }
-  };
-  
-  // 模拟天气数据（实际应用中应该调用天气API）
-  const mockWeatherData = {
-    '1': { type: 'sunny', temperature: 18, description: '晴朗' },
-    '2': { type: 'cloudy', temperature: 16, description: '多云' },
-    '3': { type: 'rainy', temperature: 14, description: '小雨' },
-    '4': { type: 'sunny', temperature: 20, description: '晴朗' },
-    '5': { type: 'cloudy', temperature: 17, description: '多云' }
-  };
-  
-  // 初始化行程数据
-  useEffect(() => {
-    const mockItinerary = [{
+  const [itinerary, setItinerary] = useState([{
     id: '1',
     day: 1,
     title: '抵达东京',
+    date: '2026-02-08',
+    weather: {
+      condition: '晴',
+      temperature: '12°C',
+      icon: '☀️',
+      lastUpdated: new Date().toISOString()
+    },
     activities: [{
       id: '1-1',
       name: '成田机场接机',
@@ -108,6 +67,13 @@ export default function Detail(props) {
     id: '2',
     day: 2,
     title: '浅草寺与晴空塔',
+    date: '2026-02-09',
+    weather: {
+      condition: '多云',
+      temperature: '10°C',
+      icon: '⛅',
+      lastUpdated: new Date().toISOString()
+    },
     activities: [{
       id: '2-1',
       name: '浅草寺参拜',
@@ -132,6 +98,13 @@ export default function Detail(props) {
     id: '3',
     day: 3,
     title: '秋叶原动漫之旅',
+    date: '2026-02-10',
+    weather: {
+      condition: '小雨',
+      temperature: '8°C',
+      icon: '🌧️',
+      lastUpdated: new Date().toISOString()
+    },
     activities: [{
       id: '3-1',
       name: '秋叶原电器街',
@@ -152,7 +125,7 @@ export default function Detail(props) {
       address: '东京都千代田区外神田1-15-6'
     }],
     completed: false
-  }];
+  }]);
   const [companions, setCompanions] = useState([]);
   const [showTimeWarning, setShowTimeWarning] = useState(false);
   const [timeWarningMessage, setTimeWarningMessage] = useState('');
@@ -668,6 +641,60 @@ export default function Detail(props) {
     }
   };
 
+  // AI 刷新天气
+  const handleRefreshWeather = async dayId => {
+    try {
+      const day = itinerary.find(d => d.id === dayId);
+      if (!day || !day.date) {
+        toast({
+          title: '刷新失败',
+          description: '请先设置日期',
+          variant: 'destructive'
+        });
+        return;
+      }
+      toast({
+        title: '正在刷新天气',
+        description: 'AI 正在获取最新天气信息...',
+        duration: 2000
+      });
+
+      // 调用 AI 获取天气信息
+      const result = await $w.cloud.callFunction({
+        name: 'ai-assistant',
+        data: {
+          action: 'getWeather',
+          date: day.date,
+          location: plan.destination || '东京'
+        }
+      });
+      if (result && result.weather) {
+        // 更新天气信息
+        setItinerary(prev => prev.map(d => d.id === dayId ? {
+          ...d,
+          weather: {
+            ...result.weather,
+            lastUpdated: new Date().toISOString()
+          }
+        } : d));
+        toast({
+          title: '天气已更新',
+          description: `${result.weather.condition} ${result.weather.temperature}`,
+          duration: 3000
+        });
+      } else {
+        throw new Error('无法获取天气信息');
+      }
+    } catch (error) {
+      console.error('刷新天气失败:', error);
+      toast({
+        title: '刷新失败',
+        description: '无法获取天气信息，请稍后重试',
+        variant: 'destructive'
+      });
+    }
+  };
+
   // 通知同伴
   const notifyCompanions = async (title, message) => {
     if (companions.length === 0) return;
@@ -861,22 +888,27 @@ export default function Detail(props) {
             {activeTab === 'itinerary' && <div className="space-y-4">
                 {itinerary.map(day => <div key={day.id} className={`pl-4 relative ${day.completed ? 'border-l-4 border-green-500' : ''}`}>
                     <div className="flex items-center justify-between mb-2">
-                      <div>
+                      <div className="flex-1">
                         <h4 className={`font-bold ${day.completed ? 'text-green-600' : 'text-gray-700'}`} style={{
                     fontFamily: 'Nunito, sans-serif'
                   }}>
                           第{day.day}天 - {day.title}
                         </h4>
                         {/* 日期和天气信息 */}
-                        <div className="flex items-center gap-2 mt-1">
+                        <div className="flex items-center gap-3 mt-1">
                           <div className="flex items-center gap-1 text-xs text-gray-500">
                             <Calendar className="w-3 h-3" />
-                            <span>{getDayDate(day.day)}</span>
+                            <span>{day.date || '未设置日期'}</span>
                           </div>
-                          {weatherData[day.day] && <div className="flex items-center gap-1 text-xs text-gray-500">
-                              {getWeatherIcon(weatherData[day.day].type)}
-                              <span>{weatherData[day.day].temperature}°C {weatherData[day.day].description}</span>
-                            </div>}
+                          <div className="flex items-center gap-1 text-xs text-gray-500">
+                            <span className="text-lg">{day.weather?.icon || '🌤️'}</span>
+                            <span>{day.weather?.condition || '未知'}</span>
+                            <span className="text-[#FF6B6B] font-semibold">{day.weather?.temperature || '--'}</span>
+                          </div>
+                          <button onClick={() => handleRefreshWeather(day.id)} className="flex items-center gap-1 text-xs text-[#4ECDC4] hover:text-[#3DBDB5] transition-colors" title="刷新天气">
+                            <Sparkles className="w-3 h-3" />
+                            <span>刷新</span>
+                          </button>
                         </div>
                       </div>
                       <div className="flex items-center gap-2">
@@ -1064,6 +1096,5 @@ export default function Detail(props) {
 
       {/* TabBar */}
       <TabBar activeTab="home" onNavigate={props.$w.utils.navigateTo} />
-    </div>
-  );
+    </div>;
 }
