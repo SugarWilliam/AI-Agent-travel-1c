@@ -695,6 +695,39 @@ export default function Detail(props) {
     }
   };
 
+  // AI 自动刷新所有节点状态
+  const autoRefreshNodeStatus = async () => {
+    try {
+      // 调用 AI 云函数刷新节点状态
+      const result = await $w.cloud.callFunction({
+        name: 'ai-assistant',
+        data: {
+          action: 'refreshNodeStatus',
+          itinerary: itinerary,
+          plan: plan
+        }
+      });
+      if (result && result.updatedItinerary) {
+        // 更新行程数据
+        setItinerary(result.updatedItinerary);
+        console.log('节点状态已自动刷新');
+      }
+    } catch (error) {
+      console.error('自动刷新节点状态失败:', error);
+      // 静默失败，不影响用户体验
+    }
+  };
+
+  // 定时自动刷新节点状态
+  useEffect(() => {
+    // 初始刷新
+    autoRefreshNodeStatus();
+
+    // 每5分钟自动刷新一次
+    const interval = setInterval(autoRefreshNodeStatus, 300000);
+    return () => clearInterval(interval);
+  }, [itinerary, plan]);
+
   // 通知同伴
   const notifyCompanions = async (title, message) => {
     if (companions.length === 0) return;

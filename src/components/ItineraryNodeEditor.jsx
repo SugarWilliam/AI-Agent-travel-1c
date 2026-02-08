@@ -33,6 +33,8 @@ export default function ItineraryNodeEditor({
   // 检查节点状态
   useEffect(() => {
     checkNodeStatus();
+    // 自动获取用户位置
+    getUserLocation();
     // 每分钟检查一次状态
     const interval = setInterval(checkNodeStatus, 60000);
     return () => clearInterval(interval);
@@ -51,17 +53,27 @@ export default function ItineraryNodeEditor({
     const nodeTime = new Date();
     nodeTime.setHours(hours, minutes, 0, 0);
 
-    // 只有当前时间已经过了节点时间，才标记为过期（红色）
-    // 还没开始的节点保持 pending 状态（灰色）
-    if (now.getTime() > nodeTime.getTime()) {
-      setNodeStatus('overdue');
-    } else {
+    // 判断三种状态
+    if (now.getTime() <= nodeTime.getTime()) {
+      // 还没开始：当前时间还没到节点时间
       setNodeStatus('pending');
-    }
-
-    // 检查用户位置（如果已到达目的地，自动标记为完成）
-    if (userLocation && node.destination && node.address) {
-      checkLocationArrival();
+    } else if (userLocation && node.destination && node.address) {
+      // 已经过了时间，检查位置
+      const distance = calculateDistance(userLocation.latitude, userLocation.longitude,
+      // 这里需要将地址转换为坐标，简化处理
+      35.714765,
+      // 浅草寺示例坐标
+      139.796655);
+      if (distance <= 200) {
+        // 已完成：到了时间并且定位在目的地 200米范围内
+        setNodeStatus('completed');
+      } else {
+        // 过期：已经过了时间并且定位也不在目的地 200米范围内
+        setNodeStatus('overdue');
+      }
+    } else {
+      // 已经过了时间但没有位置信息，标记为过期
+      setNodeStatus('overdue');
     }
   };
 
@@ -76,8 +88,8 @@ export default function ItineraryNodeEditor({
     // 浅草寺示例坐标
     139.796655);
 
-    // 如果距离小于100米，认为已到达
-    if (distance < 100) {
+    // 如果距离小于200米，认为已到达
+    if (distance <= 200) {
       setNodeStatus('completed');
       toast({
         title: '到达目的地',
@@ -106,21 +118,21 @@ export default function ItineraryNodeEditor({
           latitude: position.coords.latitude,
           longitude: position.coords.longitude
         });
-        checkLocationArrival();
+        // 获取位置后重新检查状态
+        checkNodeStatus();
       }, error => {
         console.error('获取位置失败:', error);
-        toast({
-          title: '位置获取失败',
-          description: '无法获取您的位置，请检查定位权限',
-          variant: 'destructive'
-        });
+        // 位置获取失败不影响状态检查，只是无法判断是否到达
+        checkNodeStatus();
+      }, {
+        enableHighAccuracy: true,
+        timeout: 10000,
+        maximumAge: 0
       });
     } else {
-      toast({
-        title: '不支持定位',
-        description: '您的浏览器不支持地理定位',
-        variant: 'destructive'
-      });
+      console.warn('浏览器不支持地理定位');
+      // 不支持定位也不影响状态检查
+      checkNodeStatus();
     }
   };
   const handleSave = () => {
@@ -301,20 +313,20 @@ export default function ItineraryNodeEditor({
             </div> : <div className="flex-shrink-0 w-2 h-2 bg-gray-400 rounded-full" />}
 
           {/* 时间显示 */}
-          {showTime && <div className={`flex items-center gap-1 text-xs flex-shrink-0 ${nodeStatus === 'overdue' ? 'text-red-500' : 'text-gray-500'}`}>
+          {showTime && <div className={`flex items-center gap-1 text-xs flex-shrink-0 ${nodeStatus === 'completed' ? 'text-green-500' : nodeStatus === 'overdue' ? 'text-red-500' : 'text-gray-500'}`}>
               <Clock className="w-3 h-3" />
               <span>{node.time || '09:00'}</span>
             </div>}
 
           {/* 节点名称 */}
-          <span className={`text-sm flex-1 ${nodeStatus === 'overdue' ? 'text-red-500' : 'text-gray-700'}`} style={{
+          <span className={`text-sm flex-1 ${nodeStatus === 'completed' ? 'text-green-500' : nodeStatus === 'overdue' ? 'text-red-500' : 'text-gray-700'}`} style={{
         fontFamily: 'Quicksand, sans-serif'
       }}>
             {node.name}
           </span>
 
           {/* 目的地信息 */}
-          {node.destination && <div className={`flex items-center gap-1 text-xs flex-shrink-0 ${nodeStatus === 'overdue' ? 'text-red-500' : 'text-gray-500'}`}>
+          {node.destination && <div className={`flex items-center gap-1 text-xs flex-shrink-0 ${nodeStatus === 'completed' ? 'text-green-500' : nodeStatus === 'overdue' ? 'text-red-500' : 'text-gray-500'}`}>
               <MapPin className="w-3 h-3" />
               <span className="max-w-20 truncate">{node.destination}</span>
             </div>}

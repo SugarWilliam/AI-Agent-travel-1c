@@ -7,7 +7,7 @@ const tcb = cloud.init({
 });
 
 exports.main = async (event, context) => {
-  const { action, date, location } = event;
+  const { action, date, location, itinerary, plan } = event;
   
   if (action === 'getWeather') {
     try {
@@ -39,6 +39,23 @@ exports.main = async (event, context) => {
       };
     } catch (error) {
       console.error('生成时间调整建议失败:', error);
+      return {
+        success: false,
+        error: error.message
+      };
+    }
+  }
+  
+  if (action === 'refreshNodeStatus') {
+    try {
+      const updatedItinerary = await refreshAllNodeStatus(itinerary, plan);
+      
+      return {
+        success: true,
+        updatedItinerary: updatedItinerary
+      };
+    } catch (error) {
+      console.error('刷新节点状态失败:', error);
       return {
         success: false,
         error: error.message
@@ -95,4 +112,41 @@ async function generateTimeAdjustmentSuggestion(activities) {
   
   const randomIndex = Math.floor(Math.random() * suggestions.length);
   return suggestions[randomIndex];
+}
+
+// 刷新所有节点状态
+async function refreshAllNodeStatus(itinerary, plan) {
+  const now = new Date();
+  
+  // 为每一天的每个活动更新状态
+  return itinerary.map(day => {
+    const updatedActivities = day.activities.map(activity => {
+      const [hours, minutes] = (activity.time || '09:00').split(':').map(Number);
+      const activityTime = new Date();
+      activityTime.setHours(hours, minutes, 0, 0);
+      
+      // 判断状态
+      let status = 'pending';
+      
+      if (now.getTime() <= activityTime.getTime()) {
+        // 还没开始：当前时间还没到活动时间
+        status = 'pending';
+      } else {
+        // 已经过了时间，标记为过期（AI无法获取用户位置，所以默认为过期）
+        // 在实际应用中，可以结合用户位置信息来判断是否已完成
+        status = 'overdue';
+      }
+      
+      return {
+        ...activity,
+        status: status,
+        lastUpdated: now.toISOString()
+      };
+    });
+    
+    return {
+      ...day,
+      activities: updatedActivities
+    };
+  });
 }
