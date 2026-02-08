@@ -360,18 +360,20 @@ export default function Detail(props) {
                     </div>
                   </div>}
                 {itinerary.map(day => <div key={day.id} className="border-l-4 border-[#4ECDC4] pl-4 relative">
-                    <button onClick={() => handleDeleteItinerary(day.id)} className="absolute top-0 right-0 text-gray-400 hover:text-red-500">
-                      <Trash2 className="w-4 h-4" />
-                    </button>
                     <div className="flex items-center justify-between mb-2">
                       <h4 className="font-bold text-[#2D3436]" style={{
                   fontFamily: 'Nunito, sans-serif'
                 }}>
                         第{day.day}天 - {day.title}
                       </h4>
-                      <button onClick={() => handleToggleActivity(day.id, -1)} className={`p-1 rounded-full ${day.completed ? 'bg-green-100 text-green-600' : 'bg-gray-100 text-gray-400'}`}>
-                        <CheckCircle className="w-5 h-5" />
-                      </button>
+                      <div className="flex items-center gap-2">
+                        <button onClick={() => handleToggleActivity(day.id, -1)} className={`p-1 rounded-full ${day.completed ? 'bg-green-100 text-green-600' : 'bg-gray-100 text-gray-400'}`}>
+                          <CheckCircle className="w-5 h-5" />
+                        </button>
+                        <button onClick={() => handleDeleteItinerary(day.id)} className="text-gray-400 hover:text-red-500">
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
                     </div>
                     <ul className="space-y-1">
                       {day.activities.map((activity, idx) => <li key={idx} className="text-sm text-gray-600 flex items-center gap-2" style={{
