@@ -1,11 +1,12 @@
 // @ts-ignore;
 import React, { useState, useEffect } from 'react';
 // @ts-ignore;
-import { ArrowLeft, MapPin, Calendar, DollarSign, Users, Edit, Download, Share2, Sparkles, Plus, Trash2, CheckCircle } from 'lucide-react';
+import { ArrowLeft, MapPin, Calendar, DollarSign, Users, Edit, Download, Share2, Sparkles, Plus, Trash2, CheckCircle, Camera } from 'lucide-react';
 // @ts-ignore;
 import { useToast, Button, Textarea } from '@/components/ui';
 
 import TabBar from '@/components/TabBar';
+import PhotoGuideCard from '@/components/PhotoGuideCard';
 export default function Detail(props) {
   const {
     toast
@@ -29,6 +30,7 @@ export default function Detail(props) {
     content: '预订浅草寺附近的酒店',
     date: '2026-02-03'
   }]);
+  const [photoGuides, setPhotoGuides] = useState([]);
   const [itinerary, setItinerary] = useState([{
     id: '1',
     day: 1,
@@ -74,6 +76,118 @@ export default function Detail(props) {
       }]
     };
     setPlan(mockPlan);
+
+    // 模拟拍照指导数据
+    const mockPhotoGuides = [{
+      id: '1',
+      title: '抖音热门运镜技巧',
+      category: 'video',
+      description: '学习抖音最火的运镜技巧，让你的旅行Vlog瞬间提升质感',
+      image: 'https://images.unsplash.com/photo-1574717024653-61fd2cf4d44d?w=400',
+      author: '旅行摄影师小王',
+      authorAvatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100',
+      likes: 1234,
+      views: 5678,
+      duration: '5:30',
+      tags: ['运镜', 'Vlog', '技巧'],
+      isHot: true,
+      isNew: false,
+      difficulty: '入门',
+      relatedItinerary: '1',
+      steps: [{
+        title: '推拉镜头',
+        description: '缓慢推进或拉远，突出主体',
+        image: 'https://images.unsplash.com/photo-1574717024653-61fd2cf4d44d?w=400',
+        tips: '保持稳定，速度均匀'
+      }, {
+        title: '环绕镜头',
+        description: '围绕主体360度拍摄',
+        image: 'https://images.unsplash.com/photo-1574717024653-61fd2cf4d44d?w=400',
+        tips: '保持距离一致，避免抖动'
+      }]
+    }, {
+      id: '2',
+      title: '浅草寺拍照穿搭指南',
+      category: 'outfit',
+      description: '在浅草寺拍照的穿搭建议，让你和古建筑完美融合',
+      image: 'https://images.unsplash.com/photo-1528360983277-13d401cdc186?w=400',
+      author: '时尚博主小李',
+      authorAvatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100',
+      likes: 890,
+      views: 3456,
+      duration: '3:45',
+      tags: ['穿搭', '浅草寺', '和风'],
+      isHot: false,
+      isNew: true,
+      difficulty: '入门',
+      relatedItinerary: '2',
+      steps: [{
+        title: '选择和风元素',
+        description: '和服、浴衣或简约的日式服装',
+        image: 'https://images.unsplash.com/photo-1528360983277-13d401cdc186?w=400',
+        tips: '避免过于鲜艳的颜色'
+      }, {
+        title: '配饰搭配',
+        description: '简约的配饰，如发簪、折扇',
+        image: 'https://images.unsplash.com/photo-1528360983277-13d401cdc186?w=400',
+        tips: '配饰不宜过多'
+      }]
+    }, {
+      id: '3',
+      title: '晴空塔拍照姿势大全',
+      category: 'pose',
+      description: '在晴空塔拍照的经典姿势，让你的照片更有纪念意义',
+      image: 'https://images.unsplash.com/photo-1542051841857-5f90071e7989?w=400',
+      author: '摄影师小张',
+      authorAvatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100',
+      likes: 2345,
+      views: 8901,
+      duration: '4:20',
+      tags: ['姿势', '晴空塔', '地标'],
+      isHot: true,
+      isNew: false,
+      difficulty: '入门',
+      relatedItinerary: '2',
+      steps: [{
+        title: '仰望姿势',
+        description: '站在塔下仰望，突出塔的宏伟',
+        image: 'https://images.unsplash.com/photo-1542051841857-5f90071e7989?w=400',
+        tips: '选择低角度拍摄'
+      }, {
+        title: '背影姿势',
+        description: '背对镜头，眺望远方',
+        image: 'https://images.unsplash.com/photo-1542051841857-5f90071e7989?w=400',
+        tips: '保持自然姿态'
+      }]
+    }, {
+      id: '4',
+      title: '秋叶原动漫拍照指南',
+      category: 'pose',
+      description: '在秋叶原拍照的姿势和穿搭建议，展现二次元风格',
+      image: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400',
+      author: '动漫达人小陈',
+      authorAvatar: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=100',
+      likes: 1567,
+      views: 6789,
+      duration: '5:10',
+      tags: ['姿势', '秋叶原', '动漫'],
+      isHot: false,
+      isNew: true,
+      difficulty: '入门',
+      relatedItinerary: '3',
+      steps: [{
+        title: '动漫角色模仿',
+        description: '模仿经典动漫角色的姿势',
+        image: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400',
+        tips: '选择熟悉的角色'
+      }, {
+        title: '手办合影',
+        description: '与手办或周边产品合影',
+        image: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400',
+        tips: '注意光线和角度'
+      }]
+    }];
+    setPhotoGuides(mockPhotoGuides);
   }, [planId]);
   const handleBack = () => {
     props.$w.utils.navigateBack();
@@ -210,6 +324,17 @@ export default function Detail(props) {
       variant: 'default'
     });
   };
+  const handlePhotoGuideClick = guideId => {
+    props.$w.utils.navigateTo({
+      pageId: 'photo-guide-detail',
+      params: {
+        guideId: guideId
+      }
+    });
+  };
+  const getRelatedPhotoGuides = itineraryId => {
+    return photoGuides.filter(guide => guide.relatedItinerary === itineraryId);
+  };
   if (!plan) {
     return <div className="min-h-screen bg-[#FFF9F0] flex items-center justify-center">
         <div className="text-center">
@@ -340,6 +465,27 @@ export default function Detail(props) {
                       </div>)}
                   </div>
                 </div>
+                
+                {/* Photo Guides Section */}
+                <div>
+                  <div className="flex items-center gap-2 mb-3">
+                    <Camera className="w-5 h-5 text-[#4ECDC4]" />
+                    <h3 className="font-bold text-[#2D3436]" style={{
+                  fontFamily: 'Nunito, sans-serif'
+                }}>
+                      拍照打卡指导
+                    </h3>
+                  </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    {photoGuides.slice(0, 4).map(guide => <PhotoGuideCard key={guide.id} guide={guide} onClick={() => handlePhotoGuideClick(guide.id)} />)}
+                  </div>
+                  <Button onClick={() => props.$w.utils.navigateTo({
+                pageId: 'photo-guide',
+                params: {}
+              })} variant="outline" className="w-full mt-3 rounded-xl border-[#4ECDC4] text-[#4ECDC4] hover:bg-[#4ECDC4]/10">
+                    查看更多拍照指导
+                  </Button>
+                </div>
               </div>}
 
             {/* Itinerary Tab */}
@@ -375,7 +521,7 @@ export default function Detail(props) {
                         </button>
                       </div>
                     </div>
-                    <ul className="space-y-1">
+                    <ul className="space-y-1 mb-3">
                       {day.activities.map((activity, idx) => <li key={idx} className="text-sm text-gray-600 flex items-center gap-2" style={{
                   fontFamily: 'Quicksand, sans-serif'
                 }}>
@@ -383,6 +529,33 @@ export default function Detail(props) {
                           {activity}
                         </li>)}
                     </ul>
+                    
+                    {/* Related Photo Guides */}
+                    {getRelatedPhotoGuides(day.id).length > 0 && <div className="mt-3">
+                        <div className="flex items-center gap-2 mb-2">
+                          <Camera className="w-4 h-4 text-[#4ECDC4]" />
+                          <span className="text-xs font-semibold text-[#2D3436]" style={{
+                    fontFamily: 'Nunito, sans-serif'
+                  }}>
+                            拍照指导
+                          </span>
+                        </div>
+                        <div className="flex gap-2 overflow-x-auto pb-2">
+                          {getRelatedPhotoGuides(day.id).map(guide => <div key={guide.id} onClick={() => handlePhotoGuideClick(guide.id)} className="flex-shrink-0 w-32 bg-white rounded-xl shadow-sm overflow-hidden cursor-pointer hover:shadow-md transition-shadow">
+                              <img src={guide.image} alt={guide.title} className="w-full h-20 object-cover" />
+                              <div className="p-2">
+                                <p className="text-xs font-semibold text-[#2D3436] line-clamp-1" style={{
+                        fontFamily: 'Nunito, sans-serif'
+                      }}>
+                                  {guide.title}
+                                </p>
+                                <p className="text-xs text-gray-500 mt-1">
+                                  {guide.category === 'video' ? '录像' : guide.category === 'outfit' ? '穿着' : '姿势'}
+                                </p>
+                              </div>
+                            </div>)}
+                        </div>
+                      </div>}
                   </div>)}
                 <Button onClick={() => setShowAddItinerary(true)} className="w-full bg-[#4ECDC4] hover:bg-[#3DBDB5] text-white rounded-xl">
                   <Plus className="w-4 h-4 mr-2" />
