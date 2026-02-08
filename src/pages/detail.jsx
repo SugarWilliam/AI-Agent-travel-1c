@@ -1,7 +1,7 @@
 // @ts-ignore;
 import React, { useState, useEffect } from 'react';
 // @ts-ignore;
-import { ArrowLeft, MapPin, Calendar, DollarSign, Users, Edit, Download, Share2, Sparkles, Plus, Trash2, CheckCircle, Camera } from 'lucide-react';
+import { ArrowLeft, MapPin, Calendar, DollarSign, Users, Edit, Download, Share2, Sparkles, Plus, Trash2, CheckCircle, Camera, Navigation } from 'lucide-react';
 // @ts-ignore;
 import { useToast, Button, Textarea } from '@/components/ui';
 
@@ -35,19 +35,55 @@ export default function Detail(props) {
     id: '1',
     day: 1,
     title: '抵达东京',
-    activities: ['成田机场接机', '酒店入住', '新宿初探'],
+    activities: [{
+      name: '成田机场接机',
+      destination: '成田国际机场',
+      address: '千叶县成田市古込1-1'
+    }, {
+      name: '酒店入住',
+      destination: '新宿王子酒店',
+      address: '东京都新宿区歌舞伎町1-19-1'
+    }, {
+      name: '新宿初探',
+      destination: '新宿站',
+      address: '东京都新宿区西新宿1-1-4'
+    }],
     completed: true
   }, {
     id: '2',
     day: 2,
     title: '浅草寺与晴空塔',
-    activities: ['浅草寺参拜', '晴空塔观景', '仲见世商店街'],
+    activities: [{
+      name: '浅草寺参拜',
+      destination: '浅草寺',
+      address: '东京都台东区浅草2-3-1'
+    }, {
+      name: '晴空塔观景',
+      destination: '东京晴空塔',
+      address: '东京都墨田区押上1-1-2'
+    }, {
+      name: '仲见世商店街',
+      destination: '仲见世商店街',
+      address: '东京都台东区浅草2-3-1'
+    }],
     completed: false
   }, {
     id: '3',
     day: 3,
     title: '秋叶原动漫之旅',
-    activities: ['秋叶原电器街', '女仆咖啡厅', '动漫周边购物'],
+    activities: [{
+      name: '秋叶原电器街',
+      destination: '秋叶原电器街',
+      address: '东京都千代田区外神田1-15-6'
+    }, {
+      name: '女仆咖啡厅',
+      destination: '秋叶原女仆咖啡厅',
+      address: '东京都千代田区外神田3-15-6'
+    }, {
+      name: '动漫周边购物',
+      destination: '秋叶原Radio会馆',
+      address: '东京都千代田区外神田1-15-6'
+    }],
     completed: false
   }]);
   useEffect(() => {
@@ -335,6 +371,21 @@ export default function Detail(props) {
   const getRelatedPhotoGuides = itineraryId => {
     return photoGuides.filter(guide => guide.relatedItinerary === itineraryId);
   };
+  const handleNavigateToPhotoGuide = () => {
+    props.$w.utils.navigateTo({
+      pageId: 'photo-guide',
+      params: {}
+    });
+  };
+  const handleNavigateToDestination = (destination, address) => {
+    // 打开地图导航
+    const mapUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}`;
+    window.open(mapUrl, '_blank');
+    toast({
+      title: '正在打开导航',
+      description: `前往 ${destination}`
+    });
+  };
   if (!plan) {
     return <div className="min-h-screen bg-[#FFF9F0] flex items-center justify-center">
         <div className="text-center">
@@ -505,15 +556,15 @@ export default function Detail(props) {
                       </Button>
                     </div>
                   </div>}
-                {itinerary.map(day => <div key={day.id} className="border-l-4 border-[#4ECDC4] pl-4 relative">
+                {itinerary.map(day => <div key={day.id} className={`border-l-4 pl-4 relative ${day.completed ? 'border-green-500' : 'border-red-500'}`}>
                     <div className="flex items-center justify-between mb-2">
-                      <h4 className="font-bold text-[#2D3436]" style={{
+                      <h4 className={`font-bold ${day.completed ? 'text-green-600' : 'text-red-500'}`} style={{
                   fontFamily: 'Nunito, sans-serif'
                 }}>
                         第{day.day}天 - {day.title}
                       </h4>
                       <div className="flex items-center gap-2">
-                        <button onClick={() => handleToggleActivity(day.id, -1)} className={`p-1 rounded-full ${day.completed ? 'bg-green-100 text-green-600' : 'bg-gray-100 text-gray-400'}`}>
+                        <button onClick={() => handleToggleActivity(day.id, -1)} className={`p-1 rounded-full ${day.completed ? 'bg-green-100 text-green-600' : 'bg-red-100 text-red-600'}`}>
                           <CheckCircle className="w-5 h-5" />
                         </button>
                         <button onClick={() => handleDeleteItinerary(day.id)} className="text-gray-400 hover:text-red-500">
@@ -522,26 +573,35 @@ export default function Detail(props) {
                       </div>
                     </div>
                     <ul className="space-y-1 mb-3">
-                      {day.activities.map((activity, idx) => <li key={idx} className="text-sm text-gray-600 flex items-center gap-2" style={{
+                      {day.activities.map((activity, idx) => <li key={idx} className="text-sm text-gray-600 flex items-center justify-between" style={{
                   fontFamily: 'Quicksand, sans-serif'
                 }}>
-                          <span className="w-2 h-2 bg-[#FF6B6B] rounded-full" />
-                          {activity}
+                          <div className="flex items-center gap-2 flex-1">
+                            <span className={`w-2 h-2 rounded-full ${day.completed ? 'bg-green-500' : 'bg-red-500'}`} />
+                            <span className={day.completed ? 'line-through text-gray-400' : ''}>{activity.name}</span>
+                          </div>
+                          <button onClick={() => handleNavigateToDestination(activity.destination, activity.address)} className="text-[#4ECDC4] hover:text-[#3DBDB5] transition-colors flex-shrink-0" title={`导航到 ${activity.destination}`}>
+                            <Navigation className="w-4 h-4" />
+                          </button>
                         </li>)}
                     </ul>
                     
                     {/* Related Photo Guides */}
                     {getRelatedPhotoGuides(day.id).length > 0 && <div className="mt-3">
-                        <div className="flex items-center gap-2 mb-2">
+                        <div onClick={handleNavigateToPhotoGuide} className="flex items-center gap-2 mb-2 cursor-pointer hover:bg-gray-50 p-1 rounded-lg transition-colors">
                           <Camera className="w-4 h-4 text-[#4ECDC4]" />
                           <span className="text-xs font-semibold text-[#2D3436]" style={{
                     fontFamily: 'Nunito, sans-serif'
                   }}>
                             拍照指导
                           </span>
+                          <span className="text-xs text-gray-400 ml-auto">查看更多 →</span>
                         </div>
                         <div className="flex gap-2 overflow-x-auto pb-2">
-                          {getRelatedPhotoGuides(day.id).map(guide => <div key={guide.id} onClick={() => handlePhotoGuideClick(guide.id)} className="flex-shrink-0 w-32 bg-white rounded-xl shadow-sm overflow-hidden cursor-pointer hover:shadow-md transition-shadow">
+                          {getRelatedPhotoGuides(day.id).map(guide => <div key={guide.id} onClick={e => {
+                    e.stopPropagation();
+                    handlePhotoGuideClick(guide.id);
+                  }} className="flex-shrink-0 w-32 bg-white rounded-xl shadow-sm overflow-hidden cursor-pointer hover:shadow-md transition-shadow">
                               <img src={guide.image} alt={guide.title} className="w-full h-20 object-cover" />
                               <div className="p-2">
                                 <p className="text-xs font-semibold text-[#2D3436] line-clamp-1" style={{
