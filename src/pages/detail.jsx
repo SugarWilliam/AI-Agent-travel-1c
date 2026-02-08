@@ -845,8 +845,8 @@ export default function Detail(props) {
                     
                     {/* 节点列表 - 带连接线 */}
                     <div className="relative">
-                      {/* 垂直连接线 - 根据完成状态改变颜色，与圆点中心对齐 */}
-                      {day.activities.length > 1 && <div className={`absolute left-[11px] top-3 bottom-3 w-0.5 ${day.completed ? 'bg-green-500' : 'bg-gray-300'}`} />}
+                      {/* 垂直连接线 - 只在完成时显示绿色连接线 */}
+                      {day.completed && day.activities.length > 1 && <div className="absolute left-[11px] top-3 bottom-3 w-0.5 bg-green-500" />}
                       
                       <div className="space-y-1 mb-3">
                         {day.activities.map((activity, index) => <div key={activity.id} className="relative">

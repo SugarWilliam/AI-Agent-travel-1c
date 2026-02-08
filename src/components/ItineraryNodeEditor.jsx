@@ -1,7 +1,7 @@
 // @ts-ignore;
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 // @ts-ignore;
-import { Clock, MapPin, Navigation, Check, X, Edit2, Trash2, Plus, Search } from 'lucide-react';
+import { Clock, MapPin, Navigation, Check, X, Edit2, Trash2, Plus, Search, XCircle } from 'lucide-react';
 // @ts-ignore;
 import { useToast } from '@/components/ui';
 
@@ -27,6 +27,99 @@ export default function ItineraryNodeEditor({
   const [showMapSelector, setShowMapSelector] = useState(false);
   const [mapSearchQuery, setMapSearchQuery] = useState('');
   const [mapSearchResults, setMapSearchResults] = useState([]);
+  const [nodeStatus, setNodeStatus] = useState('pending'); // pending, overdue, completed
+  const [userLocation, setUserLocation] = useState(null);
+
+  // 检查节点状态
+  useEffect(() => {
+    checkNodeStatus();
+    // 每分钟检查一次状态
+    const interval = setInterval(checkNodeStatus, 60000);
+    return () => clearInterval(interval);
+  }, [node.time, dayCompleted]);
+
+  // 检查节点状态（时间和位置）
+  const checkNodeStatus = () => {
+    if (dayCompleted) {
+      setNodeStatus('completed');
+      return;
+    }
+
+    // 检查时间是否过期
+    const now = new Date();
+    const [hours, minutes] = (node.time || '09:00').split(':').map(Number);
+    const nodeTime = new Date();
+    nodeTime.setHours(hours, minutes, 0, 0);
+    if (now > nodeTime) {
+      setNodeStatus('overdue');
+    } else {
+      setNodeStatus('pending');
+    }
+
+    // 检查用户位置（如果已到达目的地，自动标记为完成）
+    if (userLocation && node.destination && node.address) {
+      checkLocationArrival();
+    }
+  };
+
+  // 检查用户是否到达目的地
+  const checkLocationArrival = () => {
+    if (!userLocation || !node.destination || !node.address) return;
+
+    // 计算用户位置与目的地的距离
+    const distance = calculateDistance(userLocation.latitude, userLocation.longitude,
+    // 这里需要将地址转换为坐标，简化处理
+    35.714765,
+    // 浅草寺示例坐标
+    139.796655);
+
+    // 如果距离小于100米，认为已到达
+    if (distance < 100) {
+      setNodeStatus('completed');
+      toast({
+        title: '到达目的地',
+        description: `已到达 ${node.destination}`
+      });
+    }
+  };
+
+  // 计算两点之间的距离（单位：米）
+  const calculateDistance = (lat1, lon1, lat2, lon2) => {
+    const R = 6371e3; // 地球半径（米）
+    const φ1 = lat1 * Math.PI / 180;
+    const φ2 = lat2 * Math.PI / 180;
+    const Δφ = (lat2 - lat1) * Math.PI / 180;
+    const Δλ = (lon2 - lon1) * Math.PI / 180;
+    const a = Math.sin(Δφ / 2) * Math.sin(Δφ / 2) + Math.cos(φ1) * Math.cos(φ2) * Math.sin(Δλ / 2) * Math.sin(Δλ / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    return R * c;
+  };
+
+  // 获取用户位置
+  const getUserLocation = () => {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(position => {
+        setUserLocation({
+          latitude: position.coords.latitude,
+          longitude: position.coords.longitude
+        });
+        checkLocationArrival();
+      }, error => {
+        console.error('获取位置失败:', error);
+        toast({
+          title: '位置获取失败',
+          description: '无法获取您的位置，请检查定位权限',
+          variant: 'destructive'
+        });
+      });
+    } else {
+      toast({
+        title: '不支持定位',
+        description: '您的浏览器不支持地理定位',
+        variant: 'destructive'
+      });
+    }
+  };
   const handleSave = () => {
     if (!editName.trim()) {
       toast({
@@ -197,26 +290,28 @@ export default function ItineraryNodeEditor({
               </div>
             </div>}
         </div> : <div className="flex items-center gap-2 flex-1">
-          {/* 完成状态图标 */}
-          {dayCompleted ? <div className="flex-shrink-0 w-5 h-5 bg-green-500 rounded-full flex items-center justify-center">
+          {/* 完成状态图标 - 根据状态显示不同样式 */}
+          {nodeStatus === 'completed' || dayCompleted ? <div className="flex-shrink-0 w-5 h-5 bg-green-500 rounded-full flex items-center justify-center">
               <Check className="w-3 h-3 text-white" />
+            </div> : nodeStatus === 'overdue' ? <div className="flex-shrink-0 w-5 h-5 bg-red-500 rounded-full flex items-center justify-center">
+              <XCircle className="w-3 h-3 text-white" />
             </div> : <div className="flex-shrink-0 w-2 h-2 bg-gray-400 rounded-full" />}
 
           {/* 时间显示 */}
-          {showTime && <div className="flex items-center gap-1 text-xs text-gray-500 flex-shrink-0">
+          {showTime && <div className={`flex items-center gap-1 text-xs flex-shrink-0 ${nodeStatus === 'overdue' ? 'text-red-500' : 'text-gray-500'}`}>
               <Clock className="w-3 h-3" />
               <span>{node.time || '09:00'}</span>
             </div>}
 
           {/* 节点名称 */}
-          <span className="text-sm flex-1 text-gray-700" style={{
+          <span className={`text-sm flex-1 ${nodeStatus === 'overdue' ? 'text-red-500' : 'text-gray-700'}`} style={{
         fontFamily: 'Quicksand, sans-serif'
       }}>
             {node.name}
           </span>
 
           {/* 目的地信息 */}
-          {node.destination && <div className="flex items-center gap-1 text-xs text-gray-500 flex-shrink-0">
+          {node.destination && <div className={`flex items-center gap-1 text-xs flex-shrink-0 ${nodeStatus === 'overdue' ? 'text-red-500' : 'text-gray-500'}`}>
               <MapPin className="w-3 h-3" />
               <span className="max-w-20 truncate">{node.destination}</span>
             </div>}
@@ -229,6 +324,10 @@ export default function ItineraryNodeEditor({
           </button>
           {node.destination && node.address && <button onClick={handleNavigate} className="p-1 text-[#4ECDC4] hover:text-[#3DBDB5] transition-colors" title="导航">
               <Navigation className="w-4 h-4" />
+            </button>}
+          {/* 定位按钮 - 检查是否到达目的地 */}
+          {node.destination && node.address && <button onClick={getUserLocation} className="p-1 text-blue-400 hover:text-blue-600 transition-colors" title="检查位置">
+              <MapPin className="w-4 h-4" />
             </button>}
           <button onClick={() => onDelete(node.id)} className="p-1 text-gray-400 hover:text-red-500 transition-colors" title="删除">
             <Trash2 className="w-4 h-4" />
