@@ -92,64 +92,38 @@ export default function Create(props) {
   };
   const onSubmit = async data => {
     try {
-      const currentUser = props.$w.auth.currentUser;
-      const userId = currentUser?.userId || '';
-
-      // 准备保存的数据
-      const saveData = {
-        userId: userId,
-        title: data.title,
-        destination: data.destination,
-        startDate: data.startDate,
-        endDate: data.endDate,
-        budget: parseFloat(data.budget) || 0,
-        travelers: parseInt(data.travelers) || 1,
-        description: data.description,
-        coverImage: coverImage,
-        status: data.status,
-        itinerary: {},
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
-      };
-      let result;
-      if (isEditing && planId) {
-        // 更新现有计划
-        result = await props.$w.cloud.callDataSource({
-          dataSourceName: 'Trip',
-          methodName: 'wedaUpdateV2',
-          params: {
-            data: saveData,
-            filter: {
-              where: {
-                _id: planId
-              }
-            }
+      // 调用云数据库保存数据
+      const result = await props.$w.cloud.callFunction({
+        name: 'database',
+        data: {
+          action: 'add',
+          collection: 'Trip',
+          doc: {
+            ...data,
+            coverImage,
+            userId: props.$w.auth.currentUser?.userId || '',
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+            status: 'planning'
           }
-        });
-      } else {
-        // 创建新计划
-        result = await props.$w.cloud.callDataSource({
-          dataSourceName: 'Trip',
-          methodName: 'wedaCreateV2',
-          params: {
-            data: saveData
-          }
-        });
-      }
-      console.log('保存结果:', result);
-      toast({
-        title: isEditing ? '更新成功' : '创建成功',
-        description: isEditing ? '计划已更新' : '新计划已创建',
-        variant: 'default'
+        }
       });
-      setTimeout(() => {
-        props.$w.utils.navigateTo({
-          pageId: 'home',
-          params: {}
+      if (result && result.success) {
+        toast({
+          title: isEditing ? '更新成功' : '创建成功',
+          description: isEditing ? '计划已更新' : '新计划已创建',
+          variant: 'default'
         });
-      }, 1000);
+        setTimeout(() => {
+          props.$w.utils.navigateTo({
+            pageId: 'home',
+            params: {}
+          });
+        }, 1000);
+      } else {
+        throw new Error(result?.error || '保存失败');
+      }
     } catch (error) {
-      console.error('保存失败:', error);
       toast({
         title: '保存失败',
         description: error.message || '请稍后重试',

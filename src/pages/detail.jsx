@@ -132,71 +132,42 @@ export default function Detail(props) {
   const [showTimeWarning, setShowTimeWarning] = useState(false);
   const [timeWarningMessage, setTimeWarningMessage] = useState('');
   useEffect(() => {
-    if (planId) {
-      loadPlanData();
-    }
-  }, [planId]);
-  
-  const loadPlanData = async () => {
-    try {
-      // 从数据库获取计划数据
-      const result = await props.$w.cloud.callDataSource({
-        dataSourceName: 'Trip',
-        methodName: 'wedaGetItemV2',
-        params: {
-          filter: {
-            where: {
-              _id: planId
-            }
-          }
-        }
-      });
-      
-      console.log('加载计划数据:', result);
-      
-      if (result && result.data) {
-        const planData = result.data;
-        setPlan({
-          id: planData._id,
-          title: planData.title || '未命名计划',
-          destination: planData.destination || '未知目的地',
-          startDate: planData.startDate || '',
-          endDate: planData.endDate || '',
-          budget: planData.budget || 0,
-          travelers: planData.travelers || 1,
-          status: planData.status || 'planning',
-          coverImage: planData.coverImage || 'https://images.unsplash.com/photo-1488646953014-85cb44e25828?w=800',
-          description: planData.description || '',
-          itinerary: planData.itinerary || {},
-          createdAt: planData.createdAt || new Date().toISOString(),
-          updatedAt: planData.updatedAt || new Date().toISOString()
-        });
-        
-        // 如果有行程数据，加载行程
-        if (planData.itinerary && planData.itinerary.days) {
-          setItinerary(planData.itinerary.days);
-        }
-      }
-    } catch (error) {
-      console.error('加载计划数据失败:', error);
-      toast({
-        title: '加载失败',
-        description: '无法加载计划数据',
-        variant: 'destructive'
-      });
-    }
-  };
-  
-  // 模拟拍照指导数据
-  const mockPhotoGuides = [{
-    id: '1',
-    title: '抖音热门运镜技巧',
-    category: 'video',
-    description: '学习抖音最火的运镜技巧，让你的旅行Vlog瞬间提升质感',
-    image: 'https://images.unsplash.com/photo-1574717024653-61fd2cf4d44d?w=400',
-    author: '旅行摄影师小王',
-    authorAvatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100',
-    likes: 1234,
+    // 模拟从数据库获取数据
+    const mockPlan = {
+      id: planId,
+      title: '日本东京七日游',
+      destination: '东京, 日本',
+      startDate: '2026-03-15',
+      endDate: '2026-03-22',
+      budget: 15000,
+      actualBudget: 12500,
+      travelers: 2,
+      status: 'planning',
+      coverImage: 'https://images.unsplash.com/photo-1540959733332-eab4deabeeaf?w=800',
+      description: '探索东京的传统与现代，体验日本文化的独特魅力。从古老的寺庙到繁华的购物区，从精致的料理到动漫文化，全方位感受东京的魅力。',
+      aiSuggestions: ['推荐浅草寺 - 东京最古老的寺庙', '建议体验和服 - 在浅草或明治神宫', '必去秋叶原 - 动漫文化圣地', '推荐筑地市场 - 新鲜海鲜早餐', '建议购买JR Pass - 方便城际交通'],
+      guides: [{
+        id: '1',
+        title: '东京交通攻略',
+        content: '购买Suica卡，使用Google Maps导航，避开早晚高峰。'
+      }, {
+        id: '2',
+        title: '美食推荐',
+        content: '一兰拉面、筑地寿司、银座和牛。'
+      }]
+    };
+    setPlan(mockPlan);
+
+    // 模拟拍照指导数据
+    const mockPhotoGuides = [{
+      id: '1',
+      title: '抖音热门运镜技巧',
+      category: 'video',
+      description: '学习抖音最火的运镜技巧，让你的旅行Vlog瞬间提升质感',
+      image: 'https://images.unsplash.com/photo-1574717024653-61fd2cf4d44d?w=400',
+      author: '旅行摄影师小王',
+      authorAvatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100',
+      likes: 1234,
       views: 5678,
       duration: '5:30',
       tags: ['运镜', 'Vlog', '技巧'],
@@ -298,8 +269,7 @@ export default function Detail(props) {
       }]
     }];
     setPhotoGuides(mockPhotoGuides);
-  };
-  
+  }, [planId]);
   const handleBack = () => {
     props.$w.utils.navigateBack();
   };
@@ -808,8 +778,6 @@ export default function Detail(props) {
       console.error('发送同伴通知失败:', error);
     }
   };
-  
-  // 加载状态
   if (!plan) {
     return <div className="min-h-screen bg-[#FFF9F0] flex items-center justify-center">
         <div className="text-center">
@@ -818,7 +786,6 @@ export default function Detail(props) {
         </div>
       </div>;
   }
-  
   return <div className="min-h-screen bg-[#FFF9F0] pb-24">
       {/* Header Image */}
       <div className="relative h-64">
@@ -1185,8 +1152,7 @@ export default function Detail(props) {
               <X className="w-5 h-5" />
             </button>
           </div>
-        </div>
-      )}
+        </div>}
 
       {/* TabBar */}
       {/* 分享弹窗 */}
