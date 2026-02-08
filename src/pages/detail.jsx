@@ -955,21 +955,18 @@ export default function Detail(props) {
                     
                     {/* 节点列表 - 带连接线 */}
                     <div className="relative">
-                      {/* 垂直连接线 - 根据节点状态显示不同颜色 */}
+                      {/* 垂直连接线 - 只有已完成的节点显示绿色连线 */}
                       {day.activities.length > 1 && (() => {
-                  // 检查所有节点的状态
-                  const hasCompleted = day.activities.some(a => a.status === 'completed');
-                  const hasOverdue = day.activities.some(a => a.status === 'overdue');
-                  const hasPending = day.activities.some(a => a.status === 'pending');
+                  // 检查是否有已完成的节点
+                  const hasCompleted = day.activities.some(a => a.status === 'completed' || day.completed);
 
-                  // 优先显示最紧急的状态
-                  let lineColor = 'bg-gray-300'; // 默认灰色
-                  if (hasOverdue) {
-                    lineColor = 'bg-red-500'; // 有过期节点，显示红色
-                  } else if (hasCompleted) {
-                    lineColor = 'bg-green-500'; // 有完成节点，显示绿色
+                  // 只有已完成的节点才显示绿色连线
+                  if (hasCompleted) {
+                    return <div className="absolute left-[11px] top-3 bottom-3 w-0.5 bg-green-500" />;
                   }
-                  return <div className={`absolute left-[11px] top-3 bottom-3 w-0.5 ${lineColor}`} />;
+
+                  // 其他状态不显示连线
+                  return null;
                 })()}
                       
                       <div className="space-y-1 mb-3">
