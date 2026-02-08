@@ -245,6 +245,7 @@ export default function AgentList(props) {
     setShowMenu(null);
   };
   const getModelColor = model => {
+    if (!model) return 'bg-gray-100 text-gray-700';
     if (model.includes('GPT-4')) return 'bg-purple-100 text-purple-700';
     if (model.includes('GPT-3.5')) return 'bg-blue-100 text-blue-700';
     if (model.includes('Claude')) return 'bg-orange-100 text-orange-700';
