@@ -7,8 +7,7 @@ import { useToast } from '@/components/ui';
 
 export default function PhotoGuideDetail(props) {
   const {
-    $w,
-    page
+    $w
   } = props;
   const {
     toast
@@ -19,7 +18,7 @@ export default function PhotoGuideDetail(props) {
   const [isFavorited, setIsFavorited] = useState(false);
   const [currentStep, setCurrentStep] = useState(0);
   const [showVideo, setShowVideo] = useState(false);
-  const guideId = page.dataset.params.guideId;
+  const guideId = $w.page.dataset.params.guideId;
 
   // 模拟数据 - 指导详情
   const guideDetails = {
