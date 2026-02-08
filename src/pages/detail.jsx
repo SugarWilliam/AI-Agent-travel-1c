@@ -1,12 +1,13 @@
 // @ts-ignore;
 import React, { useState, useEffect } from 'react';
 // @ts-ignore;
-import { ArrowLeft, MapPin, Calendar, DollarSign, Users, Edit, Download, Share2, Sparkles, Plus, Trash2, CheckCircle, Camera, Navigation } from 'lucide-react';
+import { ArrowLeft, MapPin, Calendar, DollarSign, Users, Edit, Download, Share2, Sparkles, Plus, Trash2, CheckCircle, Camera, Navigation, Clock, AlertTriangle, Bell, UserPlus, X } from 'lucide-react';
 // @ts-ignore;
 import { useToast, Button, Textarea } from '@/components/ui';
 
 import TabBar from '@/components/TabBar';
 import PhotoGuideCard from '@/components/PhotoGuideCard';
+import ItineraryNodeEditor from '@/components/ItineraryNodeEditor';
 export default function Detail(props) {
   const {
     toast
@@ -36,15 +37,21 @@ export default function Detail(props) {
     day: 1,
     title: '抵达东京',
     activities: [{
+      id: '1-1',
       name: '成田机场接机',
+      time: '10:00',
       destination: '成田国际机场',
       address: '千叶县成田市古込1-1'
     }, {
+      id: '1-2',
       name: '酒店入住',
+      time: '12:00',
       destination: '新宿王子酒店',
       address: '东京都新宿区歌舞伎町1-19-1'
     }, {
+      id: '1-3',
       name: '新宿初探',
+      time: '14:00',
       destination: '新宿站',
       address: '东京都新宿区西新宿1-1-4'
     }],
@@ -54,15 +61,21 @@ export default function Detail(props) {
     day: 2,
     title: '浅草寺与晴空塔',
     activities: [{
+      id: '2-1',
       name: '浅草寺参拜',
+      time: '09:00',
       destination: '浅草寺',
       address: '东京都台东区浅草2-3-1'
     }, {
+      id: '2-2',
       name: '晴空塔观景',
+      time: '11:00',
       destination: '东京晴空塔',
       address: '东京都墨田区押上1-1-2'
     }, {
+      id: '2-3',
       name: '仲见世商店街',
+      time: '13:00',
       destination: '仲见世商店街',
       address: '东京都台东区浅草2-3-1'
     }],
@@ -72,20 +85,29 @@ export default function Detail(props) {
     day: 3,
     title: '秋叶原动漫之旅',
     activities: [{
+      id: '3-1',
       name: '秋叶原电器街',
+      time: '10:00',
       destination: '秋叶原电器街',
       address: '东京都千代田区外神田1-15-6'
     }, {
+      id: '3-2',
       name: '女仆咖啡厅',
+      time: '12:00',
       destination: '秋叶原女仆咖啡厅',
       address: '东京都千代田区外神田3-15-6'
     }, {
+      id: '3-3',
       name: '动漫周边购物',
+      time: '14:00',
       destination: '秋叶原Radio会馆',
       address: '东京都千代田区外神田1-15-6'
     }],
     completed: false
   }]);
+  const [companions, setCompanions] = useState([]);
+  const [showTimeWarning, setShowTimeWarning] = useState(false);
+  const [timeWarningMessage, setTimeWarningMessage] = useState('');
   useEffect(() => {
     // 模拟从数据库获取数据
     const mockPlan = {
@@ -386,6 +408,254 @@ export default function Detail(props) {
       description: `前往 ${destination}`
     });
   };
+
+  // 节点时间修改
+  const handleNodeTimeChange = (dayId, nodeId, newTime) => {
+    setItinerary(prev => prev.map(day => {
+      if (day.id === dayId) {
+        return {
+          ...day,
+          activities: day.activities.map(activity => {
+            if (activity.id === nodeId) {
+              return {
+                ...activity,
+                time: newTime
+              };
+            }
+            return activity;
+          })
+        };
+      }
+      return day;
+    }));
+
+    // 同步提醒时间
+    syncReminderTime(nodeId, newTime);
+
+    // 检查时间间隔
+    checkTimeIntervals(dayId);
+
+    // 通知同伴
+    notifyCompanions('时间更新', `行程节点时间已更新为 ${newTime}`);
+  };
+
+  // 节点名称修改
+  const handleNodeNameChange = (dayId, nodeId, newName) => {
+    setItinerary(prev => prev.map(day => {
+      if (day.id === dayId) {
+        return {
+          ...day,
+          activities: day.activities.map(activity => {
+            if (activity.id === nodeId) {
+              return {
+                ...activity,
+                name: newName
+              };
+            }
+            return activity;
+          })
+        };
+      }
+      return day;
+    }));
+
+    // 通知同伴
+    notifyCompanions('节点更新', `行程节点已更新为 ${newName}`);
+  };
+
+  // 节点目的地修改
+  const handleNodeDestinationChange = (dayId, nodeId, destinationInfo) => {
+    setItinerary(prev => prev.map(day => {
+      if (day.id === dayId) {
+        return {
+          ...day,
+          activities: day.activities.map(activity => {
+            if (activity.id === nodeId) {
+              return {
+                ...activity,
+                ...destinationInfo
+              };
+            }
+            return activity;
+          })
+        };
+      }
+      return day;
+    }));
+
+    // 通知同伴
+    notifyCompanions('目的地更新', `目的地已更新为 ${destinationInfo.destination}`);
+  };
+
+  // 添加节点
+  const handleAddNode = dayId => {
+    const newNode = {
+      id: `${dayId}-${Date.now()}`,
+      name: '新节点',
+      time: '09:00',
+      destination: '',
+      address: ''
+    };
+    setItinerary(prev => prev.map(day => {
+      if (day.id === dayId) {
+        return {
+          ...day,
+          activities: [...day.activities, newNode]
+        };
+      }
+      return day;
+    }));
+    toast({
+      title: '添加成功',
+      description: '新节点已添加'
+    });
+
+    // 通知同伴
+    notifyCompanions('节点添加', '已添加新的行程节点');
+  };
+
+  // 删除节点
+  const handleDeleteNode = (dayId, nodeId) => {
+    setItinerary(prev => prev.map(day => {
+      if (day.id === dayId) {
+        return {
+          ...day,
+          activities: day.activities.filter(activity => activity.id !== nodeId)
+        };
+      }
+      return day;
+    }));
+
+    // 删除提醒
+    deleteReminder(nodeId);
+    toast({
+      title: '删除成功',
+      description: '节点已删除'
+    });
+
+    // 通知同伴
+    notifyCompanions('节点删除', '已删除行程节点');
+  };
+
+  // 同步提醒时间
+  const syncReminderTime = async (nodeId, newTime) => {
+    try {
+      const tcb = await $w.cloud.getCloudInstance();
+      const db = tcb.database();
+
+      // 查找相关的提醒记录
+      const result = await db.collection('Reminder').where({
+        nodeId: nodeId
+      }).update({
+        time: newTime,
+        updatedAt: new Date().toISOString()
+      });
+      console.log('提醒时间已同步:', result);
+    } catch (error) {
+      console.error('同步提醒时间失败:', error);
+    }
+  };
+
+  // 删除提醒
+  const deleteReminder = async nodeId => {
+    try {
+      const tcb = await $w.cloud.getCloudInstance();
+      const db = tcb.database();
+      await db.collection('Reminder').where({
+        nodeId: nodeId
+      }).remove();
+      console.log('提醒已删除');
+    } catch (error) {
+      console.error('删除提醒失败:', error);
+    }
+  };
+
+  // 检查时间间隔
+  const checkTimeIntervals = dayId => {
+    const day = itinerary.find(d => d.id === dayId);
+    if (!day || day.activities.length < 2) return;
+    const sortedActivities = [...day.activities].sort((a, b) => {
+      return a.time.localeCompare(b.time);
+    });
+    for (let i = 0; i < sortedActivities.length - 1; i++) {
+      const current = sortedActivities[i];
+      const next = sortedActivities[i + 1];
+      const currentTime = new Date(`2000-01-01 ${current.time}`);
+      const nextTime = new Date(`2000-01-01 ${next.time}`);
+      const diffMinutes = (nextTime - currentTime) / (1000 * 60);
+
+      // 如果时间间隔小于30分钟，显示警告
+      if (diffMinutes < 30) {
+        setTimeWarningMessage(`⚠️ 时间间隔过短：${current.name} (${current.time}) 到 ${next.name} (${next.time}) 只有 ${diffMinutes} 分钟，可能无法完成，建议调整时间安排。`);
+        setShowTimeWarning(true);
+
+        // AI 重新规划建议
+        suggestTimeAdjustment(dayId, sortedActivities);
+        return;
+      }
+    }
+    setShowTimeWarning(false);
+  };
+
+  // AI 时间调整建议
+  const suggestTimeAdjustment = async (dayId, activities) => {
+    try {
+      const result = await $w.cloud.callFunction({
+        name: 'ai-assistant',
+        data: {
+          action: 'suggestTimeAdjustment',
+          dayId: dayId,
+          activities: activities
+        }
+      });
+      if (result && result.suggestion) {
+        toast({
+          title: 'AI 建议',
+          description: result.suggestion,
+          duration: 5000
+        });
+      }
+    } catch (error) {
+      console.error('AI 建议生成失败:', error);
+    }
+  };
+
+  // 通知同伴
+  const notifyCompanions = async (title, message) => {
+    if (companions.length === 0) return;
+    try {
+      const tcb = await $w.cloud.getCloudInstance();
+      const db = tcb.database();
+
+      // 创建通知记录
+      const notification = {
+        userId: $w.auth.currentUser?.userId || '',
+        title: title,
+        message: message,
+        type: 'itinerary_update',
+        read: false,
+        timestamp: new Date().toISOString(),
+        planId: planId
+      };
+      await db.collection('Notification').add(notification);
+
+      // 为每个同伴创建通知
+      for (const companion of companions) {
+        await db.collection('Notification').add({
+          userId: companion.id,
+          title: title,
+          message: message,
+          type: 'itinerary_update',
+          read: false,
+          timestamp: new Date().toISOString(),
+          planId: planId
+        });
+      }
+      console.log('同伴通知已发送');
+    } catch (error) {
+      console.error('发送同伴通知失败:', error);
+    }
+  };
   if (!plan) {
     return <div className="min-h-screen bg-[#FFF9F0] flex items-center justify-center">
         <div className="text-center">
@@ -572,19 +842,17 @@ export default function Detail(props) {
                         </button>
                       </div>
                     </div>
-                    <ul className="space-y-1 mb-3">
-                      {day.activities.map((activity, idx) => <li key={idx} className="text-sm text-gray-600 flex items-center justify-between" style={{
-                  fontFamily: 'Quicksand, sans-serif'
-                }}>
-                          <div className="flex items-center gap-2 flex-1">
-                            <span className={`w-2 h-2 rounded-full ${day.completed ? 'bg-green-500' : 'bg-red-500'}`} />
-                            <span className={day.completed ? 'line-through text-gray-400' : ''}>{activity.name}</span>
-                          </div>
-                          <button onClick={() => handleNavigateToDestination(activity.destination, activity.address)} className="text-[#4ECDC4] hover:text-[#3DBDB5] transition-colors flex-shrink-0" title={`导航到 ${activity.destination}`}>
-                            <Navigation className="w-4 h-4" />
-                          </button>
-                        </li>)}
-                    </ul>
+                    
+                    {/* 节点列表 */}
+                    <div className="space-y-1 mb-3">
+                      {day.activities.map(activity => <ItineraryNodeEditor key={activity.id} node={activity} dayId={day.id} dayCompleted={day.completed} onTimeChange={(nodeId, newTime) => handleNodeTimeChange(day.id, nodeId, newTime)} onNameChange={(nodeId, newName) => handleNodeNameChange(day.id, nodeId, newName)} onDestinationChange={(nodeId, destinationInfo) => handleNodeDestinationChange(day.id, nodeId, destinationInfo)} onDelete={nodeId => handleDeleteNode(day.id, nodeId)} onNavigate={handleNavigateToDestination} showTime={true} />)}
+                    </div>
+                    
+                    {/* 添加节点按钮 */}
+                    <button onClick={() => handleAddNode(day.id)} className="w-full py-2 text-sm text-gray-500 hover:text-[#FF6B6B] border-2 border-dashed border-gray-300 hover:border-[#FF6B6B] rounded-lg transition-colors flex items-center justify-center gap-2">
+                      <Plus className="w-4 h-4" />
+                      添加节点
+                    </button>
                     
                     {/* Related Photo Guides */}
                     {getRelatedPhotoGuides(day.id).length > 0 && <div className="mt-3">
@@ -688,6 +956,43 @@ export default function Detail(props) {
           </div>
         </div>
       </div>
+
+      {/* 时间警告提示 */}
+      {showTimeWarning && <div className="fixed top-20 left-4 right-4 bg-yellow-50 border border-yellow-200 rounded-xl p-4 shadow-lg z-50 animate-slide-down">
+          <div className="flex items-start gap-3">
+            <AlertTriangle className="w-5 h-5 text-yellow-600 flex-shrink-0 mt-0.5" />
+            <div className="flex-1">
+              <h4 className="font-bold text-yellow-800 mb-1" style={{
+            fontFamily: 'Nunito, sans-serif'
+          }}>
+                时间安排提醒
+              </h4>
+              <p className="text-sm text-yellow-700" style={{
+            fontFamily: 'Quicksand, sans-serif'
+          }}>
+                {timeWarningMessage}
+              </p>
+              <div className="flex gap-2 mt-3">
+                <button onClick={() => setShowTimeWarning(false)} className="px-3 py-1 text-xs bg-yellow-600 text-white rounded-lg hover:bg-yellow-700 transition-colors">
+                  我知道了
+                </button>
+                <button onClick={() => {
+              setShowTimeWarning(false);
+              toast({
+                title: 'AI 规划',
+                description: '正在为您重新规划时间安排...',
+                duration: 3000
+              });
+            }} className="px-3 py-1 text-xs bg-white text-yellow-700 border border-yellow-300 rounded-lg hover:bg-yellow-50 transition-colors">
+                  AI 重新规划
+                </button>
+              </div>
+            </div>
+            <button onClick={() => setShowTimeWarning(false)} className="text-yellow-600 hover:text-yellow-800 transition-colors">
+              <X className="w-5 h-5" />
+            </button>
+          </div>
+        </div>}
 
       {/* TabBar */}
       <TabBar activeTab="home" onNavigate={props.$w.utils.navigateTo} />
