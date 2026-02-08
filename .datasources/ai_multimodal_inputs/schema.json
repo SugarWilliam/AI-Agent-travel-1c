@@ -1,0 +1,46 @@
+{
+  "name": "ai_multimodal_inputs",
+  "title": "多模态输入记录",
+  "schemas": [
+    {
+      "name": "conversationId",
+      "title": "关联的对话ID",
+      "type": "String"
+    },
+    {
+      "name": "messageId",
+      "title": "关联的消息ID",
+      "type": "String"
+    },
+    {
+      "name": "inputType",
+      "title": "输入类型",
+      "type": "String"
+    },
+    {
+      "name": "fileInfo",
+      "title": "文件信息",
+      "type": "Object"
+    },
+    {
+      "name": "content",
+      "title": "文本内容",
+      "type": "String"
+    },
+    {
+      "name": "voiceDuration",
+      "title": "语音时长（秒）",
+      "type": "Number"
+    },
+    {
+      "name": "status",
+      "title": "处理状态",
+      "type": "String"
+    },
+    {
+      "name": "analysisResult",
+      "title": "分析结果",
+      "type": "Object"
+    }
+  ]
+}

@@ -1,0 +1,76 @@
+[
+  {
+    "conversationId": "conv_001",
+    "messageId": "msg_001",
+    "inputType": "text",
+    "content": "我想去日本旅行",
+    "status": "processed",
+    "analysisResult": {
+      "intent": "travel_planning",
+      "destination": "Japan",
+      "confidence": 0.95
+    }
+  },
+  {
+    "conversationId": "conv_001",
+    "messageId": "msg_002",
+    "inputType": "image",
+    "fileInfo": {
+      "name": "tokyo_tower.jpg",
+      "type": "image/jpeg",
+      "size": 2048576
+    },
+    "content": "",
+    "status": "processed",
+    "analysisResult": {
+      "detected": "Tokyo Tower",
+      "confidence": 0.92
+    }
+  },
+  {
+    "conversationId": "conv_002",
+    "messageId": "msg_003",
+    "inputType": "voice",
+    "content": "帮我规划一下去大理的行程",
+    "voiceDuration": 3.5,
+    "status": "processed",
+    "analysisResult": {
+      "intent": "travel_planning",
+      "destination": "Dali",
+      "confidence": 0.98
+    }
+  },
+  {
+    "conversationId": "conv_003",
+    "messageId": "msg_004",
+    "inputType": "document",
+    "fileInfo": {
+      "name": "travel_plan.pdf",
+      "type": "application/pdf",
+      "size": 5242880
+    },
+    "content": "",
+    "status": "processed",
+    "analysisResult": {
+      "pages": 5,
+      "key_points": [
+        "5天行程",
+        "预算5000元",
+        "包含住宿和交通"
+      ]
+    }
+  },
+  {
+    "conversationId": "conv_004",
+    "messageId": "msg_005",
+    "inputType": "voice",
+    "content": "巴黎有哪些必去的景点？",
+    "voiceDuration": 2.8,
+    "status": "processed",
+    "analysisResult": {
+      "intent": "attraction_query",
+      "destination": "Paris",
+      "confidence": 0.96
+    }
+  }
+]

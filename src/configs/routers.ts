@@ -1,0 +1,45 @@
+import HOME from '../pages/home.jsx';
+import DETAIL from '../pages/detail.jsx';
+import AI from '../pages/ai.jsx';
+import CREATE from '../pages/create.jsx';
+import PROFILE from '../pages/profile.jsx';
+import SETTINGS from '../pages/settings.jsx';
+import AI_CONFIG from '../pages/ai-config.jsx';
+import AI_OUTPUT from '../pages/ai-output.jsx';
+import AGENT_LIST from '../pages/agent-list.jsx';
+import AGENT_LOGS from '../pages/agent-logs.jsx';
+import MY_PLANS from '../pages/my-plans.jsx';
+export const routers = [{
+  id: "home",
+  component: HOME
+}, {
+  id: "detail",
+  component: DETAIL
+}, {
+  id: "ai",
+  component: AI
+}, {
+  id: "create",
+  component: CREATE
+}, {
+  id: "profile",
+  component: PROFILE
+}, {
+  id: "settings",
+  component: SETTINGS
+}, {
+  id: "ai-config",
+  component: AI_CONFIG
+}, {
+  id: "ai-output",
+  component: AI_OUTPUT
+}, {
+  id: "agent-list",
+  component: AGENT_LIST
+}, {
+  id: "agent-logs",
+  component: AGENT_LOGS
+}, {
+  id: "my-plans",
+  component: MY_PLANS
+}]
