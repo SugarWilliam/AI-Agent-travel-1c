@@ -1,4 +1,4 @@
-// @ts-nocheck
+// 旅行计划保存云函数
 const cloud = require('@cloudbase/node-sdk');
 
 const app = cloud.init({
@@ -6,7 +6,6 @@ const app = cloud.init({
 });
 
 const db = app.database();
-const _ = db.command;
 
 exports.main = async (event, context) => {
   const { action, plan, planId, userId } = event;
@@ -49,14 +48,16 @@ async function createPlan(plan, userId) {
     
     return {
       success: true,
-      planId: result.id,
-      message: '计划创建成功'
+      data: {
+        planId: result.id,
+        ...plan
+      }
     };
   } catch (error) {
     console.error('创建计划失败:', error);
     return {
       success: false,
-      error: error.message || '创建计划失败'
+      error: '创建计划失败: ' + error.message
     };
   }
 }
@@ -68,32 +69,49 @@ async function updatePlan(planId, plan, userId) {
       updatedAt: new Date().toISOString()
     });
     
+    if (result.updated === 0) {
+      return {
+        success: false,
+        error: '计划不存在或无权限更新'
+      };
+    }
+    
     return {
       success: true,
-      message: '计划更新成功'
+      data: {
+        planId,
+        ...plan
+      }
     };
   } catch (error) {
     console.error('更新计划失败:', error);
     return {
       success: false,
-      error: error.message || '更新计划失败'
+      error: '更新计划失败: ' + error.message
     };
   }
 }
 
 async function deletePlan(planId, userId) {
   try {
-    await db.collection('Trip').doc(planId).remove();
+    const result = await db.collection('Trip').doc(planId).remove();
+    
+    if (result.deleted === 0) {
+      return {
+        success: false,
+        error: '计划不存在或无权限删除'
+      };
+    }
     
     return {
       success: true,
-      message: '计划删除成功'
+      data: { planId }
     };
   } catch (error) {
     console.error('删除计划失败:', error);
     return {
       success: false,
-      error: error.message || '删除计划失败'
+      error: '删除计划失败: ' + error.message
     };
   }
 }
@@ -102,7 +120,7 @@ async function getPlan(planId, userId) {
   try {
     const result = await db.collection('Trip').doc(planId).get();
     
-    if (!result.data || result.data.length === 0) {
+    if (!result.data) {
       return {
         success: false,
         error: '计划不存在'
@@ -111,13 +129,13 @@ async function getPlan(planId, userId) {
     
     return {
       success: true,
-      plan: result.data[0]
+      data: result.data
     };
   } catch (error) {
     console.error('获取计划失败:', error);
     return {
       success: false,
-      error: error.message || '获取计划失败'
+      error: '获取计划失败: ' + error.message
     };
   }
 }
@@ -133,13 +151,13 @@ async function listPlans(userId) {
     
     return {
       success: true,
-      plans: result.data || []
+      data: result.data || []
     };
   } catch (error) {
     console.error('获取计划列表失败:', error);
     return {
       success: false,
-      error: error.message || '获取计划列表失败'
+      error: '获取计划列表失败: ' + error.message
     };
   }
 }
