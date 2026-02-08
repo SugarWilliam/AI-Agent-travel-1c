@@ -1,7 +1,7 @@
 // @ts-ignore;
 import React, { useState } from 'react';
 // @ts-ignore;
-import { Clock, MapPin, Navigation, Check, X, Edit2, Trash2, Plus } from 'lucide-react';
+import { Clock, MapPin, Navigation, Check, X, Edit2, Trash2, Plus, Search } from 'lucide-react';
 // @ts-ignore;
 import { useToast } from '@/components/ui';
 
@@ -24,6 +24,9 @@ export default function ItineraryNodeEditor({
   const [editTime, setEditTime] = useState(node.time || '09:00');
   const [editDestination, setEditDestination] = useState(node.destination || '');
   const [editAddress, setEditAddress] = useState(node.address || '');
+  const [showMapSelector, setShowMapSelector] = useState(false);
+  const [mapSearchQuery, setMapSearchQuery] = useState('');
+  const [mapSearchResults, setMapSearchResults] = useState([]);
   const handleSave = () => {
     if (!editName.trim()) {
       toast({
@@ -65,12 +68,78 @@ export default function ItineraryNodeEditor({
       });
     }
   };
+
+  // 打开地图选择器
+  const handleOpenMapSelector = () => {
+    setShowMapSelector(true);
+    setMapSearchQuery('');
+    setMapSearchResults([]);
+  };
+
+  // 搜索地图位置
+  const handleMapSearch = async () => {
+    if (!mapSearchQuery.trim()) {
+      toast({
+        title: '搜索失败',
+        description: '请输入搜索关键词',
+        variant: 'destructive'
+      });
+      return;
+    }
+    try {
+      // 使用 Google Places API 进行搜索
+      const response = await fetch(`https://maps.googleapis.com/maps/api/place/textsearch/json?query=${encodeURIComponent(mapSearchQuery)}&key=YOUR_API_KEY`);
+      const data = await response.json();
+      if (data.results && data.results.length > 0) {
+        setMapSearchResults(data.results.slice(0, 5));
+      } else {
+        toast({
+          title: '搜索结果',
+          description: '未找到相关地点',
+          variant: 'destructive'
+        });
+      }
+    } catch (error) {
+      console.error('地图搜索失败:', error);
+      toast({
+        title: '搜索失败',
+        description: '无法连接地图服务',
+        variant: 'destructive'
+      });
+    }
+  };
+
+  // 选择地图位置
+  const handleSelectMapLocation = location => {
+    setEditDestination(location.name);
+    setEditAddress(location.formatted_address);
+    setShowMapSelector(false);
+    toast({
+      title: '选择成功',
+      description: `已选择: ${location.name}`
+    });
+  };
   return <div className="flex items-center justify-between py-2 group">
       {isEditing ? <div className="flex-1 space-y-2">
           <input type="text" value={editName} onChange={e => setEditName(e.target.value)} className="w-full px-2 py-1 text-sm border border-gray-300 rounded-lg focus:outline-none focus:border-[#FF6B6B]" placeholder="节点名称" />
           {showTime && <input type="time" value={editTime} onChange={e => setEditTime(e.target.value)} className="w-full px-2 py-1 text-sm border border-gray-300 rounded-lg focus:outline-none focus:border-[#FF6B6B]" />}
-          <input type="text" value={editDestination} onChange={e => setEditDestination(e.target.value)} className="w-full px-2 py-1 text-sm border border-gray-300 rounded-lg focus:outline-none focus:border-[#FF6B6B]" placeholder="目的地名称" />
-          <input type="text" value={editAddress} onChange={e => setEditAddress(e.target.value)} className="w-full px-2 py-1 text-sm border border-gray-300 rounded-lg focus:outline-none focus:border-[#FF6B6B]" placeholder="详细地址" />
+          
+          {/* 目的地名称 - 带地图选择按钮 */}
+          <div className="relative">
+            <input type="text" value={editDestination} onChange={e => setEditDestination(e.target.value)} className="w-full px-2 py-1 pr-8 text-sm border border-gray-300 rounded-lg focus:outline-none focus:border-[#FF6B6B]" placeholder="目的地名称" />
+            <button onClick={handleOpenMapSelector} className="absolute right-1 top-1/2 -translate-y-1/2 p-1 text-[#4ECDC4] hover:text-[#3DBDB5] transition-colors" title="从地图选择">
+              <MapPin className="w-4 h-4" />
+            </button>
+          </div>
+          
+          {/* 详细地址 - 带地图选择按钮 */}
+          <div className="relative">
+            <input type="text" value={editAddress} onChange={e => setEditAddress(e.target.value)} className="w-full px-2 py-1 pr-8 text-sm border border-gray-300 rounded-lg focus:outline-none focus:border-[#FF6B6B]" placeholder="详细地址" />
+            <button onClick={handleOpenMapSelector} className="absolute right-1 top-1/2 -translate-y-1/2 p-1 text-[#4ECDC4] hover:text-[#3DBDB5] transition-colors" title="从地图选择">
+              <MapPin className="w-4 h-4" />
+            </button>
+          </div>
+          
           <div className="flex gap-2">
             <button onClick={handleSave} className="flex items-center gap-1 px-3 py-1 text-xs bg-[#4ECDC4] text-white rounded-lg hover:bg-[#3DBDB5] transition-colors">
               <Check className="w-3 h-3" />
@@ -81,6 +150,52 @@ export default function ItineraryNodeEditor({
               取消
             </button>
           </div>
+          
+          {/* 地图选择器弹窗 */}
+          {showMapSelector && <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+              <div className="bg-white rounded-xl p-4 w-full max-w-md mx-4 shadow-2xl">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="font-bold text-[#2D3436]" style={{
+              fontFamily: 'Nunito, sans-serif'
+            }}>
+                    选择目的地
+                  </h3>
+                  <button onClick={() => setShowMapSelector(false)} className="text-gray-400 hover:text-gray-600 transition-colors">
+                    <X className="w-5 h-5" />
+                  </button>
+                </div>
+                
+                {/* 搜索框 */}
+                <div className="relative mb-4">
+                  <input type="text" value={mapSearchQuery} onChange={e => setMapSearchQuery(e.target.value)} onKeyPress={e => e.key === 'Enter' && handleMapSearch()} className="w-full px-3 py-2 pr-10 text-sm border border-gray-300 rounded-lg focus:outline-none focus:border-[#4ECDC4]" placeholder="搜索地点..." />
+                  <button onClick={handleMapSearch} className="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-[#4ECDC4] hover:text-[#3DBDB5] transition-colors">
+                    <Search className="w-4 h-4" />
+                  </button>
+                </div>
+                
+                {/* 搜索结果 */}
+                <div className="max-h-60 overflow-y-auto space-y-2">
+                  {mapSearchResults.length > 0 ? mapSearchResults.map((result, index) => <button key={index} onClick={() => handleSelectMapLocation(result)} className="w-full text-left p-3 bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors">
+                      <div className="flex items-start gap-2">
+                        <MapPin className="w-4 h-4 text-[#4ECDC4] flex-shrink-0 mt-0.5" />
+                        <div className="flex-1">
+                          <p className="text-sm font-medium text-gray-700" style={{
+                    fontFamily: 'Quicksand, sans-serif'
+                  }}>
+                            {result.name}
+                          </p>
+                          <p className="text-xs text-gray-500 mt-1 line-clamp-2">
+                            {result.formatted_address}
+                          </p>
+                        </div>
+                      </div>
+                    </button>) : <div className="text-center py-8 text-gray-400">
+                      <MapPin className="w-12 h-12 mx-auto mb-2 opacity-50" />
+                      <p className="text-sm">输入关键词搜索地点</p>
+                    </div>}
+                </div>
+              </div>
+            </div>}
         </div> : <div className="flex items-center gap-2 flex-1">
           {/* 完成状态图标 */}
           {dayCompleted ? <div className="flex-shrink-0 w-5 h-5 bg-green-500 rounded-full flex items-center justify-center">
