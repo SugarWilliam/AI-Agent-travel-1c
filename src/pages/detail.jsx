@@ -8,12 +8,12 @@ import { useToast, Button, Textarea } from '@/components/ui';
 import TabBar from '@/components/TabBar';
 import PhotoGuideCard from '@/components/PhotoGuideCard';
 import ItineraryNodeEditor from '@/components/ItineraryNodeEditor';
+import ShareModal from '@/components/ShareModal';
 export default function Detail(props) {
   const {
     toast
   } = useToast();
   const planId = props.$w.page.dataset.params.id;
-  const planDataParam = props.$w.page.dataset.params.planData;
   const [plan, setPlan] = useState(null);
   const [activeTab, setActiveTab] = useState('overview');
   const [newNote, setNewNote] = useState('');
@@ -23,6 +23,7 @@ export default function Detail(props) {
   const [showAddItinerary, setShowAddItinerary] = useState(false);
   const [newItineraryTitle, setNewItineraryTitle] = useState('');
   const [newItineraryActivities, setNewItineraryActivities] = useState('');
+  const [showShareModal, setShowShareModal] = useState(false);
   const [notes, setNotes] = useState([{
     id: '1',
     content: '记得提前办理签证',
@@ -131,92 +132,6 @@ export default function Detail(props) {
   const [showTimeWarning, setShowTimeWarning] = useState(false);
   const [timeWarningMessage, setTimeWarningMessage] = useState('');
   useEffect(() => {
-    // 检查是否有AI生成的计划数据
-    if (planDataParam) {
-      try {
-        const aiPlan = JSON.parse(planDataParam);
-        // 将AI生成的计划转换为页面需要的格式
-        const convertedPlan = {
-          id: planId,
-          title: `${aiPlan.destination}${aiPlan.days}日游`,
-          destination: aiPlan.destination,
-          startDate: aiPlan.itinerary[0]?.date || new Date().toISOString().split('T')[0],
-          endDate: aiPlan.itinerary[aiPlan.itinerary.length - 1]?.date || new Date().toISOString().split('T')[0],
-          budget: aiPlan.budget,
-          actualBudget: 0,
-          travelers: 1,
-          status: 'planning',
-          coverImage: 'https://images.unsplash.com/photo-1540959733332-eab4deabeeaf?w=800',
-          description: `AI为您生成的${aiPlan.destination}${aiPlan.days}日旅行计划，包含详细的行程安排、攻略、天气、拍照指导和穿搭建议。`,
-          aiSuggestions: aiPlan.guide?.highlights || [],
-          guides: [{
-            id: '1',
-            title: `${aiPlan.destination}旅行攻略`,
-            content: aiPlan.guide?.overview || 'AI生成的旅行攻略'
-          }]
-        };
-        setPlan(convertedPlan);
-
-        // 转换行程数据
-        const convertedItinerary = aiPlan.itinerary.map((day, index) => ({
-          id: (index + 1).toString(),
-          day: day.day,
-          title: day.title,
-          date: day.date,
-          weather: aiPlan.weather[index] || {
-            condition: '晴',
-            temperature: '15°C',
-            icon: '☀️',
-            lastUpdated: new Date().toISOString()
-          },
-          activities: day.activities.map((activity, actIndex) => ({
-            id: `${index + 1}-${actIndex + 1}`,
-            name: activity.name,
-            time: activity.time,
-            destination: activity.destination,
-            address: '',
-            status: 'pending'
-          })),
-          completed: false
-        }));
-        setItinerary(convertedItinerary);
-
-        // 转换拍照指导数据
-        const convertedPhotoGuides = [{
-          id: '1',
-          title: `${aiPlan.destination}拍照指导`,
-          category: 'photo',
-          description: aiPlan.photoGuide?.tips?.join('、') || 'AI生成的拍照指导',
-          image: 'https://images.unsplash.com/photo-1574717024653-61fd2cf4d44d?w=400',
-          author: 'AI助手',
-          authorAvatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100',
-          likes: 0,
-          views: 0,
-          duration: '0:00',
-          tags: aiPlan.photoGuide?.equipment || ['拍照'],
-          isHot: false,
-          isNew: true,
-          difficulty: '入门',
-          relatedItinerary: '1',
-          steps: aiPlan.photoGuide?.spots?.map((spot, idx) => ({
-            title: spot.name,
-            description: spot.tips,
-            image: 'https://images.unsplash.com/photo-1574717024653-61fd2cf4d44d?w=400',
-            tips: spot.bestTime
-          })) || []
-        }];
-        setPhotoGuides(convertedPhotoGuides);
-        return;
-      } catch (error) {
-        console.error('解析AI计划数据失败:', error);
-        toast({
-          title: '数据解析失败',
-          description: '无法解析AI生成的计划数据',
-          variant: 'destructive'
-        });
-      }
-    }
-
     // 模拟从数据库获取数据
     const mockPlan = {
       id: planId,
@@ -374,9 +289,21 @@ export default function Detail(props) {
     });
   };
   const handleShare = () => {
+    setShowShareModal(true);
+  };
+  const handleCopyLink = () => {
     toast({
-      title: '分享链接已复制',
+      title: '链接已复制',
       description: '可以分享给好友一起规划',
+      variant: 'default'
+    });
+  };
+  const handleShareToWechat = () => {
+    // 微信分享逻辑
+    // 在实际应用中，这里可以调用微信SDK或生成小程序码
+    toast({
+      title: '分享到微信',
+      description: '请使用微信扫描二维码或复制链接分享',
       variant: 'default'
     });
   };
@@ -1226,6 +1153,10 @@ export default function Detail(props) {
             </button>
           </div>
         </div>}
+
+      {/* TabBar */}
+      {/* 分享弹窗 */}
+      <ShareModal isOpen={showShareModal} onClose={() => setShowShareModal(false)} plan={plan} onCopyLink={handleCopyLink} onShareToWechat={handleShareToWechat} $w={props.$w} />
 
       {/* TabBar */}
       <TabBar activeTab="home" onNavigate={props.$w.utils.navigateTo} />
