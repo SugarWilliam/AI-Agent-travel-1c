@@ -1,56 +1,81 @@
 // @ts-ignore;
 import React, { useState, useEffect } from 'react';
 // @ts-ignore;
-import { ArrowLeft, Bell, Volume2, Package, Clock, Car, AlertTriangle, Cloud, Save, X, MessageCircle, Smartphone, Loader2 } from 'lucide-react';
+import { ArrowLeft, Bell, Volume2, Package, Clock, Navigation, AlertTriangle, Sun, Check, X, ToggleLeft, ToggleRight, Settings } from 'lucide-react';
 // @ts-ignore;
-import { useToast, Button, Switch } from '@/components/ui';
+import { useToast, Button } from '@/components/ui';
 
+import TabBar from '@/components/TabBar';
 export default function ReminderSettings(props) {
+  const {
+    $w
+  } = props;
   const {
     toast
   } = useToast();
-
-  // 提醒类型设置
-  const [reminderTypes, setReminderTypes] = useState({
-    sound: true,
-    // 声音提醒
-    leftBehind: true,
-    // 物品遗留
-    queue: true,
-    // 排队提醒
-    traffic: true,
-    // 交通提醒
-    attention: true,
-    // 注意事项
-    weather: true // 天气提醒
-  });
-
-  // 通知方式设置
-  const [notificationMethods, setNotificationMethods] = useState({
-    push: true,
-    // 推送通知
-    wechat: true // 微信通知
-  });
-
-  // 全局开关
-  const [allEnabled, setAllEnabled] = useState(true);
-  const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
-  const [currentUserId, setCurrentUserId] = useState('');
+  const {
+    navigateTo
+  } = $w.utils;
+  const [reminders, setReminders] = useState({});
+  const [reminderItems, setReminderItems] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const reminderTypes = ['sound', 'itemLeft', 'queue', 'traffic', 'notes', 'weather'];
+  const reminderConfig = {
+    sound: {
+      icon: Volume2,
+      title: '声音提醒',
+      description: '重要事项的声音提示',
+      color: '#FF6B6B',
+      bgColor: 'bg-[#FF6B6B]/20'
+    },
+    itemLeft: {
+      icon: Package,
+      title: '物品遗留',
+      description: '提醒不要遗忘物品',
+      color: '#4ECDC4',
+      bgColor: 'bg-[#4ECDC4]/20'
+    },
+    queue: {
+      icon: Clock,
+      title: '排队提醒',
+      description: '景点排队时间提醒',
+      color: '#FFE66D',
+      bgColor: 'bg-[#FFE66D]/20'
+    },
+    traffic: {
+      icon: Navigation,
+      title: '交通提醒',
+      description: '交通状况和路线提醒',
+      color: '#FFA500',
+      bgColor: 'bg-[#FFE66D]/20'
+    },
+    notes: {
+      icon: AlertTriangle,
+      title: '注意事项',
+      description: '重要注意事项提醒',
+      color: '#FF6B6B',
+      bgColor: 'bg-[#FF6B6B]/20'
+    },
+    weather: {
+      icon: Sun,
+      title: '天气提醒',
+      description: '天气变化和穿衣建议',
+      color: '#4ECDC4',
+      bgColor: 'bg-[#4ECDC4]/20'
+    }
+  };
 
   // 加载提醒设置
-  const loadReminderSettings = async () => {
+  useEffect(() => {
+    loadReminders();
+  }, []);
+  const loadReminders = async () => {
     try {
       setLoading(true);
-
-      // 获取当前用户ID
-      const userId = props.$w.auth.currentUser?.userId || 'user_001';
-      setCurrentUserId(userId);
-
-      // 查询用户的提醒偏好
-      const result = await props.$w.cloud.callDataSource({
-        dataSourceName: 'user_reminder_preferences',
-        methodName: 'wedaGetItemV2',
+      const userId = $w.auth.currentUser?.userId || 'user_001';
+      const result = await $w.cloud.callDataSource({
+        dataSourceName: 'reminder_settings',
+        methodName: 'wedaGetRecordsV2',
         params: {
           filter: {
             where: {
@@ -66,20 +91,22 @@ export default function ReminderSettings(props) {
           }
         }
       });
-      if (result) {
-        setAllEnabled(result.allEnabled);
-        setReminderTypes(result.reminderTypes || {
-          sound: true,
-          leftBehind: true,
-          queue: true,
-          traffic: true,
-          attention: true,
-          weather: true
+      if (result && result.records) {
+        const remindersMap = {};
+        const items = [];
+        result.records.forEach(record => {
+          remindersMap[record.reminderType] = record.isEnabled;
+          items.push({
+            id: record.reminderType,
+            icon: reminderConfig[record.reminderType]?.icon || Bell,
+            title: record.reminderTitle,
+            description: record.reminderDescription,
+            color: record.color,
+            bgColor: record.bgColor
+          });
         });
-        setNotificationMethods(result.notificationMethods || {
-          push: true,
-          wechat: true
-        });
+        setReminders(remindersMap);
+        setReminderItems(items);
       }
     } catch (error) {
       console.error('加载提醒设置失败:', error);
@@ -92,279 +119,290 @@ export default function ReminderSettings(props) {
       setLoading(false);
     }
   };
-  useEffect(() => {
-    loadReminderSettings();
-  }, []);
-  const handleReminderTypeChange = type => {
-    setReminderTypes(prev => ({
-      ...prev,
-      [type]: !prev[type]
-    }));
-  };
-  const handleNotificationMethodChange = method => {
-    setNotificationMethods(prev => ({
-      ...prev,
-      [method]: !prev[method]
-    }));
-  };
-  const handleToggleAll = () => {
-    const newState = !allEnabled;
-    setAllEnabled(newState);
-
-    // 关闭所有提醒类型
-    setReminderTypes({
-      sound: newState,
-      leftBehind: newState,
-      queue: newState,
-      traffic: newState,
-      attention: newState,
-      weather: newState
-    });
-
-    // 关闭所有通知方式
-    setNotificationMethods({
-      push: newState,
-      wechat: newState
-    });
-  };
-  const handleSave = async () => {
+  const handleToggleReminder = async id => {
     try {
-      setSaving(true);
-
-      // 使用 upsert 创建或更新提醒设置
-      await props.$w.cloud.callDataSource({
-        dataSourceName: 'user_reminder_preferences',
-        methodName: 'wedaUpsertV2',
+      const userId = $w.auth.currentUser?.userId || 'user_001';
+      const newEnabled = !reminders[id];
+      const result = await $w.cloud.callDataSource({
+        dataSourceName: 'reminder_settings',
+        methodName: 'wedaUpdateV2',
         params: {
+          data: {
+            isEnabled: newEnabled
+          },
           filter: {
             where: {
               $and: [{
                 userId: {
-                  $eq: currentUserId
+                  $eq: userId
+                }
+              }, {
+                reminderType: {
+                  $eq: id
                 }
               }]
             }
-          },
-          update: {
-            allEnabled: allEnabled,
-            reminderTypes: reminderTypes,
-            notificationMethods: notificationMethods
-          },
-          create: {
-            userId: currentUserId,
-            allEnabled: allEnabled,
-            reminderTypes: reminderTypes,
-            notificationMethods: notificationMethods
           }
         }
       });
-      toast({
-        title: '设置已保存',
-        description: '提醒设置已更新'
-      });
-      props.$w.utils.navigateBack();
+      if (result && result.count > 0) {
+        setReminders({
+          ...reminders,
+          [id]: newEnabled
+        });
+        toast({
+          title: newEnabled ? '已开启' : '已关闭',
+          description: `${reminderConfig[id]?.title || id}提醒已${newEnabled ? '开启' : '关闭'}`
+        });
+      }
     } catch (error) {
-      console.error('保存设置失败:', error);
+      console.error('更新提醒设置失败:', error);
       toast({
-        title: '保存失败',
-        description: error.message || '无法保存设置',
+        title: '更新失败',
+        description: error.message || '无法更新提醒设置',
         variant: 'destructive'
       });
-    } finally {
-      setSaving(false);
     }
   };
-  const handleCancel = () => {
-    props.$w.utils.navigateBack();
+  const handleEnableAll = async () => {
+    try {
+      const userId = $w.auth.currentUser?.userId || 'user_001';
+      const result = await $w.cloud.callDataSource({
+        dataSourceName: 'reminder_settings',
+        methodName: 'wedaBatchUpdateV2',
+        params: {
+          data: {
+            isEnabled: true
+          },
+          filter: {
+            where: {
+              $and: [{
+                userId: {
+                  $eq: userId
+                }
+              }]
+            }
+          }
+        }
+      });
+      if (result && result.count > 0) {
+        const newReminders = {};
+        reminderTypes.forEach(type => {
+          newReminders[type] = true;
+        });
+        setReminders(newReminders);
+        toast({
+          title: '全部开启',
+          description: '所有提醒已开启'
+        });
+      }
+    } catch (error) {
+      console.error('批量更新失败:', error);
+      toast({
+        title: '更新失败',
+        description: error.message || '无法批量更新提醒设置',
+        variant: 'destructive'
+      });
+    }
   };
-  const reminderTypeConfig = [{
-    key: 'sound',
-    icon: Volume2,
-    title: '声音提醒',
-    description: '重要事项的声音提醒',
-    color: 'bg-blue-100 text-blue-600'
-  }, {
-    key: 'leftBehind',
-    icon: Package,
-    title: '物品遗留',
-    description: '提醒检查随身物品',
-    color: 'bg-orange-100 text-orange-600'
-  }, {
-    key: 'queue',
-    icon: Clock,
-    title: '排队提醒',
-    description: '景点排队时间提醒',
-    color: 'bg-purple-100 text-purple-600'
-  }, {
-    key: 'traffic',
-    icon: Car,
-    title: '交通提醒',
-    description: '交通状况和路线提醒',
-    color: 'bg-green-100 text-green-600'
-  }, {
-    key: 'attention',
-    icon: AlertTriangle,
-    title: '注意事项',
-    description: '重要注意事项提醒',
-    color: 'bg-red-100 text-red-600'
-  }, {
-    key: 'weather',
-    icon: Cloud,
-    title: '天气提醒',
-    description: '目的地天气变化提醒',
-    color: 'bg-cyan-100 text-cyan-600'
-  }];
-  if (loading) {
-    return <div className="min-h-screen bg-gradient-to-br from-orange-50 via-pink-50 to-yellow-50 flex items-center justify-center">
-        <div className="text-center">
-          <Loader2 className="w-16 h-16 mx-auto text-[#FF6B6B] animate-spin mb-4" />
-          <p className="text-gray-500">加载中...</p>
-        </div>
-      </div>;
-  }
-  return <div className="min-h-screen bg-gradient-to-br from-orange-50 via-pink-50 to-yellow-50">
+  const handleDisableAll = async () => {
+    try {
+      const userId = $w.auth.currentUser?.userId || 'user_001';
+      const result = await $w.cloud.callDataSource({
+        dataSourceName: 'reminder_settings',
+        methodName: 'wedaBatchUpdateV2',
+        params: {
+          data: {
+            isEnabled: false
+          },
+          filter: {
+            where: {
+              $and: [{
+                userId: {
+                  $eq: userId
+                }
+              }]
+            }
+          }
+        }
+      });
+      if (result && result.count > 0) {
+        const newReminders = {};
+        reminderTypes.forEach(type => {
+          newReminders[type] = false;
+        });
+        setReminders(newReminders);
+        toast({
+          title: '全部关闭',
+          description: '所有提醒已关闭'
+        });
+      }
+    } catch (error) {
+      console.error('批量更新失败:', error);
+      toast({
+        title: '更新失败',
+        description: error.message || '无法批量更新提醒设置',
+        variant: 'destructive'
+      });
+    }
+  };
+  const handleSaveSettings = () => {
+    toast({
+      title: '设置已保存',
+      description: '提醒设置已更新'
+    });
+  };
+  const enabledCount = Object.values(reminders).filter(v => v).length;
+  return <div className="min-h-screen bg-gradient-to-br from-[#FFF9F0] to-[#FFE4E1] pb-20">
       {/* Header */}
-      <div className="bg-white/80 backdrop-blur-sm sticky top-0 z-10 border-b border-orange-100">
-        <div className="max-w-2xl mx-auto px-4 py-4">
-          <div className="flex items-center gap-4">
-            <Button variant="ghost" size="icon" onClick={handleCancel} className="rounded-full">
-              <ArrowLeft className="w-5 h-5" />
-            </Button>
-            <h1 className="text-xl font-bold text-gray-800" style={{
+      <div className="bg-gradient-to-r from-[#FF6B6B] to-[#FF8E8E] text-white p-4 pt-12">
+        <div className="max-w-lg mx-auto">
+          <div className="flex items-center justify-between mb-4">
+            <button onClick={() => navigateTo({
+            pageId: 'home',
+            params: {}
+          })} className="p-2 hover:bg-white/20 rounded-full transition-colors">
+              <ArrowLeft className="w-6 h-6" />
+            </button>
+            <h1 className="text-2xl font-bold" style={{
             fontFamily: 'Nunito, sans-serif'
           }}>
               提醒设置
             </h1>
+            <div className="w-10" />
           </div>
+          <p className="text-white/90 text-sm" style={{
+          fontFamily: 'Quicksand, sans-serif'
+        }}>
+            管理各类提醒，让旅行更安心
+          </p>
         </div>
       </div>
 
-      {/* Content */}
-      <div className="max-w-2xl mx-auto px-4 py-6">
-        {/* Global Toggle */}
-        <div className="bg-white rounded-2xl p-6 shadow-sm mb-6">
+      <div className="max-w-lg mx-auto p-4">
+        {/* Stats */}
+        <div className="bg-white rounded-2xl p-4 shadow-lg mb-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-full bg-gradient-to-br from-[#FF6B6B] to-[#FF8E53] flex items-center justify-center">
-                <Bell className="w-6 h-6 text-white" />
+              <div className="bg-[#FF6B6B]/20 p-3 rounded-xl">
+                <Bell className="w-6 h-6 text-[#FF6B6B]" />
               </div>
               <div>
-                <h3 className="font-bold text-gray-800" style={{
+                <p className="text-2xl font-bold text-[#2D3436]" style={{
                 fontFamily: 'Nunito, sans-serif'
               }}>
-                  全部提醒
-                </h3>
-                <p className="text-sm text-gray-500">开启或关闭所有提醒</p>
+                  {enabledCount}/6
+                </p>
+                <p className="text-sm text-gray-500" style={{
+                fontFamily: 'Quicksand, sans-serif'
+              }}>
+                  已开启提醒
+                </p>
               </div>
             </div>
-            <Switch checked={allEnabled} onCheckedChange={handleToggleAll} />
+            <div className="flex gap-2">
+              <Button variant="outline" size="sm" onClick={handleEnableAll} className="border-[#4ECDC4] text-[#4ECDC4] hover:bg-[#4ECDC4] hover:text-white rounded-xl px-3">
+                <Check className="w-4 h-4 mr-1" />
+                全部开启
+              </Button>
+              <Button variant="outline" size="sm" onClick={handleDisableAll} className="border-red-500 text-red-500 hover:bg-red-500 hover:text-white rounded-xl px-3">
+                <X className="w-4 h-4 mr-1" />
+                全部关闭
+              </Button>
+            </div>
           </div>
         </div>
 
-        {/* Reminder Types */}
-        <div className="bg-white rounded-2xl p-6 shadow-sm mb-6">
+        {/* Reminder List */}
+        <div className="bg-white rounded-2xl p-4 shadow-lg mb-4">
           <div className="flex items-center gap-2 mb-4">
-            <Bell className="w-5 h-5 text-[#FF6B6B]" />
-            <h3 className="font-bold text-gray-800" style={{
+            <Settings className="w-5 h-5 text-[#FF6B6B]" />
+            <h2 className="font-bold text-[#2D3436]" style={{
             fontFamily: 'Nunito, sans-serif'
           }}>
               提醒类型
-            </h3>
+            </h2>
           </div>
-          <div className="space-y-4">
-            {reminderTypeConfig.map(config => {
-            const Icon = config.icon;
-            return <div key={config.key} className="flex items-center justify-between">
+          <div className="space-y-3">
+            {reminderItems.map(item => {
+            const Icon = item.icon;
+            const isEnabled = reminders[item.id];
+            return <div key={item.id} className={`flex items-center justify-between p-4 rounded-xl transition-all ${isEnabled ? 'bg-gray-50' : 'bg-gray-100 opacity-60'}`}>
                   <div className="flex items-center gap-3">
-                    <div className={`w-10 h-10 rounded-full ${config.color} flex items-center justify-center`}>
-                      <Icon className="w-5 h-5" />
+                    <div className={`${item.bgColor} p-3 rounded-xl`}>
+                      <Icon className="w-5 h-5" style={{
+                    color: item.color
+                  }} />
                     </div>
                     <div>
-                      <p className="font-medium text-gray-800">{config.title}</p>
-                      <p className="text-xs text-gray-500">{config.description}</p>
+                      <p className="font-medium text-[#2D3436]" style={{
+                    fontFamily: 'Nunito, sans-serif'
+                  }}>
+                        {item.title}
+                      </p>
+                      <p className="text-xs text-gray-500" style={{
+                    fontFamily: 'Quicksand, sans-serif'
+                  }}>
+                        {item.description}
+                      </p>
                     </div>
                   </div>
-                  <Switch checked={reminderTypes[config.key]} onCheckedChange={() => handleReminderTypeChange(config.key)} />
+                  <button onClick={() => handleToggleReminder(item.id)} className="p-2 hover:bg-gray-200 rounded-lg transition-colors">
+                    {isEnabled ? <ToggleRight className="w-8 h-8 text-[#4ECDC4]" /> : <ToggleLeft className="w-8 h-8 text-gray-400" />}
+                  </button>
                 </div>;
           })}
           </div>
         </div>
 
-        {/* Notification Methods */}
-        <div className="bg-white rounded-2xl p-6 shadow-sm mb-6">
+        {/* Reminder Details */}
+        <div className="bg-white rounded-2xl p-4 shadow-lg mb-4">
           <div className="flex items-center gap-2 mb-4">
-            <Bell className="w-5 h-5 text-[#FF6B6B]" />
-            <h3 className="font-bold text-gray-800" style={{
+            <AlertTriangle className="w-5 h-5 text-[#FF6B6B]" />
+            <h2 className="font-bold text-[#2D3436]" style={{
             fontFamily: 'Nunito, sans-serif'
           }}>
-              通知方式
-            </h3>
+              提醒说明
+            </h2>
           </div>
-          <div className="space-y-4">
-            {/* Push Notification */}
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
-                  <Smartphone className="w-5 h-5 text-blue-600" />
-                </div>
-                <div>
-                  <p className="font-medium text-gray-800">推送通知</p>
-                  <p className="text-xs text-gray-500">通过App推送接收提醒</p>
-                </div>
-              </div>
-              <Switch checked={notificationMethods.push} onCheckedChange={() => handleNotificationMethodChange('push')} />
-            </div>
-
-            {/* WeChat Notification */}
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center">
-                  <MessageCircle className="w-5 h-5 text-green-600" />
-                </div>
-                <div>
-                  <p className="font-medium text-gray-800">微信通知</p>
-                  <p className="text-xs text-gray-500">通过微信接收提醒</p>
-                </div>
-              </div>
-              <Switch checked={notificationMethods.wechat} onCheckedChange={() => handleNotificationMethodChange('wechat')} />
-            </div>
-          </div>
-        </div>
-
-        {/* Summary */}
-        <div className="bg-gradient-to-r from-orange-50 to-pink-50 rounded-2xl p-6 mb-6">
-          <h4 className="font-bold text-gray-800 mb-3" style={{
-          fontFamily: 'Nunito, sans-serif'
+          <div className="space-y-3 text-sm text-gray-600" style={{
+          fontFamily: 'Quicksand, sans-serif'
         }}>
-            当前设置
-          </h4>
-          <div className="space-y-2 text-sm">
-            <div className="flex justify-between">
-              <span className="text-gray-600">已开启提醒类型:</span>
-              <span className="font-medium text-gray-800">
-                {Object.values(reminderTypes).filter(v => v).length} / 6
-              </span>
+            <div className="p-3 bg-[#FF6B6B]/10 rounded-xl">
+              <p className="font-medium text-[#FF6B6B] mb-1">声音提醒</p>
+              <p>在重要时间点播放提示音，确保不会错过关键信息</p>
             </div>
-            <div className="flex justify-between">
-              <span className="text-gray-600">已开启通知方式:</span>
-              <span className="font-medium text-gray-800">
-                {Object.values(notificationMethods).filter(v => v).length} / 2
-              </span>
+            <div className="p-3 bg-[#4ECDC4]/10 rounded-xl">
+              <p className="font-medium text-[#4ECDC4] mb-1">物品遗留</p>
+              <p>离开酒店、餐厅等场所时，提醒检查是否遗漏物品</p>
+            </div>
+            <div className="p-3 bg-[#FFE66D]/20 rounded-xl">
+              <p className="font-medium text-[#FFA500] mb-1">排队提醒</p>
+              <p>实时监控景点排队时间，提前规划最佳游览时间</p>
+            </div>
+            <div className="p-3 bg-[#FFA500]/10 rounded-xl">
+              <p className="font-medium text-[#FFA500] mb-1">交通提醒</p>
+              <p>提供实时交通状况，推荐最优路线和出行方式</p>
+            </div>
+            <div className="p-3 bg-[#FF6B6B]/10 rounded-xl">
+              <p className="font-medium text-[#FF6B6B] mb-1">注意事项</p>
+              <p>提醒重要注意事项，如签证、证件、安全等</p>
+            </div>
+            <div className="p-3 bg-[#4ECDC4]/10 rounded-xl">
+              <p className="font-medium text-[#4ECDC4] mb-1">天气提醒</p>
+              <p>实时天气变化提醒，提供穿衣和出行建议</p>
             </div>
           </div>
         </div>
 
-        {/* Action Buttons */}
-        <div className="flex gap-3">
-          <Button variant="outline" onClick={handleCancel} className="flex-1 rounded-xl" disabled={saving}>
-            <X className="w-4 h-4 mr-2" />
-            取消
-          </Button>
-          <Button onClick={handleSave} className="flex-1 bg-[#FF6B6B] hover:bg-[#FF5252] text-white rounded-xl" disabled={saving}>
-            {saving ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Save className="w-4 h-4 mr-2" />}
-            {saving ? '保存中...' : '保存'}
-          </Button>
-        </div>
+        {/* Save Button */}
+        <Button onClick={handleSaveSettings} className="w-full bg-[#FF6B6B] hover:bg-[#FF5252] text-white rounded-xl py-3 text-lg font-bold" style={{
+        fontFamily: 'Nunito, sans-serif'
+      }}>
+          保存设置
+        </Button>
       </div>
+
+      <TabBar />
     </div>;
 }

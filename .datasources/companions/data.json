@@ -1,0 +1,59 @@
+[
+  {
+    "_id": "1",
+    "userId": "user_001",
+    "companionId": "companion_001",
+    "companionName": "张小明",
+    "companionAvatar": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&h=200&fit=crop",
+    "companionEmail": "xiaoming@example.com",
+    "companionPhone": "138****1234",
+    "note": "大学同学，喜欢摄影",
+    "status": "active",
+    "sharePermissions": {
+      "itinerary": true,
+      "guide": true,
+      "notes": true
+    },
+    "joinedDate": "2026-02-01",
+    "createdAt": 1738368000000,
+    "updatedAt": 1738368000000
+  },
+  {
+    "_id": "2",
+    "userId": "user_001",
+    "companionId": "companion_002",
+    "companionName": "李小红",
+    "companionAvatar": "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=200&h=200&fit=crop",
+    "companionEmail": "xiaohong@example.com",
+    "companionPhone": "139****5678",
+    "note": "高中好友，美食达人",
+    "status": "active",
+    "sharePermissions": {
+      "itinerary": true,
+      "guide": true,
+      "notes": false
+    },
+    "joinedDate": "2026-02-03",
+    "createdAt": 1738540800000,
+    "updatedAt": 1738540800000
+  },
+  {
+    "_id": "3",
+    "userId": "user_001",
+    "companionId": "companion_003",
+    "companionName": "王大伟",
+    "companionAvatar": "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=200&h=200&fit=crop",
+    "companionEmail": "dawei@example.com",
+    "companionPhone": "137****9012",
+    "note": "同事，负责攻略",
+    "status": "pending",
+    "sharePermissions": {
+      "itinerary": false,
+      "guide": false,
+      "notes": false
+    },
+    "joinedDate": "2026-02-05",
+    "createdAt": 1738713600000,
+    "updatedAt": 1738713600000
+  }
+]

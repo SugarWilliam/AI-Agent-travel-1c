@@ -10,7 +10,7 @@ import AGENT_LIST from '../pages/agent-list.jsx';
 import AGENT_LOGS from '../pages/agent-logs.jsx';
 import MY_PLANS from '../pages/my-plans.jsx';
 import COMPANIONS from '../pages/companions.jsx';
-import COMPANION_SETTINGS from '../pages/companion-settings.jsx';
+import SHARE_SETTINGS from '../pages/share-settings.jsx';
 import REMINDER_SETTINGS from '../pages/reminder-settings.jsx';
 export const routers = [{
   id: "home",
@@ -49,8 +49,8 @@ export const routers = [{
   id: "companions",
   component: COMPANIONS
 }, {
-  id: "companion-settings",
-  component: COMPANION_SETTINGS
+  id: "share-settings",
+  component: SHARE_SETTINGS
 }, {
   id: "reminder-settings",
   component: REMINDER_SETTINGS

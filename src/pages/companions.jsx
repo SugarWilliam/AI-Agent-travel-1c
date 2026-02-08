@@ -1,37 +1,45 @@
 // @ts-ignore;
 import React, { useState, useEffect } from 'react';
 // @ts-ignore;
-import { Search, UserPlus, UserMinus, Settings, Share2, User, Mail, Phone, Calendar, MapPin, X, Plus, QrCode, Loader2 } from 'lucide-react';
+import { ArrowLeft, Plus, User, Mail, Phone, Trash2, Edit, Search, MoreVertical, UserPlus, Users } from 'lucide-react';
 // @ts-ignore;
-import { useToast, Button, Input, Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui';
+import { useToast, Button, Input } from '@/components/ui';
 
 import TabBar from '@/components/TabBar';
 export default function Companions(props) {
   const {
+    $w
+  } = props;
+  const {
     toast
   } = useToast();
-  const [searchQuery, setSearchQuery] = useState('');
-  const [showAddDialog, setShowAddDialog] = useState(false);
-  const [addMethod, setAddMethod] = useState('search'); // 'search' or 'invite'
-  const [searchInput, setSearchInput] = useState('');
-  const [inviteCode, setInviteCode] = useState('');
+  const {
+    navigateTo
+  } = $w.utils;
   const [companions, setCompanions] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [myInviteCode, setMyInviteCode] = useState('');
-  const [currentUserId, setCurrentUserId] = useState('');
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [selectedCompanion, setSelectedCompanion] = useState(null);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [newCompanion, setNewCompanion] = useState({
+    name: '',
+    email: '',
+    phone: '',
+    note: ''
+  });
+  const filteredCompanions = companions.filter(c => c.name.toLowerCase().includes(searchQuery.toLowerCase()) || c.email.toLowerCase().includes(searchQuery.toLowerCase()));
 
   // 加载同伴列表
+  useEffect(() => {
+    loadCompanions();
+  }, []);
   const loadCompanions = async () => {
     try {
       setLoading(true);
-
-      // 获取当前用户ID
-      const userId = props.$w.auth.currentUser?.userId || 'user_001';
-      setCurrentUserId(userId);
-
-      // 查询同伴关系数据
-      const result = await props.$w.cloud.callDataSource({
-        dataSourceName: 'companion_relations',
+      const userId = $w.auth.currentUser?.userId || 'user_001';
+      const result = await $w.cloud.callDataSource({
+        dataSourceName: 'companions',
         methodName: 'wedaGetRecordsV2',
         params: {
           filter: {
@@ -52,24 +60,17 @@ export default function Companions(props) {
         }
       });
       if (result && result.records) {
-        // 映射数据到页面需要的格式
         const mappedCompanions = result.records.map(record => ({
           id: record._id,
           name: record.companionName,
-          avatar: record.companionAvatar,
-          email: record.companionEmail,
-          phone: record.companionPhone,
-          joinDate: record.joinDate,
-          sharedPlans: [],
-          // 可以从其他关联表获取
-          status: record.status,
-          permissions: record.permissions,
-          inviteCode: record.inviteCode
+          avatar: record.companionAvatar || 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&h=200&fit=crop',
+          email: record.companionEmail || '未填写',
+          phone: record.companionPhone || '未填写',
+          note: record.note || '',
+          joinedDate: record.joinedDate || new Date().toISOString().split('T')[0],
+          status: record.status || 'active'
         }));
         setCompanions(mappedCompanions);
-
-        // 设置我的邀请码（使用当前用户ID生成）
-        setMyInviteCode(`TRAVEL${userId.split('_')[1] || '2026'}`);
       }
     } catch (error) {
       console.error('加载同伴列表失败:', error);
@@ -82,176 +83,52 @@ export default function Companions(props) {
       setLoading(false);
     }
   };
-  useEffect(() => {
-    loadCompanions();
-  }, []);
-  const filteredCompanions = companions.filter(companion => companion.name.toLowerCase().includes(searchQuery.toLowerCase()) || companion.email.toLowerCase().includes(searchQuery.toLowerCase()));
-  const handleSearchUser = async () => {
-    if (!searchInput.trim()) {
+  const handleAddCompanion = async () => {
+    if (!newCompanion.name.trim()) {
       toast({
-        title: '请输入搜索内容',
-        description: '请输入用户名、邮箱或手机号进行搜索',
-        variant: 'destructive'
-      });
-      return;
-    }
-
-    // 检查是否已存在
-    const existingUser = companions.find(c => c.name === searchInput || c.email === searchInput);
-    if (existingUser) {
-      toast({
-        title: '用户已存在',
-        description: '该用户已在您的同伴列表中',
+        title: '请输入同伴姓名',
+        description: '姓名不能为空',
         variant: 'destructive'
       });
       return;
     }
     try {
-      // 模拟搜索用户（实际应该调用用户搜索API）
-      const searchResult = await props.$w.cloud.callDataSource({
-        dataSourceName: 'companion_relations',
-        methodName: 'wedaGetRecordsV2',
+      const userId = $w.auth.currentUser?.userId || 'user_001';
+      const result = await $w.cloud.callDataSource({
+        dataSourceName: 'companions',
+        methodName: 'wedaCreateV2',
         params: {
-          filter: {
-            where: {
-              $or: [{
-                companionName: {
-                  $eq: searchInput
-                }
-              }, {
-                companionEmail: {
-                  $eq: searchInput
-                }
-              }, {
-                companionPhone: {
-                  $eq: searchInput
-                }
-              }]
-            }
-          },
-          select: {
-            $master: true
+          data: {
+            userId: userId,
+            companionId: `companion_${Date.now()}`,
+            companionName: newCompanion.name,
+            companionAvatar: `https://images.unsplash.com/photo-${1500000000000 + Math.floor(Math.random() * 1000000000)}?w=200&h=200&fit=crop`,
+            companionEmail: newCompanion.email || '',
+            companionPhone: newCompanion.phone || '',
+            note: newCompanion.note || '',
+            status: 'active',
+            sharePermissions: {
+              itinerary: true,
+              guide: true,
+              notes: true
+            },
+            joinedDate: new Date().toISOString().split('T')[0]
           }
         }
       });
-      if (searchResult && searchResult.records && searchResult.records.length > 0) {
+      if (result && result.id) {
         toast({
-          title: '搜索成功',
-          description: `找到用户: ${searchInput}，请发送邀请`
+          title: '添加成功',
+          description: `已添加同伴：${newCompanion.name}`
         });
-      } else {
-        toast({
-          title: '未找到用户',
-          description: '未找到匹配的用户，请检查输入信息',
-          variant: 'destructive'
+        setNewCompanion({
+          name: '',
+          email: '',
+          phone: '',
+          note: ''
         });
-      }
-    } catch (error) {
-      console.error('搜索用户失败:', error);
-      toast({
-        title: '搜索失败',
-        description: error.message || '无法搜索用户',
-        variant: 'destructive'
-      });
-    }
-  };
-  const handleInviteByCode = async () => {
-    if (!inviteCode.trim()) {
-      toast({
-        title: '请输入邀请码',
-        description: '请输入有效的邀请码',
-        variant: 'destructive'
-      });
-      return;
-    }
-    if (inviteCode === myInviteCode) {
-      toast({
-        title: '不能使用自己的邀请码',
-        description: '请使用其他用户的邀请码',
-        variant: 'destructive'
-      });
-      return;
-    }
-    try {
-      // 查找使用该邀请码的用户
-      const result = await props.$w.cloud.callDataSource({
-        dataSourceName: 'companion_relations',
-        methodName: 'wedaGetRecordsV2',
-        params: {
-          filter: {
-            where: {
-              $and: [{
-                inviteCode: {
-                  $eq: inviteCode
-                }
-              }]
-            }
-          },
-          select: {
-            $master: true
-          }
-        }
-      });
-      if (result && result.records && result.records.length > 0) {
-        const targetUser = result.records[0];
-
-        // 检查是否已经关联
-        const existingRelation = companions.find(c => c.id === targetUser._id);
-        if (existingRelation) {
-          toast({
-            title: '已存在关联',
-            description: '该用户已在您的同伴列表中',
-            variant: 'destructive'
-          });
-          return;
-        }
-
-        // 创建同伴关系
-        await props.$w.cloud.callDataSource({
-          dataSourceName: 'companion_relations',
-          methodName: 'wedaCreateV2',
-          params: {
-            data: {
-              userId: currentUserId,
-              companionId: targetUser.userId,
-              companionName: targetUser.companionName,
-              companionAvatar: targetUser.companionAvatar,
-              companionEmail: targetUser.companionEmail,
-              companionPhone: targetUser.companionPhone,
-              status: 'pending',
-              joinDate: new Date().toISOString().split('T')[0],
-              inviteCode: inviteCode,
-              permissions: {
-                canViewOverview: true,
-                canViewItinerary: true,
-                canViewGuides: true,
-                canViewNotes: false,
-                canEditItinerary: false,
-                canEditGuides: false,
-                canEditNotes: false,
-                canViewBudget: true,
-                canEditBudget: false,
-                canViewAI: true,
-                canReceiveNotifications: true
-              }
-            }
-          }
-        });
-        setInviteCode('');
-        setShowAddDialog(false);
-        toast({
-          title: '邀请已发送',
-          description: '等待对方确认后即可建立关联'
-        });
-
-        // 重新加载列表
-        loadCompanions();
-      } else {
-        toast({
-          title: '邀请码无效',
-          description: '未找到使用该邀请码的用户',
-          variant: 'destructive'
-        });
+        setShowAddModal(false);
+        loadCompanions(); // 重新加载列表
       }
     } catch (error) {
       console.error('添加同伴失败:', error);
@@ -262,212 +139,275 @@ export default function Companions(props) {
       });
     }
   };
-  const handleRemoveCompanion = async companionId => {
+  const handleDeleteCompanion = async () => {
     try {
-      await props.$w.cloud.callDataSource({
-        dataSourceName: 'companion_relations',
+      const result = await $w.cloud.callDataSource({
+        dataSourceName: 'companions',
         methodName: 'wedaDeleteV2',
         params: {
           filter: {
             where: {
               $and: [{
                 _id: {
-                  $eq: companionId
+                  $eq: selectedCompanion.id
                 }
               }]
             }
           }
         }
       });
-      toast({
-        title: '已解除关联',
-        description: '已成功解除与该同伴的关联'
-      });
-
-      // 重新加载列表
-      loadCompanions();
+      if (result && result.count > 0) {
+        toast({
+          title: '删除成功',
+          description: `已删除同伴：${selectedCompanion.name}`
+        });
+        setShowDeleteConfirm(false);
+        setSelectedCompanion(null);
+        loadCompanions(); // 重新加载列表
+      }
     } catch (error) {
-      console.error('解除关联失败:', error);
+      console.error('删除同伴失败:', error);
       toast({
-        title: '操作失败',
-        description: error.message || '无法解除关联',
+        title: '删除失败',
+        description: error.message || '无法删除同伴',
         variant: 'destructive'
       });
     }
   };
-  const handleShareSettings = companionId => {
-    props.$w.utils.navigateTo({
-      pageId: 'companion-settings',
-      params: {
-        companionId
-      }
-    });
-  };
-  const copyInviteCode = () => {
-    navigator.clipboard.writeText(myInviteCode);
-    toast({
-      title: '邀请码已复制',
-      description: `邀请码 ${myInviteCode} 已复制到剪贴板`
-    });
-  };
-  return <div className="min-h-screen bg-gradient-to-br from-orange-50 via-pink-50 to-yellow-50 pb-20">
+  return <div className="min-h-screen bg-gradient-to-br from-[#FFF9F0] to-[#FFE4E1] pb-20">
       {/* Header */}
-      <div className="bg-white/80 backdrop-blur-sm sticky top-0 z-10 border-b border-orange-100">
-        <div className="max-w-2xl mx-auto px-4 py-4">
+      <div className="bg-gradient-to-r from-[#FF6B6B] to-[#FF8E8E] text-white p-4 pt-12">
+        <div className="max-w-lg mx-auto">
           <div className="flex items-center justify-between mb-4">
-            <h1 className="text-2xl font-bold text-gray-800" style={{
+            <button onClick={() => navigateTo({
+            pageId: 'home',
+            params: {}
+          })} className="p-2 hover:bg-white/20 rounded-full transition-colors">
+              <ArrowLeft className="w-6 h-6" />
+            </button>
+            <h1 className="text-2xl font-bold" style={{
             fontFamily: 'Nunito, sans-serif'
           }}>
-              我的同伴
+              同伴管理
             </h1>
-            <Dialog open={showAddDialog} onOpenChange={setShowAddDialog}>
-              <DialogTrigger asChild>
-                <Button className="bg-[#FF6B6B] hover:bg-[#FF5252] text-white rounded-full px-4 py-2">
-                  <UserPlus className="w-4 h-4 mr-2" />
-                  添加同伴
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="rounded-2xl">
-                <DialogHeader>
-                  <DialogTitle className="text-xl" style={{
-                  fontFamily: 'Nunito, sans-serif'
-                }}>添加同伴</DialogTitle>
-                </DialogHeader>
-                <div className="space-y-4">
-                  {/* 添加方式选择 */}
-                  <div className="flex gap-2">
-                    <Button variant={addMethod === 'search' ? 'default' : 'outline'} onClick={() => setAddMethod('search')} className={`flex-1 ${addMethod === 'search' ? 'bg-[#FF6B6B] hover:bg-[#FF5252]' : ''}`}>
-                      <Search className="w-4 h-4 mr-2" />
-                      搜索用户
-                    </Button>
-                    <Button variant={addMethod === 'invite' ? 'default' : 'outline'} onClick={() => setAddMethod('invite')} className={`flex-1 ${addMethod === 'invite' ? 'bg-[#FF6B6B] hover:bg-[#FF5252]' : ''}`}>
-                      <QrCode className="w-4 h-4 mr-2" />
-                      邀请码
-                    </Button>
-                  </div>
-
-                  {/* 搜索用户 */}
-                  {addMethod === 'search' && <div className="space-y-3">
-                      <Input placeholder="输入用户名、邮箱或手机号" value={searchInput} onChange={e => setSearchInput(e.target.value)} className="rounded-xl" />
-                      <Button onClick={handleSearchUser} className="w-full bg-[#FF6B6B] hover:bg-[#FF5252] text-white rounded-xl">
-                        <Search className="w-4 h-4 mr-2" />
-                        搜索
-                      </Button>
-                    </div>}
-
-                  {/* 邀请码 */}
-                  {addMethod === 'invite' && <div className="space-y-3">
-                      <div className="bg-orange-50 rounded-xl p-4">
-                        <p className="text-sm text-gray-600 mb-2">我的邀请码：</p>
-                        <div className="flex items-center gap-2">
-                          <code className="flex-1 bg-white px-3 py-2 rounded-lg text-lg font-mono font-bold text-[#FF6B6B]">
-                            {myInviteCode}
-                          </code>
-                          <Button size="sm" variant="outline" onClick={copyInviteCode} className="rounded-lg">
-                            复制
-                          </Button>
-                        </div>
-                      </div>
-                      <div className="text-sm text-gray-500">
-                        <p>或输入其他用户的邀请码：</p>
-                      </div>
-                      <Input placeholder="输入邀请码" value={inviteCode} onChange={e => setInviteCode(e.target.value)} className="rounded-xl" />
-                      <Button onClick={handleInviteByCode} className="w-full bg-[#FF6B6B] hover:bg-[#FF5252] text-white rounded-xl">
-                        <UserPlus className="w-4 h-4 mr-2" />
-                        添加同伴
-                      </Button>
-                    </div>}
-                </div>
-              </DialogContent>
-            </Dialog>
+            <div className="w-10" />
           </div>
-
-          {/* Search Bar */}
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-            <Input placeholder="搜索同伴..." value={searchQuery} onChange={e => setSearchQuery(e.target.value)} className="pl-10 rounded-xl bg-gray-50 border-gray-200" />
-          </div>
+          <p className="text-white/90 text-sm" style={{
+          fontFamily: 'Quicksand, sans-serif'
+        }}>
+            管理你的旅行伙伴，一起规划精彩旅程
+          </p>
         </div>
       </div>
 
-      {/* Companions List */}
-      <div className="max-w-2xl mx-auto px-4 py-6">
-        {loading ? <div className="text-center py-12">
-            <Loader2 className="w-16 h-16 mx-auto text-[#FF6B6B] animate-spin mb-4" />
-            <p className="text-gray-500" style={{
-          fontFamily: 'Quicksand, sans-serif'
-        }}>
-              加载中...
-            </p>
-          </div> : filteredCompanions.length === 0 ? <div className="text-center py-12">
-            <User className="w-16 h-16 mx-auto text-gray-300 mb-4" />
-            <p className="text-gray-500" style={{
-          fontFamily: 'Quicksand, sans-serif'
-        }}>
-              暂无同伴，点击右上角添加
-            </p>
-          </div> : <div className="space-y-4">
-            {filteredCompanions.map(companion => <div key={companion.id} className="bg-white rounded-2xl p-4 shadow-sm hover:shadow-md transition-shadow">
-                <div className="flex items-start gap-4">
-                  {/* Avatar */}
-                  <img src={companion.avatar} alt={companion.name} className="w-16 h-16 rounded-full object-cover border-2 border-orange-200" />
+      <div className="max-w-lg mx-auto p-4">
+        {/* Stats */}
+        <div className="bg-white rounded-2xl p-4 shadow-lg mb-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="bg-[#4ECDC4]/20 p-3 rounded-xl">
+                <Users className="w-6 h-6 text-[#4ECDC4]" />
+              </div>
+              <div>
+                <p className="text-2xl font-bold text-[#2D3436]" style={{
+                fontFamily: 'Nunito, sans-serif'
+              }}>
+                  {companions.length}
+                </p>
+                <p className="text-sm text-gray-500" style={{
+                fontFamily: 'Quicksand, sans-serif'
+              }}>
+                  同伴总数
+                </p>
+              </div>
+            </div>
+            <Button onClick={() => setShowAddModal(true)} className="bg-[#FF6B6B] hover:bg-[#FF5252] text-white rounded-xl px-4 py-2 flex items-center gap-2">
+              <UserPlus className="w-4 h-4" />
+              添加同伴
+            </Button>
+          </div>
+        </div>
 
-                  {/* Info */}
+        {/* Search */}
+        <div className="relative mb-4">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+          <Input placeholder="搜索同伴姓名或邮箱..." value={searchQuery} onChange={e => setSearchQuery(e.target.value)} className="pl-10 rounded-xl border-2 border-gray-200 focus:border-[#FF6B6B]" style={{
+          fontFamily: 'Quicksand, sans-serif'
+        }} />
+        </div>
+
+        {/* Companion List */}
+        <div className="space-y-3">
+          {filteredCompanions.length === 0 ? <div className="text-center py-12">
+              <User className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+              <p className="text-gray-500" style={{
+            fontFamily: 'Quicksand, sans-serif'
+          }}>
+                暂无同伴，点击上方按钮添加
+              </p>
+            </div> : filteredCompanions.map(companion => <div key={companion.id} className="bg-white rounded-2xl p-4 shadow-lg hover:shadow-xl transition-shadow">
+                <div className="flex items-start gap-3">
+                  <img src={companion.avatar} alt={companion.name} className="w-14 h-14 rounded-full object-cover border-2 border-[#FF6B6B]" />
                   <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-1">
-                      <h3 className="font-bold text-gray-800" style={{
+                    <div className="flex items-center justify-between">
+                      <h3 className="font-bold text-[#2D3436]" style={{
                   fontFamily: 'Nunito, sans-serif'
                 }}>
                         {companion.name}
                       </h3>
-                      {companion.status === 'pending' && <span className="px-2 py-0.5 bg-yellow-100 text-yellow-700 text-xs rounded-full">
-                          待确认
-                        </span>}
-                    </div>
-                    <div className="space-y-1 text-sm text-gray-600">
                       <div className="flex items-center gap-2">
-                        <Mail className="w-4 h-4" />
-                        <span>{companion.email}</span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Phone className="w-4 h-4" />
-                        <span>{companion.phone}</span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Calendar className="w-4 h-4" />
-                        <span>加入时间: {companion.joinDate}</span>
+                        {companion.status === 'active' && <span className="bg-[#4ECDC4]/20 text-[#4ECDC4] text-xs px-2 py-1 rounded-full">
+                            已加入
+                          </span>}
+                        {companion.status === 'pending' && <span className="bg-[#FFE66D]/20 text-[#FFA500] text-xs px-2 py-1 rounded-full">
+                            待确认
+                          </span>}
                       </div>
                     </div>
-
-                    {/* Shared Plans */}
-                    {companion.sharedPlans.length > 0 && <div className="mt-3">
-                        <div className="flex items-center gap-2 mb-2">
-                          <Share2 className="w-4 h-4 text-[#FF6B6B]" />
-                          <span className="text-sm font-medium text-gray-700">共享计划:</span>
-                        </div>
-                        <div className="flex flex-wrap gap-2">
-                          {companion.sharedPlans.map((plan, index) => <span key={index} className="px-3 py-1 bg-orange-50 text-orange-700 text-xs rounded-full">
-                              {plan}
-                            </span>)}
-                        </div>
-                      </div>}
-                  </div>
-
-                  {/* Actions */}
-                  <div className="flex flex-col gap-2">
-                    <Button size="sm" variant="outline" onClick={() => handleShareSettings(companion.id)} className="rounded-lg">
-                      <Settings className="w-4 h-4" />
-                    </Button>
-                    <Button size="sm" variant="outline" onClick={() => handleRemoveCompanion(companion.id)} className="rounded-lg text-red-500 hover:text-red-600 hover:bg-red-50">
-                      <UserMinus className="w-4 h-4" />
-                    </Button>
+                    <div className="flex items-center gap-2 mt-1 text-sm text-gray-500">
+                      <Mail className="w-4 h-4" />
+                      <span style={{
+                  fontFamily: 'Quicksand, sans-serif'
+                }}>{companion.email}</span>
+                    </div>
+                    <div className="flex items-center gap-2 mt-1 text-sm text-gray-500">
+                      <Phone className="w-4 h-4" />
+                      <span style={{
+                  fontFamily: 'Quicksand, sans-serif'
+                }}>{companion.phone}</span>
+                    </div>
+                    {companion.note && <p className="mt-2 text-sm text-gray-600 bg-gray-50 rounded-lg p-2" style={{
+                fontFamily: 'Quicksand, sans-serif'
+              }}>
+                        {companion.note}
+                      </p>}
+                    <p className="mt-2 text-xs text-gray-400" style={{
+                fontFamily: 'Quicksand, sans-serif'
+              }}>
+                      加入时间：{companion.joinedDate}
+                    </p>
                   </div>
                 </div>
+                <div className="flex gap-2 mt-3 pt-3 border-t border-gray-100">
+                  <Button variant="outline" className="flex-1 border-[#FF6B6B] text-[#FF6B6B] hover:bg-[#FF6B6B] hover:text-white rounded-xl" onClick={() => {
+              setSelectedCompanion(companion);
+              setShowDeleteConfirm(true);
+            }}>
+                    <Trash2 className="w-4 h-4 mr-2" />
+                    删除
+                  </Button>
+                </div>
               </div>)}
-          </div>}
+        </div>
       </div>
 
-      {/* TabBar */}
+      {/* Add Companion Modal */}
+      {showAddModal && <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-2xl p-6 w-full max-w-md">
+            <h2 className="text-xl font-bold mb-4" style={{
+          fontFamily: 'Nunito, sans-serif'
+        }}>
+              添加同伴
+            </h2>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium mb-2" style={{
+              fontFamily: 'Quicksand, sans-serif'
+            }}>
+                  姓名 *
+                </label>
+                <Input placeholder="请输入姓名" value={newCompanion.name} onChange={e => setNewCompanion({
+              ...newCompanion,
+              name: e.target.value
+            })} className="rounded-xl border-2 border-gray-200 focus:border-[#FF6B6B]" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-2" style={{
+              fontFamily: 'Quicksand, sans-serif'
+            }}>
+                  邮箱
+                </label>
+                <Input type="email" placeholder="请输入邮箱" value={newCompanion.email} onChange={e => setNewCompanion({
+              ...newCompanion,
+              email: e.target.value
+            })} className="rounded-xl border-2 border-gray-200 focus:border-[#FF6B6B]" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-2" style={{
+              fontFamily: 'Quicksand, sans-serif'
+            }}>
+                  电话
+                </label>
+                <Input type="tel" placeholder="请输入电话" value={newCompanion.phone} onChange={e => setNewCompanion({
+              ...newCompanion,
+              phone: e.target.value
+            })} className="rounded-xl border-2 border-gray-200 focus:border-[#FF6B6B]" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-2" style={{
+              fontFamily: 'Quicksand, sans-serif'
+            }}>
+                  备注
+                </label>
+                <textarea placeholder="请输入备注信息" value={newCompanion.note} onChange={e => setNewCompanion({
+              ...newCompanion,
+              note: e.target.value
+            })} className="w-full rounded-xl border-2 border-gray-200 focus:border-[#FF6B6B] p-3 min-h-[80px] resize-none" style={{
+              fontFamily: 'Quicksand, sans-serif'
+            }} />
+              </div>
+            </div>
+            <div className="flex gap-3 mt-6">
+              <Button variant="outline" onClick={() => {
+            setShowAddModal(false);
+            setNewCompanion({
+              name: '',
+              email: '',
+              phone: '',
+              note: ''
+            });
+          }} className="flex-1 rounded-xl border-2 border-gray-200">
+                取消
+              </Button>
+              <Button onClick={handleAddCompanion} className="flex-1 bg-[#FF6B6B] hover:bg-[#FF5252] text-white rounded-xl">
+                保存
+              </Button>
+            </div>
+          </div>
+        </div>}
+
+      {/* Delete Confirm Modal */}
+      {showDeleteConfirm && selectedCompanion && <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-2xl p-6 w-full max-w-sm">
+            <div className="text-center">
+              <div className="bg-red-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Trash2 className="w-8 h-8 text-red-500" />
+              </div>
+              <h2 className="text-xl font-bold mb-2" style={{
+            fontFamily: 'Nunito, sans-serif'
+          }}>
+                确认删除
+              </h2>
+              <p className="text-gray-600 mb-6" style={{
+            fontFamily: 'Quicksand, sans-serif'
+          }}>
+                确定要删除同伴「{selectedCompanion.name}」吗？此操作不可恢复。
+              </p>
+              <div className="flex gap-3">
+                <Button variant="outline" onClick={() => {
+              setShowDeleteConfirm(false);
+              setSelectedCompanion(null);
+            }} className="flex-1 rounded-xl border-2 border-gray-200">
+                  取消
+                </Button>
+                <Button onClick={handleDeleteCompanion} className="flex-1 bg-red-500 hover:bg-red-600 text-white rounded-xl">
+                  删除
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>}
+
       <TabBar />
     </div>;
 }

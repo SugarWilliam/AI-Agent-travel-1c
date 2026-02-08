@@ -1,0 +1,56 @@
+{
+  "name": "reminder_settings",
+  "title": "提醒设置",
+  "schemas": [
+    {
+      "name": "userId",
+      "title": "用户ID",
+      "type": "String"
+    },
+    {
+      "name": "reminderType",
+      "title": "提醒类型",
+      "type": "String"
+    },
+    {
+      "name": "reminderTitle",
+      "title": "提醒标题",
+      "type": "String"
+    },
+    {
+      "name": "reminderDescription",
+      "title": "提醒描述",
+      "type": "String"
+    },
+    {
+      "name": "isEnabled",
+      "title": "是否启用",
+      "type": "Boolean"
+    },
+    {
+      "name": "pushEnabled",
+      "title": "推送启用",
+      "type": "Boolean"
+    },
+    {
+      "name": "wechatEnabled",
+      "title": "微信启用",
+      "type": "Boolean"
+    },
+    {
+      "name": "icon",
+      "title": "图标",
+      "type": "String"
+    },
+    {
+      "name": "color",
+      "title": "颜色",
+      "type": "String"
+    },
+    {
+      "name": "bgColor",
+      "title": "背景色",
+      "type": "String"
+    }
+  ]
+}
