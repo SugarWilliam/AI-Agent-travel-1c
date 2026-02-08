@@ -1,7 +1,7 @@
 // @ts-ignore;
 import React, { useState, useEffect } from 'react';
 // @ts-ignore;
-import { ArrowLeft, MapPin, Calendar, DollarSign, Users, Edit, Download, Share2, Sparkles, Plus, Trash2, CheckCircle, Camera, Navigation, Clock, AlertTriangle, Bell, UserPlus, X } from 'lucide-react';
+import { ArrowLeft, MapPin, Calendar, DollarSign, Users, Edit, Download, Share2, Sparkles, Plus, Trash2, CheckCircle, Camera, Navigation, Clock, AlertTriangle, Bell, UserPlus, X, Cloud, Sun, CloudRain, CloudSnow, Wind, Thermometer } from 'lucide-react';
 // @ts-ignore;
 import { useToast, Button, Textarea } from '@/components/ui';
 
@@ -32,7 +32,55 @@ export default function Detail(props) {
     date: '2026-02-03'
   }]);
   const [photoGuides, setPhotoGuides] = useState([]);
-  const [itinerary, setItinerary] = useState([{
+  const [itinerary, setItinerary] = useState([]);
+  const [weatherData, setWeatherData] = useState({});
+  
+  // 计算每一天的日期
+  const getDayDate = (dayNumber) => {
+    if (!plan || !plan.startDate) return '';
+    const startDate = new Date(plan.startDate);
+    const targetDate = new Date(startDate);
+    targetDate.setDate(startDate.getDate() + (dayNumber - 1));
+    
+    const year = targetDate.getFullYear();
+    const month = String(targetDate.getMonth() + 1).padStart(2, '0');
+    const day = String(targetDate.getDate()).padStart(2, '0');
+    const weekdays = ['周日', '周一', '周二', '周三', '周四', '周五', '周六'];
+    const weekday = weekdays[targetDate.getDay()];
+    
+    return `${year}.${month}.${day} ${weekday}`;
+  };
+  
+  // 获取天气图标组件
+  const getWeatherIcon = (weatherType) => {
+    switch (weatherType) {
+      case 'sunny':
+        return <Sun className="w-4 h-4 text-yellow-500" />;
+      case 'cloudy':
+        return <Cloud className="w-4 h-4 text-gray-500" />;
+      case 'rainy':
+        return <CloudRain className="w-4 h-4 text-blue-500" />;
+      case 'snowy':
+        return <CloudSnow className="w-4 h-4 text-blue-300" />;
+      case 'windy':
+        return <Wind className="w-4 h-4 text-gray-400" />;
+      default:
+        return <Sun className="w-4 h-4 text-yellow-500" />;
+    }
+  };
+  
+  // 模拟天气数据（实际应用中应该调用天气API）
+  const mockWeatherData = {
+    '1': { type: 'sunny', temperature: 18, description: '晴朗' },
+    '2': { type: 'cloudy', temperature: 16, description: '多云' },
+    '3': { type: 'rainy', temperature: 14, description: '小雨' },
+    '4': { type: 'sunny', temperature: 20, description: '晴朗' },
+    '5': { type: 'cloudy', temperature: 17, description: '多云' }
+  };
+  
+  // 初始化行程数据
+  useEffect(() => {
+    const mockItinerary = [{
     id: '1',
     day: 1,
     title: '抵达东京',
@@ -104,7 +152,7 @@ export default function Detail(props) {
       address: '东京都千代田区外神田1-15-6'
     }],
     completed: false
-  }]);
+  }];
   const [companions, setCompanions] = useState([]);
   const [showTimeWarning, setShowTimeWarning] = useState(false);
   const [timeWarningMessage, setTimeWarningMessage] = useState('');
@@ -813,11 +861,24 @@ export default function Detail(props) {
             {activeTab === 'itinerary' && <div className="space-y-4">
                 {itinerary.map(day => <div key={day.id} className={`pl-4 relative ${day.completed ? 'border-l-4 border-green-500' : ''}`}>
                     <div className="flex items-center justify-between mb-2">
-                      <h4 className={`font-bold ${day.completed ? 'text-green-600' : 'text-gray-700'}`} style={{
-                  fontFamily: 'Nunito, sans-serif'
-                }}>
-                        第{day.day}天 - {day.title}
-                      </h4>
+                      <div>
+                        <h4 className={`font-bold ${day.completed ? 'text-green-600' : 'text-gray-700'}`} style={{
+                    fontFamily: 'Nunito, sans-serif'
+                  }}>
+                          第{day.day}天 - {day.title}
+                        </h4>
+                        {/* 日期和天气信息 */}
+                        <div className="flex items-center gap-2 mt-1">
+                          <div className="flex items-center gap-1 text-xs text-gray-500">
+                            <Calendar className="w-3 h-3" />
+                            <span>{getDayDate(day.day)}</span>
+                          </div>
+                          {weatherData[day.day] && <div className="flex items-center gap-1 text-xs text-gray-500">
+                              {getWeatherIcon(weatherData[day.day].type)}
+                              <span>{weatherData[day.day].temperature}°C {weatherData[day.day].description}</span>
+                            </div>}
+                        </div>
+                      </div>
                       <div className="flex items-center gap-2">
                         <button onClick={() => handleToggleActivity(day.id, -1)} className={`p-1 rounded-full ${day.completed ? 'bg-green-100 text-green-600' : 'bg-gray-100 text-gray-600'}`}>
                           <CheckCircle className="w-5 h-5" />
@@ -1003,5 +1064,6 @@ export default function Detail(props) {
 
       {/* TabBar */}
       <TabBar activeTab="home" onNavigate={props.$w.utils.navigateTo} />
-    </div>;
+    </div>
+  );
 }
