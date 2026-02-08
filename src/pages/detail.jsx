@@ -826,15 +826,15 @@ export default function Detail(props) {
                       </Button>
                     </div>
                   </div>}
-                {itinerary.map(day => <div key={day.id} className={`border-l-4 pl-4 relative ${day.completed ? 'border-green-500' : 'border-red-500'}`}>
+                {itinerary.map(day => <div key={day.id} className={`pl-4 relative ${day.completed ? 'border-l-4 border-green-500' : ''}`}>
                     <div className="flex items-center justify-between mb-2">
-                      <h4 className={`font-bold ${day.completed ? 'text-green-600' : 'text-red-500'}`} style={{
+                      <h4 className={`font-bold ${day.completed ? 'text-green-600' : 'text-gray-700'}`} style={{
                   fontFamily: 'Nunito, sans-serif'
                 }}>
                         第{day.day}天 - {day.title}
                       </h4>
                       <div className="flex items-center gap-2">
-                        <button onClick={() => handleToggleActivity(day.id, -1)} className={`p-1 rounded-full ${day.completed ? 'bg-green-100 text-green-600' : 'bg-red-100 text-red-600'}`}>
+                        <button onClick={() => handleToggleActivity(day.id, -1)} className={`p-1 rounded-full ${day.completed ? 'bg-green-100 text-green-600' : 'bg-gray-100 text-gray-600'}`}>
                           <CheckCircle className="w-5 h-5" />
                         </button>
                         <button onClick={() => handleDeleteItinerary(day.id)} className="text-gray-400 hover:text-red-500">
@@ -843,16 +843,21 @@ export default function Detail(props) {
                       </div>
                     </div>
                     
-                    {/* 节点列表 */}
-                    <div className="space-y-1 mb-3">
-                      {day.activities.map(activity => <ItineraryNodeEditor key={activity.id} node={activity} dayId={day.id} dayCompleted={day.completed} onTimeChange={(nodeId, newTime) => handleNodeTimeChange(day.id, nodeId, newTime)} onNameChange={(nodeId, newName) => handleNodeNameChange(day.id, nodeId, newName)} onDestinationChange={(nodeId, destinationInfo) => handleNodeDestinationChange(day.id, nodeId, destinationInfo)} onDelete={nodeId => handleDeleteNode(day.id, nodeId)} onNavigate={handleNavigateToDestination} showTime={true} />)}
+                    {/* 节点列表 - 带连接线 */}
+                    <div className="relative">
+                      {/* 垂直连接线 - 根据完成状态改变颜色 */}
+                      {day.activities.length > 1 && <div className={`absolute left-2 top-3 bottom-3 w-0.5 ${day.completed ? 'bg-green-500' : 'bg-gray-300'}`} />}
+                      
+                      <div className="space-y-1 mb-3">
+                        {day.activities.map((activity, index) => <div key={activity.id} className="relative">
+                            <ItineraryNodeEditor node={activity} dayId={day.id} dayCompleted={day.completed} onTimeChange={(nodeId, newTime) => handleNodeTimeChange(day.id, nodeId, newTime)} onNameChange={(nodeId, newName) => handleNodeNameChange(day.id, nodeId, newName)} onDestinationChange={(nodeId, destinationInfo) => handleNodeDestinationChange(day.id, nodeId, destinationInfo)} onDelete={nodeId => handleDeleteNode(day.id, nodeId)} onNavigate={handleNavigateToDestination} showTime={true} />
+                            {/* 添加节点按钮 - 在最后一个节点右侧，下移避免重叠 */}
+                            {index === day.activities.length - 1 && <button onClick={() => handleAddNode(day.id)} className="absolute right-0 top-3/4 -translate-y-1/2 w-8 h-8 bg-[#4ECDC4] hover:bg-[#3DBDB5] text-white rounded-full flex items-center justify-center shadow-lg transition-colors z-10" title="添加节点">
+                                <Plus className="w-4 h-4" />
+                              </button>}
+                          </div>)}
+                      </div>
                     </div>
-                    
-                    {/* 添加节点按钮 */}
-                    <button onClick={() => handleAddNode(day.id)} className="w-full py-2 text-sm text-gray-500 hover:text-[#FF6B6B] border-2 border-dashed border-gray-300 hover:border-[#FF6B6B] rounded-lg transition-colors flex items-center justify-center gap-2">
-                      <Plus className="w-4 h-4" />
-                      添加节点
-                    </button>
                     
                     {/* Related Photo Guides */}
                     {getRelatedPhotoGuides(day.id).length > 0 && <div className="mt-3">

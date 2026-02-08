@@ -85,7 +85,7 @@ export default function ItineraryNodeEditor({
           {/* 完成状态图标 */}
           {dayCompleted ? <div className="flex-shrink-0 w-5 h-5 bg-green-500 rounded-full flex items-center justify-center">
               <Check className="w-3 h-3 text-white" />
-            </div> : <div className="flex-shrink-0 w-2 h-2 bg-red-500 rounded-full" />}
+            </div> : <div className="flex-shrink-0 w-2 h-2 bg-gray-400 rounded-full" />}
 
           {/* 时间显示 */}
           {showTime && <div className="flex items-center gap-1 text-xs text-gray-500 flex-shrink-0">
@@ -94,7 +94,7 @@ export default function ItineraryNodeEditor({
             </div>}
 
           {/* 节点名称 */}
-          <span className={`text-sm flex-1 ${dayCompleted ? 'line-through text-gray-400' : 'text-gray-700'}`} style={{
+          <span className="text-sm flex-1 text-gray-700" style={{
         fontFamily: 'Quicksand, sans-serif'
       }}>
             {node.name}
