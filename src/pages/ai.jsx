@@ -13,7 +13,7 @@ export default function AIAssistant(props) {
   const [messages, setMessages] = useState([{
     id: '1',
     role: 'assistant',
-    content: '你好！我是你的AI旅行助手 🌍✈️\n\n我可以帮你：\n• 规划旅行路线和行程\n• 推荐景点和美食\n• 提供交通和住宿建议\n• 解答旅行相关问题\n• 识别图片中的景点\n• 解析旅行文档\n• 生成旅行攻略文档\n• 创建可分享的小程序链接\n• 语音输入对话\n\n你想去哪里旅行呢？',
+    content: '你好！我是你的AI旅行助手 🌍✈️\n\n我可以帮你：\n• 📋 生成完整旅行计划（行程规划、攻略、天气、拍照指导、穿搭指导）\n• 🗺️ 规划旅行路线和详细行程\n• 🏔️ 推荐景点和美食\n• 🚗 提供交通和住宿建议\n• ❓ 解答旅行相关问题\n• 📸 识别图片中的景点\n• 📄 解析旅行文档\n• 📝 生成旅行攻略文档\n• 🔗 创建可分享的小程序链接\n• 🎤 语音输入对话\n\n💡 快速开始：\n告诉我你想去哪里、几天、预算多少，我就能为你生成完整的旅行计划！\n\n例如：\n"帮我制定一个东京5天的旅行计划，预算1万元"\n"我想去巴黎玩7天，预算2万元"',
     timestamp: new Date().toISOString()
   }]);
   const [input, setInput] = useState('');
@@ -118,17 +118,113 @@ export default function AIAssistant(props) {
     setUploadedFiles([]);
     setIsLoading(true);
 
-    // 模拟AI响应（实际应该调用云函数）
-    setTimeout(() => {
+    // 检查是否需要生成完整计划
+    if (input.includes('生成计划') || input.includes('制定行程') || input.includes('规划旅行')) {
+      await handleGenerateCompletePlan(input);
+    } else {
+      // 普通对话
+      await handleNormalConversation(input, uploadedImages, uploadedFiles);
+    }
+  };
+
+  // 生成完整旅行计划
+  const handleGenerateCompletePlan = async userInput => {
+    try {
+      const result = await props.$w.cloud.callFunction({
+        name: 'ai-assistant',
+        data: {
+          action: 'generateCompletePlan',
+          userInput: userInput,
+          conversationId: Date.now().toString()
+        }
+      });
+      if (result && result.success && result.plan) {
+        const plan = result.plan;
+        const responseContent = `✨ 已为您生成完整的旅行计划！\n\n📍 目的地：${plan.destination}\n📅 天数：${plan.days}天\n💰 预算：${plan.budget}元\n\n📋 行程安排：\n${formatItinerary(plan.itinerary)}\n\n📖 旅行攻略：\n${formatGuide(plan.guide)}\n\n🌤️ 天气预报：\n${formatWeather(plan.weather)}\n\n📸 拍照指导：\n${formatPhotoGuide(plan.photoGuide)}\n\n👕 穿搭指导：\n${formatOutfitGuide(plan.outfitGuide)}\n\n💡 提示：您可以点击下方按钮查看详细内容，或对计划进行局部修改和补齐。`;
+        const aiResponse = {
+          id: (Date.now() + 1).toString(),
+          role: 'assistant',
+          content: responseContent,
+          planData: plan,
+          timestamp: new Date().toISOString()
+        };
+        setMessages(prev => [...prev, aiResponse]);
+      } else {
+        throw new Error('生成计划失败');
+      }
+    } catch (error) {
+      console.error('生成完整计划失败:', error);
+      const errorResponse = {
+        id: (Date.now() + 1).toString(),
+        role: 'assistant',
+        content: '抱歉，生成旅行计划时遇到了问题。请稍后重试或提供更详细的信息。',
+        timestamp: new Date().toISOString()
+      };
+      setMessages(prev => [...prev, errorResponse]);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // 普通对话处理
+  const handleNormalConversation = async (userInput, images, files) => {
+    try {
+      const result = await props.$w.cloud.callFunction({
+        name: 'ai-assistant',
+        data: {
+          action: 'chat',
+          userInput: userInput,
+          images: images,
+          files: files
+        }
+      });
       const aiResponse = {
         id: (Date.now() + 1).toString(),
         role: 'assistant',
-        content: generateAIResponse(input, uploadedImages, uploadedFiles),
+        content: result.response || generateAIResponse(userInput, images, files),
         timestamp: new Date().toISOString()
       };
       setMessages(prev => [...prev, aiResponse]);
+    } catch (error) {
+      console.error('对话处理失败:', error);
+      const fallbackResponse = {
+        id: (Date.now() + 1).toString(),
+        role: 'assistant',
+        content: generateAIResponse(userInput, images, files),
+        timestamp: new Date().toISOString()
+      };
+      setMessages(prev => [...prev, fallbackResponse]);
+    } finally {
       setIsLoading(false);
-    }, 2000);
+    }
+  };
+
+  // 格式化行程安排
+  const formatItinerary = itinerary => {
+    return itinerary.map(day => {
+      const activities = day.activities.map(a => `  • ${a.time} ${a.name} - ${a.destination}`).join('\n');
+      return `第${day.day}天：${day.title}\n${activities}`;
+    }).join('\n\n');
+  };
+
+  // 格式化攻略
+  const formatGuide = guide => {
+    return `• 景点亮点：${guide.highlights.join('、')}\n• 交通信息：${guide.transportation.localTransport}\n• 美食推荐：${guide.food.join('、')}`;
+  };
+
+  // 格式化天气
+  const formatWeather = weather => {
+    return weather.map(w => `• ${w.date}: ${w.icon} ${w.condition} ${w.temperature}`).join('\n');
+  };
+
+  // 格式化拍照指导
+  const formatPhotoGuide = photoGuide => {
+    return `• 拍照贴士：${photoGuide.tips.slice(0, 2).join('、')}\n• 推荐设备：${photoGuide.equipment.slice(0, 3).join('、')}`;
+  };
+
+  // 格式化穿搭指导
+  const formatOutfitGuide = outfitGuide => {
+    return `• 每日穿搭：${outfitGuide.dailyOutfits.map(o => `第${o.day}天-${o.morning}`).join('、')}\n• 必备物品：${outfitGuide.essentials.slice(0, 3).join('、')}`;
   };
   const generateAIResponse = (userInput, images, files) => {
     const input = userInput.toLowerCase();
@@ -258,6 +354,26 @@ export default function AIAssistant(props) {
       });
     }, 2000);
   };
+
+  // 查看完整计划
+  const handleViewPlan = planData => {
+    toast({
+      title: '正在打开计划',
+      description: '正在为您打开完整的旅行计划...',
+      variant: 'default'
+    });
+
+    // 将计划数据存储到本地或传递到详情页面
+    setTimeout(() => {
+      props.$w.utils.navigateTo({
+        pageId: 'detail',
+        params: {
+          planId: 'ai-generated-' + Date.now(),
+          planData: JSON.stringify(planData)
+        }
+      });
+    }, 1000);
+  };
   const handleBack = () => {
     props.$w.utils.navigateBack();
   };
@@ -338,6 +454,9 @@ export default function AIAssistant(props) {
                     <button onClick={() => handleFeedback(message.id, false)} className="text-gray-400 hover:text-red-500 p-1">
                       <ThumbsDown className="w-4 h-4" />
                     </button>
+                    {message.planData && <button onClick={() => handleViewPlan(message.planData)} className="text-gray-400 hover:text-[#FF6B6B] p-1" title="查看完整计划">
+                      <FileText className="w-4 h-4" />
+                    </button>}
                     <button onClick={() => handleOutputOptions(message.id)} className="text-gray-400 hover:text-[#4ECDC4] p-1" title="生成输出">
                       <Download className="w-4 h-4" />
                     </button>
