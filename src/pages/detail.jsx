@@ -888,20 +888,19 @@ export default function Detail(props) {
             {activeTab === 'itinerary' && <div className="space-y-4">
                 {itinerary.map(day => <div key={day.id} className={`pl-4 relative ${day.completed ? 'border-l-4 border-green-500' : ''}`}>
                     <div className="flex items-center justify-between mb-2">
-                      <div className="flex-1">
+                      <div className="flex items-center gap-2 flex-1">
                         <h4 className={`font-bold ${day.completed ? 'text-green-600' : 'text-gray-700'}`} style={{
                     fontFamily: 'Nunito, sans-serif'
                   }}>
                           第{day.day}天 - {day.title}
                         </h4>
-                        {/* 日期和天气信息 */}
-                        <div className="flex items-center gap-3 mt-1">
+                        {/* 日期和天气信息 - 与标题在同一行 */}
+                        <div className="flex items-center gap-2">
                           <div className="flex items-center gap-1 text-xs text-gray-500">
                             <Calendar className="w-3 h-3" />
                             <span>{day.date || '未设置日期'}</span>
                           </div>
                           <div className="flex items-center gap-1 text-xs text-gray-500">
-                            <span className="text-lg">{day.weather?.icon || '🌤️'}</span>
                             <span>{day.weather?.condition || '未知'}</span>
                             <span className="text-[#FF6B6B] font-semibold">{day.weather?.temperature || '--'}</span>
                           </div>
