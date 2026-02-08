@@ -21,10 +21,64 @@ export default function AIOutput(props) {
   const loadOutputData = async () => {
     try {
       setIsLoading(true);
-      // 从路由参数获取类型
+      // 从路由参数获取类型和计划ID
       const type = props.$w.page.dataset.params?.type || 'document';
+      const planId = props.$w.page.dataset.params?.planId;
 
-      // 模拟数据（实际应该从云函数或数据库获取）
+      // 如果有 planId，从数据库加载真实数据
+      if (planId) {
+        const result = await props.$w.cloud.callFunction({
+          name: 'saveTravelPlan',
+          data: {
+            action: 'get',
+            planId: planId,
+            userId: props.$w.auth.currentUser?.userId || 'anonymous'
+          }
+        });
+        if (result.success && result.plan) {
+          const plan = result.plan;
+          // 将数据库字段映射到页面显示格式
+          const mappedData = {
+            document: {
+              title: plan.title || '旅行攻略',
+              content: plan.description || plan.guide?.overview || '暂无内容',
+              format: 'markdown'
+            },
+            itinerary: {
+              title: `${plan.destination}行程安排`,
+              days: plan.itinerary || []
+            },
+            weather: {
+              title: `${plan.destination}天气预报`,
+              location: plan.destination,
+              forecast: plan.weather || []
+            },
+            photo: {
+              title: `${plan.destination}拍照指南`,
+              tips: plan.photoTips?.bestSpots || []
+            },
+            outfit: {
+              title: `${plan.destination}穿搭指南`,
+              daily: plan.outfitTips?.recommendations || []
+            },
+            image: {
+              title: '攻略海报',
+              url: plan.coverImage || 'https://images.unsplash.com/photo-1488646953014-85cb44e25828?w=800',
+              description: 'AI生成的旅行攻略海报'
+            },
+            miniprogram: {
+              title: `${plan.destination}旅行小程序`,
+              url: `https://example.com/miniprogram/${plan._id}`,
+              qrCode: `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=https://example.com/miniprogram/${plan._id}`,
+              description: '可分享的小程序链接，包含完整行程和攻略'
+            }
+          };
+          setOutputData(mappedData);
+          return;
+        }
+      }
+
+      // 否则使用模拟数据
       const mockData = {
         document: {
           title: '日本东京七日游攻略',
@@ -449,19 +503,31 @@ export default function AIOutput(props) {
   };
   const handleSaveEdit = async () => {
     try {
+      const planId = props.$w.page.dataset.params?.planId;
+      if (!planId) {
+        throw new Error('计划ID不存在');
+      }
+
+      // 准备更新数据，确保长文本字段正确保存
+      const updateData = {
+        ...outputData,
+        description: editedContent,
+        // 将编辑后的内容保存到 description 字段
+        guide: outputData?.guide || null,
+        photoTips: outputData?.photoTips || null,
+        outfitTips: outputData?.outfitTips || null,
+        itinerary: outputData?.itinerary || [],
+        weather: outputData?.weather || []
+      };
+
       // 调用云函数保存修改
       const result = await props.$w.cloud.callFunction({
         name: 'saveTravelPlan',
         data: {
           action: 'update',
-          planId: props.$w.page.dataset.params?.planId,
-          plan: {
-            ...outputData,
-            document: {
-              ...outputData.document,
-              content: editedContent
-            }
-          }
+          planId: planId,
+          plan: updateData,
+          userId: props.$w.auth.currentUser?.userId || 'anonymous'
         }
       });
       if (result.success) {
@@ -473,10 +539,7 @@ export default function AIOutput(props) {
         setIsEditing(false);
         setOutputData(prev => ({
           ...prev,
-          document: {
-            ...prev.document,
-            content: editedContent
-          }
+          description: editedContent
         }));
       } else {
         throw new Error(result.error || '保存失败');

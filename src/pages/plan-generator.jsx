@@ -90,7 +90,8 @@ export default function PlanGenerator(props) {
             ...generatedPlan,
             title: `${formData.destination}${formData.days}日游`,
             status: 'draft'
-          }
+          },
+          userId: props.$w.auth.currentUser?.userId || 'anonymous'
         }
       });
       if (result.success) {
@@ -99,6 +100,11 @@ export default function PlanGenerator(props) {
           description: '计划已保存到我的计划',
           variant: 'default'
         });
+        // 保存 planId 到 generatedPlan，用于后续查看详情
+        setGeneratedPlan(prev => ({
+          ...prev,
+          planId: result.planId
+        }));
         props.$w.utils.navigateTo({
           pageId: 'my-plans',
           params: {}
