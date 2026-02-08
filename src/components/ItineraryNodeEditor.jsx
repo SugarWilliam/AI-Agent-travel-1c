@@ -310,7 +310,7 @@ export default function ItineraryNodeEditor({
               <Check className="w-3 h-3 text-white" />
             </div> : nodeStatus === 'overdue' ? <div className="flex-shrink-0 w-5 h-5 bg-red-500 rounded-full flex items-center justify-center">
               <XCircle className="w-3 h-3 text-white" />
-            </div> : <div className="flex-shrink-0 w-5 h-5 bg-gray-400 rounded-full flex items-center justify-center" />}
+            </div> : <div className="flex-shrink-0 w-5 h-5 border-2 border-gray-400 rounded-full flex items-center justify-center" />}
 
           {/* 时间显示 - 统一颜色和对齐 */}
           {showTime && <div className="flex items-center gap-1 text-xs flex-shrink-0 text-gray-500">
