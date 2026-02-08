@@ -50,7 +50,10 @@ export default function ItineraryNodeEditor({
     const [hours, minutes] = (node.time || '09:00').split(':').map(Number);
     const nodeTime = new Date();
     nodeTime.setHours(hours, minutes, 0, 0);
-    if (now > nodeTime) {
+
+    // 只有当前时间已经过了节点时间，才标记为过期（红色）
+    // 还没开始的节点保持 pending 状态（灰色）
+    if (now.getTime() > nodeTime.getTime()) {
       setNodeStatus('overdue');
     } else {
       setNodeStatus('pending');

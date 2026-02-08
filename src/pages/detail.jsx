@@ -811,21 +811,6 @@ export default function Detail(props) {
 
             {/* Itinerary Tab */}
             {activeTab === 'itinerary' && <div className="space-y-4">
-                {showAddItinerary && <div className="mb-4 bg-[#FFF9F0] rounded-xl p-4">
-                    <input type="text" placeholder="行程标题（如：第4天 - 返程）" value={newItineraryTitle} onChange={e => setNewItineraryTitle(e.target.value)} className="w-full mb-2 px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#4ECDC4]" style={{
-                fontFamily: 'Quicksand, sans-serif'
-              }} />
-                    <Textarea placeholder="活动内容（每行一个活动）" value={newItineraryActivities} onChange={e => setNewItineraryActivities(e.target.value)} className="min-h-[80px] resize-none mb-2" />
-                    <div className="flex gap-2">
-                      <Button onClick={handleAddItinerary} className="flex-1 bg-[#4ECDC4] hover:bg-[#3DBDB5] text-white rounded-xl">
-                        <Plus className="w-4 h-4 mr-2" />
-                        保存
-                      </Button>
-                      <Button onClick={() => setShowAddItinerary(false)} variant="outline" className="flex-1 rounded-xl">
-                        取消
-                      </Button>
-                    </div>
-                  </div>}
                 {itinerary.map(day => <div key={day.id} className={`pl-4 relative ${day.completed ? 'border-l-4 border-green-500' : ''}`}>
                     <div className="flex items-center justify-between mb-2">
                       <h4 className={`font-bold ${day.completed ? 'text-green-600' : 'text-gray-700'}`} style={{
@@ -890,6 +875,22 @@ export default function Detail(props) {
                         </div>
                       </div>}
                   </div>)}
+                {/* 添加行程编辑栏 - 显示在最下方 */}
+                {showAddItinerary && <div className="mb-4 bg-[#FFF9F0] rounded-xl p-4">
+                    <input type="text" placeholder="行程标题（如：第4天 - 返程）" value={newItineraryTitle} onChange={e => setNewItineraryTitle(e.target.value)} className="w-full mb-2 px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#4ECDC4]" style={{
+                fontFamily: 'Quicksand, sans-serif'
+              }} />
+                    <Textarea placeholder="活动内容（每行一个活动）" value={newItineraryActivities} onChange={e => setNewItineraryActivities(e.target.value)} className="min-h-[80px] resize-none mb-2" />
+                    <div className="flex gap-2">
+                      <Button onClick={handleAddItinerary} className="flex-1 bg-[#4ECDC4] hover:bg-[#3DBDB5] text-white rounded-xl">
+                        <Plus className="w-4 h-4 mr-2" />
+                        保存
+                      </Button>
+                      <Button onClick={() => setShowAddItinerary(false)} variant="outline" className="flex-1 rounded-xl">
+                        取消
+                      </Button>
+                    </div>
+                  </div>}
                 <Button onClick={() => setShowAddItinerary(true)} className="w-full bg-[#4ECDC4] hover:bg-[#3DBDB5] text-white rounded-xl">
                   <Plus className="w-4 h-4 mr-2" />
                   添加行程
