@@ -1,7 +1,7 @@
 // @ts-ignore;
 import React, { useState, useEffect } from 'react';
 // @ts-ignore;
-import { Plus, Search, MapPin, Calendar, DollarSign, Sparkles, Download, Trash2, Settings } from 'lucide-react';
+import { Plus, Search, MapPin, Calendar, DollarSign, Sparkles, Download, Trash2, Settings, Camera } from 'lucide-react';
 // @ts-ignore;
 import { useToast, Button, Input } from '@/components/ui';
 
@@ -152,6 +152,13 @@ export default function Home(props) {
             AI助手
           </Button>
         </div>
+        <Button onClick={() => props.$w.utils.navigateTo({
+        pageId: 'photo-guide',
+        params: {}
+      })} className="w-full mt-3 bg-gradient-to-r from-[#FFE66D] to-[#FF6B6B] hover:from-[#FFD93D] hover:to-[#FF5252] text-white rounded-2xl h-14 text-base font-semibold shadow-lg">
+          <Camera className="w-5 h-5 mr-2" />
+          拍照打卡指导
+        </Button>
       </div>
 
       {/* Plans List */}

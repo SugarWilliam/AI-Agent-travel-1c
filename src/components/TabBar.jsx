@@ -1,7 +1,7 @@
 // @ts-ignore;
 import React from 'react';
 // @ts-ignore;
-import { Home, Map, Sparkles, User, Settings } from 'lucide-react';
+import { Home, Camera, Sparkles, User, Settings } from 'lucide-react';
 
 export default function TabBar({
   activeTab,
@@ -12,9 +12,9 @@ export default function TabBar({
     label: '首页',
     icon: Home
   }, {
-    id: 'detail',
-    label: '计划',
-    icon: Map
+    id: 'photo-guide',
+    label: '拍照指导',
+    icon: Camera
   }, {
     id: 'ai',
     label: 'AI助手',
