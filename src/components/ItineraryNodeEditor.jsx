@@ -305,27 +305,27 @@ export default function ItineraryNodeEditor({
               </div>
             </div>}
         </div> : <div className="flex items-center gap-2 flex-1">
-          {/* 完成状态图标 - 根据状态显示不同样式 */}
+          {/* 完成状态图标 - 根据状态显示不同样式，统一尺寸和对齐 */}
           {nodeStatus === 'completed' || dayCompleted ? <div className="flex-shrink-0 w-5 h-5 bg-green-500 rounded-full flex items-center justify-center">
               <Check className="w-3 h-3 text-white" />
             </div> : nodeStatus === 'overdue' ? <div className="flex-shrink-0 w-5 h-5 bg-red-500 rounded-full flex items-center justify-center">
               <XCircle className="w-3 h-3 text-white" />
-            </div> : <div className="flex-shrink-0 w-2 h-2 bg-gray-400 rounded-full" />}
+            </div> : <div className="flex-shrink-0 w-5 h-5 bg-gray-400 rounded-full flex items-center justify-center" />}
 
-          {/* 时间显示 - 统一颜色 */}
+          {/* 时间显示 - 统一颜色和对齐 */}
           {showTime && <div className="flex items-center gap-1 text-xs flex-shrink-0 text-gray-500">
               <Clock className="w-3 h-3" />
               <span>{node.time || '09:00'}</span>
             </div>}
 
-          {/* 节点名称 - 统一颜色 */}
+          {/* 节点名称 - 统一颜色和对齐 */}
           <span className="text-sm flex-1 text-gray-700" style={{
         fontFamily: 'Quicksand, sans-serif'
       }}>
             {node.name}
           </span>
 
-          {/* 目的地信息 - 统一颜色 */}
+          {/* 目的地信息 - 统一颜色和对齐 */}
           {node.destination && <div className="flex items-center gap-1 text-xs flex-shrink-0 text-gray-500">
               <MapPin className="w-3 h-3" />
               <span className="max-w-20 truncate">{node.destination}</span>
