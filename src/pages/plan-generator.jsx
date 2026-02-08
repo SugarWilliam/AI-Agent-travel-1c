@@ -43,9 +43,9 @@ export default function PlanGenerator(props) {
     try {
       // 调用云函数生成完整计划
       const result = await props.$w.cloud.callFunction({
-        name: 'ai-assistant',
+        name: 'generatePlan',
         data: {
-          action: 'generatePlan',
+          action: 'generate',
           input: {
             destination: formData.destination,
             startDate: formData.startDate,
