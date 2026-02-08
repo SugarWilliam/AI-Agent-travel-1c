@@ -10,39 +10,68 @@ export default function Home(props) {
   const {
     toast
   } = useToast();
-  const [plans, setPlans] = useState([{
-    id: '1',
-    title: '日本东京七日游',
-    destination: '东京, 日本',
-    startDate: '2026-03-15',
-    endDate: '2026-03-22',
-    budget: 15000,
-    status: 'planning',
-    coverImage: 'https://images.unsplash.com/photo-1540959733332-eab4deabeeaf?w=800',
-    aiSuggestions: ['推荐浅草寺', '建议体验和服', '必去秋叶原']
-  }, {
-    id: '2',
-    title: '云南大理慢生活',
-    destination: '大理, 中国',
-    startDate: '2026-04-01',
-    endDate: '2026-04-05',
-    budget: 3000,
-    status: 'confirmed',
-    coverImage: 'https://images.unsplash.com/photo-1508804185872-d7badad00f7d?w=800',
-    aiSuggestions: ['洱海骑行', '古城漫步', '品尝白族美食']
-  }, {
-    id: '3',
-    title: '巴黎浪漫之旅',
-    destination: '巴黎, 法国',
-    startDate: '2026-05-20',
-    endDate: '2026-05-27',
-    budget: 25000,
-    status: 'completed',
-    coverImage: 'https://images.unsplash.com/photo-1502602898657-3e91760cbb34?w=800',
-    aiSuggestions: ['埃菲尔铁塔日落', '卢浮宫艺术之旅', '塞纳河游船']
-  }]);
+  const [plans, setPlans] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
-  const [filteredPlans, setFilteredPlans] = useState(plans);
+  const [filteredPlans, setFilteredPlans] = useState([]);
+
+  // 从数据库加载计划数据
+  useEffect(() => {
+    loadPlans();
+  }, []);
+  const loadPlans = async () => {
+    try {
+      setLoading(true);
+      const currentUser = props.$w.auth.currentUser;
+      const userId = currentUser?.userId || '';
+      const result = await props.$w.cloud.callDataSource({
+        dataSourceName: 'Trip',
+        methodName: 'wedaGetRecordsV2',
+        params: {
+          filter: {
+            where: {
+              $and: [{
+                userId: userId
+              }]
+            }
+          },
+          orderBy: [{
+            createdAt: 'desc'
+          }]
+        }
+      });
+      console.log('加载计划数据:', result);
+      if (result && result.records) {
+        const formattedPlans = result.records.map(record => ({
+          id: record._id,
+          title: record.title || '未命名计划',
+          destination: record.destination || '未知目的地',
+          startDate: record.startDate || '',
+          endDate: record.endDate || '',
+          budget: record.budget || 0,
+          travelers: record.travelers || 1,
+          status: record.status || 'planning',
+          coverImage: record.coverImage || 'https://images.unsplash.com/photo-1488646953014-85cb44e25828?w=800',
+          description: record.description || '',
+          itinerary: record.itinerary || {},
+          createdAt: record.createdAt || new Date().toISOString(),
+          updatedAt: record.updatedAt || new Date().toISOString()
+        }));
+        setPlans(formattedPlans);
+      }
+    } catch (error) {
+      console.error('加载计划失败:', error);
+      toast({
+        title: '加载失败',
+        description: '无法加载计划数据',
+        variant: 'destructive'
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // 搜索过滤
   useEffect(() => {
     const filtered = plans.filter(plan => plan.title.toLowerCase().includes(searchQuery.toLowerCase()) || plan.destination.toLowerCase().includes(searchQuery.toLowerCase()));
     setFilteredPlans(filtered);
@@ -61,15 +90,38 @@ export default function Home(props) {
       }
     });
   };
-  const handleDeletePlan = (planId, e) => {
+  const handleDeletePlan = async (planId, e) => {
     e.stopPropagation();
-    const updatedPlans = plans.filter(p => p.id !== planId);
-    setPlans(updatedPlans);
-    toast({
-      title: '删除成功',
-      description: '旅游计划已删除',
-      variant: 'default'
-    });
+    try {
+      // 从数据库删除计划
+      await props.$w.cloud.callDataSource({
+        dataSourceName: 'Trip',
+        methodName: 'wedaDeleteV2',
+        params: {
+          filter: {
+            where: {
+              _id: planId
+            }
+          }
+        }
+      });
+
+      // 更新本地状态
+      const updatedPlans = plans.filter(p => p.id !== planId);
+      setPlans(updatedPlans);
+      toast({
+        title: '删除成功',
+        description: '旅游计划已删除',
+        variant: 'default'
+      });
+    } catch (error) {
+      console.error('删除失败:', error);
+      toast({
+        title: '删除失败',
+        description: error.message || '请稍后重试',
+        variant: 'destructive'
+      });
+    }
   };
   const handleExportPlan = (planId, e) => {
     e.stopPropagation();
@@ -162,7 +214,14 @@ export default function Home(props) {
           我的计划 ({filteredPlans.length})
         </h2>
         
-        {filteredPlans.length === 0 ? <div className="text-center py-12">
+        {loading ? <div className="text-center py-12">
+            <div className="text-6xl mb-4">⏳</div>
+            <p className="text-gray-500" style={{
+          fontFamily: 'Quicksand, sans-serif'
+        }}>
+              加载中...
+            </p>
+          </div> : filteredPlans.length === 0 ? <div className="text-center py-12">
             <div className="text-6xl mb-4">🗺️</div>
             <p className="text-gray-500" style={{
           fontFamily: 'Quicksand, sans-serif'

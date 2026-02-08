@@ -92,12 +92,51 @@ export default function Create(props) {
   };
   const onSubmit = async data => {
     try {
-      // 这里应该调用云函数保存数据
-      // const result = await props.$w.cloud.callFunction({
-      //   name: 'saveTravelPlan',
-      //   data: { ...data, coverImage, id: planId }
-      // });
+      const currentUser = props.$w.auth.currentUser;
+      const userId = currentUser?.userId || '';
 
+      // 准备保存的数据
+      const saveData = {
+        userId: userId,
+        title: data.title,
+        destination: data.destination,
+        startDate: data.startDate,
+        endDate: data.endDate,
+        budget: parseFloat(data.budget) || 0,
+        travelers: parseInt(data.travelers) || 1,
+        description: data.description,
+        coverImage: coverImage,
+        status: data.status,
+        itinerary: {},
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      };
+      let result;
+      if (isEditing && planId) {
+        // 更新现有计划
+        result = await props.$w.cloud.callDataSource({
+          dataSourceName: 'Trip',
+          methodName: 'wedaUpdateV2',
+          params: {
+            data: saveData,
+            filter: {
+              where: {
+                _id: planId
+              }
+            }
+          }
+        });
+      } else {
+        // 创建新计划
+        result = await props.$w.cloud.callDataSource({
+          dataSourceName: 'Trip',
+          methodName: 'wedaCreateV2',
+          params: {
+            data: saveData
+          }
+        });
+      }
+      console.log('保存结果:', result);
       toast({
         title: isEditing ? '更新成功' : '创建成功',
         description: isEditing ? '计划已更新' : '新计划已创建',
@@ -110,6 +149,7 @@ export default function Create(props) {
         });
       }, 1000);
     } catch (error) {
+      console.error('保存失败:', error);
       toast({
         title: '保存失败',
         description: error.message || '请稍后重试',

@@ -1,0 +1,71 @@
+{
+  "name": "Trip",
+  "title": "旅行计划",
+  "schemas": [
+    {
+      "name": "userId",
+      "title": "用户ID",
+      "type": "String"
+    },
+    {
+      "name": "title",
+      "title": "计划标题",
+      "type": "String"
+    },
+    {
+      "name": "destination",
+      "title": "目的地",
+      "type": "String"
+    },
+    {
+      "name": "startDate",
+      "title": "开始日期",
+      "type": "Date"
+    },
+    {
+      "name": "endDate",
+      "title": "结束日期",
+      "type": "Date"
+    },
+    {
+      "name": "budget",
+      "title": "预算",
+      "type": "Number"
+    },
+    {
+      "name": "travelers",
+      "title": "旅行人数",
+      "type": "Number"
+    },
+    {
+      "name": "description",
+      "title": "行程简介",
+      "type": "String"
+    },
+    {
+      "name": "coverImage",
+      "title": "封面图片",
+      "type": "Image"
+    },
+    {
+      "name": "status",
+      "title": "计划状态",
+      "type": "String"
+    },
+    {
+      "name": "itinerary",
+      "title": "行程安排",
+      "type": "Object"
+    },
+    {
+      "name": "createdAt",
+      "title": "创建时间",
+      "type": "Date"
+    },
+    {
+      "name": "updatedAt",
+      "title": "更新时间",
+      "type": "Date"
+    }
+  ]
+}
