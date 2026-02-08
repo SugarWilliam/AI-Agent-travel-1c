@@ -1,7 +1,7 @@
 // @ts-ignore;
 import React, { useState, useEffect } from 'react';
 // @ts-ignore;
-import { Search, Heart, Share2, Play, Shirt, Camera, Sparkles, Filter, ChevronRight, Star, TrendingUp, Clock, Eye, RefreshCw, Brain, Bookmark, SlidersHorizontal, Zap } from 'lucide-react';
+import { Search, Heart, Share2, Play, Shirt, Camera, Sparkles, Filter, ChevronRight, Star, TrendingUp, Clock, Eye, RefreshCw, Palette, Wand2, Bookmark, Zap } from 'lucide-react';
 // @ts-ignore;
 import { useToast, Button } from '@/components/ui';
 
@@ -18,18 +18,14 @@ export default function PhotoGuide(props) {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [showFilterModal, setShowFilterModal] = useState(false);
-  const [showAISuggestions, setShowAISuggestions] = useState(true);
-  const [userPreferences, setUserPreferences] = useState({
-    preferredCategories: [],
-    viewedGuides: [],
-    favoriteTags: []
+  const [showOutfitModal, setShowOutfitModal] = useState(false);
+  const [selectedFilters, setSelectedFilters] = useState({
+    difficulty: [],
+    duration: [],
+    tags: []
   });
-  const [filterOptions, setFilterOptions] = useState({
-    difficulty: 'all',
-    duration: 'all',
-    sortBy: 'hot'
-  });
-  const [aiSuggestions, setAISuggestions] = useState([]);
+  const [personalizedGuides, setPersonalizedGuides] = useState([]);
+  const [showPersonalized, setShowPersonalized] = useState(false);
 
   // 模拟数据 - 拍照指导内容
   const guides = [{
@@ -45,7 +41,8 @@ export default function PhotoGuide(props) {
     tags: ['运镜', '抖音', '热门'],
     isHot: true,
     isNew: false,
-    difficulty: '入门'
+    difficulty: '入门',
+    durationMinutes: 4
   }, {
     id: '2',
     title: '小红书爆款穿搭指南',
@@ -59,7 +56,8 @@ export default function PhotoGuide(props) {
     tags: ['穿搭', '小红书', '爆款'],
     isHot: true,
     isNew: true,
-    difficulty: '入门'
+    difficulty: '入门',
+    durationMinutes: 3
   }, {
     id: '3',
     title: '必学拍照姿势大全',
@@ -73,7 +71,8 @@ export default function PhotoGuide(props) {
     tags: ['姿势', '拍照', '技巧'],
     isHot: false,
     isNew: true,
-    difficulty: '入门'
+    difficulty: '入门',
+    durationMinutes: 5
   }, {
     id: '4',
     title: '旅行Vlog剪辑教程',
@@ -87,7 +86,8 @@ export default function PhotoGuide(props) {
     tags: ['剪辑', 'Vlog', '教程'],
     isHot: false,
     isNew: false,
-    difficulty: '进阶'
+    difficulty: '进阶',
+    durationMinutes: 6
   }, {
     id: '5',
     title: '海边拍照穿搭秘籍',
@@ -101,7 +101,8 @@ export default function PhotoGuide(props) {
     tags: ['海边', '穿搭', '拍照'],
     isHot: true,
     isNew: false,
-    difficulty: '入门'
+    difficulty: '入门',
+    durationMinutes: 4
   }, {
     id: '6',
     title: '情侣拍照姿势大全',
@@ -115,7 +116,8 @@ export default function PhotoGuide(props) {
     tags: ['情侣', '拍照', '姿势'],
     isHot: true,
     isNew: true,
-    difficulty: '入门'
+    difficulty: '入门',
+    durationMinutes: 5
   }, {
     id: '7',
     title: '夜景拍摄技巧',
@@ -129,7 +131,8 @@ export default function PhotoGuide(props) {
     tags: ['夜景', '拍摄', '技巧'],
     isHot: false,
     isNew: false,
-    difficulty: '进阶'
+    difficulty: '进阶',
+    durationMinutes: 4
   }, {
     id: '8',
     title: '山景穿搭指南',
@@ -143,7 +146,38 @@ export default function PhotoGuide(props) {
     tags: ['山景', '穿搭', '户外'],
     isHot: false,
     isNew: false,
-    difficulty: '入门'
+    difficulty: '入门',
+    durationMinutes: 3
+  }, {
+    id: '9',
+    title: '古建筑拍照姿势',
+    category: 'pose',
+    description: '在古建筑前拍照的姿势技巧，展现历史韵味',
+    image: 'https://images.unsplash.com/photo-1548013146-72479768bada?w=400&h=500&fit=crop',
+    author: '古风摄影师',
+    likes: 1678,
+    views: 6789,
+    duration: '3:20',
+    tags: ['古建筑', '姿势', '历史'],
+    isHot: false,
+    isNew: true,
+    difficulty: '入门',
+    durationMinutes: 4
+  }, {
+    id: '10',
+    title: '美食拍摄技巧',
+    category: 'video',
+    description: '美食怎么拍才诱人？学习专业美食拍摄技巧',
+    image: 'https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=400&h=500&fit=crop',
+    author: '美食摄影师',
+    likes: 2345,
+    views: 8901,
+    duration: '4:00',
+    tags: ['美食', '拍摄', '技巧'],
+    isHot: true,
+    isNew: false,
+    difficulty: '进阶',
+    durationMinutes: 5
   }];
   const categories = [{
     id: 'all',
@@ -162,113 +196,76 @@ export default function PhotoGuide(props) {
     name: '姿势指导',
     icon: Camera
   }];
+  const filterOptions = {
+    difficulty: ['入门', '进阶', '高级'],
+    duration: ['3分钟内', '3-5分钟', '5分钟以上'],
+    tags: ['热门', '最新', '运镜', '穿搭', '姿势', '夜景', '美食', '情侣']
+  };
+  const outfitSuggestions = [{
+    id: '1',
+    title: '清新夏日风',
+    description: '白色连衣裙 + 草帽 + 凉鞋',
+    image: 'https://images.unsplash.com/photo-1496747611176-843222e1e57c?w=400',
+    tags: ['夏日', '清新', '连衣裙'],
+    color: '#FFE4E1'
+  }, {
+    id: '2',
+    title: '复古文艺风',
+    description: '格子衬衫 + 牛仔裤 + 帆布鞋',
+    image: 'https://images.unsplash.com/photo-1483985988355-763728e1935b?w=400',
+    tags: ['复古', '文艺', '休闲'],
+    color: '#E0F7FA'
+  }, {
+    id: '3',
+    title: '优雅气质风',
+    description: '长裙 + 高跟鞋 + 手提包',
+    image: 'https://images.unsplash.com/photo-1509631179647-0177331693ae?w=400',
+    tags: ['优雅', '气质', '长裙'],
+    color: '#FFF9F0'
+  }, {
+    id: '4',
+    title: '活力运动风',
+    description: '运动套装 + 运动鞋 + 帽子',
+    image: 'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=400',
+    tags: ['运动', '活力', '休闲'],
+    color: '#FFE66D'
+  }];
   useEffect(() => {
-    // 从 localStorage 加载用户偏好
-    const savedPreferences = localStorage.getItem('photoGuidePreferences');
-    if (savedPreferences) {
-      setUserPreferences(JSON.parse(savedPreferences));
-    }
-
-    // 从 localStorage 加载收藏
-    const savedFavorites = localStorage.getItem('photoGuideFavorites');
-    if (savedFavorites) {
-      setFavorites(JSON.parse(savedFavorites));
-    }
-
-    // 生成 AI 建议
-    generateAISuggestions();
     setLoading(false);
+    generatePersonalizedGuides();
   }, []);
-
-  // 保存用户偏好到 localStorage
-  useEffect(() => {
-    localStorage.setItem('photoGuidePreferences', JSON.stringify(userPreferences));
-  }, [userPreferences]);
-
-  // 保存收藏到 localStorage
-  useEffect(() => {
-    localStorage.setItem('photoGuideFavorites', JSON.stringify(favorites));
-  }, [favorites]);
-
-  // 生成 AI 建议
-  const generateAISuggestions = () => {
-    const suggestions = [];
-
-    // 根据用户偏好生成建议
-    if (userPreferences.preferredCategories.length > 0) {
-      const preferredGuides = guides.filter(g => userPreferences.preferredCategories.includes(g.category)).slice(0, 3);
-      suggestions.push(...preferredGuides.map(g => ({
-        ...g,
-        reason: '根据您的浏览偏好推荐'
-      })));
-    } else {
-      // 默认推荐热门内容
-      suggestions.push(...guides.filter(g => g.isHot).slice(0, 3).map(g => ({
-        ...g,
-        reason: '热门推荐'
-      })));
-    }
-    setAISuggestions(suggestions);
-  };
-
-  // 刷新功能
-  const handleRefresh = async () => {
-    setRefreshing(true);
-    try {
-      // 模拟刷新数据
-      await new Promise(resolve => setTimeout(resolve, 1000));
-
-      // 重新生成 AI 建议
-      generateAISuggestions();
-      toast({
-        title: '刷新成功',
-        description: '内容已更新'
-      });
-    } catch (error) {
-      toast({
-        title: '刷新失败',
-        description: '请稍后重试',
-        variant: 'destructive'
-      });
-    } finally {
-      setRefreshing(false);
-    }
-  };
-
-  // 记录浏览历史
-  const recordViewHistory = guideId => {
-    const newViewedGuides = [...new Set([guideId, ...userPreferences.viewedGuides])].slice(0, 20);
-    setUserPreferences(prev => ({
-      ...prev,
-      viewedGuides: newViewedGuides
-    }));
-
-    // 更新偏好分类
-    const guide = guides.find(g => g.id === guideId);
-    if (guide) {
-      const newCategories = [...new Set([guide.category, ...userPreferences.preferredCategories])].slice(0, 3);
-      setUserPreferences(prev => ({
-        ...prev,
-        preferredCategories: newCategories
-      }));
-    }
+  const generatePersonalizedGuides = () => {
+    // 模拟AI个性化推荐
+    const personalized = guides.filter(g => g.isHot || g.isNew).sort((a, b) => b.likes - a.likes).slice(0, 3);
+    setPersonalizedGuides(personalized);
   };
   const filteredGuides = guides.filter(guide => {
     const matchesCategory = activeCategory === 'all' || guide.category === activeCategory;
     const matchesSearch = guide.title.toLowerCase().includes(searchQuery.toLowerCase()) || guide.description.toLowerCase().includes(searchQuery.toLowerCase()) || guide.tags.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase()));
-    const matchesDifficulty = filterOptions.difficulty === 'all' || guide.difficulty === filterOptions.difficulty;
-    const matchesDuration = filterOptions.duration === 'all' || filterOptions.duration === 'short' && parseInt(guide.duration) <= 3 || filterOptions.duration === 'medium' && parseInt(guide.duration) > 3 && parseInt(guide.duration) <= 5 || filterOptions.duration === 'long' && parseInt(guide.duration) > 5;
-    return matchesCategory && matchesSearch && matchesDifficulty && matchesDuration;
-  }).sort((a, b) => {
-    if (filterOptions.sortBy === 'hot') {
-      return b.likes - a.likes;
-    } else if (filterOptions.sortBy === 'new') {
-      return b.isNew ? 1 : -1;
-    } else if (filterOptions.sortBy === 'views') {
-      return b.views - a.views;
-    }
-    return 0;
+
+    // 筛选条件
+    const matchesDifficulty = selectedFilters.difficulty.length === 0 || selectedFilters.difficulty.includes(guide.difficulty);
+    const matchesDuration = selectedFilters.duration.length === 0 || checkDurationFilter(guide.durationMinutes, selectedFilters.duration);
+    const matchesTags = selectedFilters.tags.length === 0 || guide.tags.some(tag => selectedFilters.tags.includes(tag));
+    return matchesCategory && matchesSearch && matchesDifficulty && matchesDuration && matchesTags;
   });
+  const checkDurationFilter = (minutes, filters) => {
+    if (filters.includes('3分钟内') && minutes <= 3) return true;
+    if (filters.includes('3-5分钟') && minutes > 3 && minutes <= 5) return true;
+    if (filters.includes('5分钟以上') && minutes > 5) return true;
+    return false;
+  };
+  const handleRefresh = async () => {
+    setRefreshing(true);
+    // 模拟刷新数据
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    generatePersonalizedGuides();
+    setRefreshing(false);
+    toast({
+      title: '刷新成功',
+      description: '内容已更新'
+    });
+  };
   const handleToggleFavorite = guideId => {
     if (favorites.includes(guideId)) {
       setFavorites(favorites.filter(id => id !== guideId));
@@ -284,23 +281,6 @@ export default function PhotoGuide(props) {
       });
     }
   };
-
-  // 查看收藏列表
-  const handleViewFavorites = () => {
-    const favoriteGuides = guides.filter(g => favorites.includes(g.id));
-    if (favoriteGuides.length === 0) {
-      toast({
-        title: '暂无收藏',
-        description: '您还没有收藏任何内容'
-      });
-      return;
-    }
-    // 可以跳转到收藏列表页面
-    toast({
-      title: '收藏列表',
-      description: `共 ${favoriteGuides.length} 条收藏内容`
-    });
-  };
   const handleShare = guide => {
     toast({
       title: '分享成功',
@@ -308,8 +288,6 @@ export default function PhotoGuide(props) {
     });
   };
   const handleGuideClick = guide => {
-    // 记录浏览历史
-    recordViewHistory(guide.id);
     $w.utils.navigateTo({
       pageId: 'photo-guide-detail',
       params: {
@@ -317,28 +295,17 @@ export default function PhotoGuide(props) {
       }
     });
   };
-
-  // 应用筛选
-  const applyFilter = newFilterOptions => {
-    setFilterOptions(newFilterOptions);
-    setShowFilterModal(false);
-    toast({
-      title: '筛选已应用',
-      description: '内容已按您的条件筛选'
-    });
+  const handleFilterToggle = (filterType, value) => {
+    setSelectedFilters(prev => ({
+      ...prev,
+      [filterType]: prev[filterType].includes(value) ? prev[filterType].filter(item => item !== value) : [...prev[filterType], value]
+    }));
   };
-
-  // 重置筛选
-  const resetFilter = () => {
-    setFilterOptions({
-      difficulty: 'all',
-      duration: 'all',
-      sortBy: 'hot'
-    });
-    setShowFilterModal(false);
-    toast({
-      title: '筛选已重置',
-      description: '显示全部内容'
+  const handleClearFilters = () => {
+    setSelectedFilters({
+      difficulty: [],
+      duration: [],
+      tags: []
     });
   };
   const formatNumber = num => {
@@ -369,8 +336,11 @@ export default function PhotoGuide(props) {
               <button onClick={handleRefresh} className={`text-gray-600 hover:text-[#FF6B6B] transition-colors ${refreshing ? 'animate-spin' : ''}`}>
                 <RefreshCw className="w-6 h-6" />
               </button>
-              <button onClick={() => setShowFilterModal(true)} className="text-gray-600 hover:text-[#FF6B6B] transition-colors">
-                <SlidersHorizontal className="w-6 h-6" />
+              <button onClick={() => setShowFilterModal(true)} className="text-gray-600 hover:text-[#FF6B6B] transition-colors relative">
+                <Filter className="w-6 h-6" />
+                {(selectedFilters.difficulty.length > 0 || selectedFilters.duration.length > 0 || selectedFilters.tags.length > 0) && <span className="absolute -top-1 -right-1 w-4 h-4 bg-[#FF6B6B] text-white text-xs rounded-full flex items-center justify-center">
+                    {selectedFilters.difficulty.length + selectedFilters.duration.length + selectedFilters.tags.length}
+                  </span>}
               </button>
             </div>
           </div>
@@ -400,26 +370,26 @@ export default function PhotoGuide(props) {
         </div>
       </div>
 
-      {/* AI 智能建议 */}
-      {showAISuggestions && aiSuggestions.length > 0 && <div className="px-4 mt-4">
+      {/* AI个性化推荐 */}
+      {showPersonalized && personalizedGuides.length > 0 && <div className="px-4 mt-4">
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2">
-              <Brain className="w-5 h-5 text-[#4ECDC4]" />
+              <Wand2 className="w-5 h-5 text-[#FF6B6B]" />
               <h2 className="text-lg font-bold text-[#2D3436]" style={{
             fontFamily: 'Nunito, sans-serif'
           }}>
-                AI 智能推荐
+                AI为你推荐
               </h2>
             </div>
-            <button onClick={() => setShowAISuggestions(false)} className="text-xs text-gray-500 hover:text-[#FF6B6B] transition-colors">
+            <button onClick={() => setShowPersonalized(false)} className="text-sm text-gray-500 hover:text-[#FF6B6B]">
               收起
             </button>
           </div>
           <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
-            {aiSuggestions.map(guide => <div key={guide.id} onClick={() => handleGuideClick(guide)} className="flex-shrink-0 w-40 cursor-pointer group">
+            {personalizedGuides.map(guide => <div key={guide.id} onClick={() => handleGuideClick(guide)} className="flex-shrink-0 w-40 cursor-pointer group">
                 <div className="relative rounded-2xl overflow-hidden shadow-lg group-hover:shadow-xl transition-all">
                   <img src={guide.image} alt={guide.title} className="w-full h-52 object-cover group-hover:scale-105 transition-transform duration-300" />
-                  <div className="absolute top-2 left-2 bg-gradient-to-r from-[#4ECDC4] to-[#FF6B6B] text-white text-xs px-2 py-1 rounded-full font-medium flex items-center gap-1">
+                  <div className="absolute top-2 left-2 bg-gradient-to-r from-[#FF6B6B] to-[#FFE66D] text-white text-xs px-2 py-1 rounded-full font-medium flex items-center gap-1">
                     <Zap className="w-3 h-3" />
                     AI推荐
                   </div>
@@ -429,14 +399,35 @@ export default function PhotoGuide(props) {
               }}>
                       {guide.title}
                     </p>
-                    <p className="text-white/80 text-xs mt-1 truncate">
-                      {guide.reason}
-                    </p>
                   </div>
                 </div>
               </div>)}
           </div>
         </div>}
+
+      {/* 穿搭建议按钮 */}
+      <div className="px-4 mt-4">
+        <button onClick={() => setShowOutfitModal(true)} className="w-full bg-gradient-to-r from-[#FFE66D] to-[#FF6B6B] text-white rounded-2xl p-4 flex items-center justify-between shadow-lg hover:shadow-xl transition-all">
+          <div className="flex items-center gap-3">
+            <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center">
+              <Palette className="w-6 h-6" />
+            </div>
+            <div className="text-left">
+              <h3 className="font-bold" style={{
+              fontFamily: 'Nunito, sans-serif'
+            }}>
+                穿搭建议
+              </h3>
+              <p className="text-sm opacity-90" style={{
+              fontFamily: 'Quicksand, sans-serif'
+            }}>
+                获取个性化穿搭推荐
+              </p>
+            </div>
+          </div>
+          <ChevronRight className="w-6 h-6" />
+        </button>
+      </div>
 
       {/* 热门推荐 */}
       <div className="px-4 mt-4">
@@ -477,21 +468,12 @@ export default function PhotoGuide(props) {
           }}>
               {activeCategory === 'all' ? '全部指导' : categories.find(c => c.id === activeCategory)?.name}
             </h2>
-            {(filterOptions.difficulty !== 'all' || filterOptions.duration !== 'all') && <span className="text-xs bg-[#FF6B6B] text-white px-2 py-0.5 rounded-full">
-                已筛选
-              </span>}
           </div>
-          <div className="flex items-center gap-2">
-            <button onClick={handleViewFavorites} className="text-xs text-gray-500 hover:text-[#FF6B6B] transition-colors flex items-center gap-1">
-              <Bookmark className="w-3 h-3" />
-              我的收藏 ({favorites.length})
-            </button>
-            <span className="text-sm text-gray-500" style={{
-            fontFamily: 'Quicksand, sans-serif'
-          }}>
-              {filteredGuides.length} 条内容
-            </span>
-          </div>
+          <span className="text-sm text-gray-500" style={{
+          fontFamily: 'Quicksand, sans-serif'
+        }}>
+            {filteredGuides.length} 条内容
+          </span>
         </div>
 
         {loading ? <div className="flex items-center justify-center py-12">
@@ -499,6 +481,9 @@ export default function PhotoGuide(props) {
           </div> : filteredGuides.length === 0 ? <div className="flex flex-col items-center justify-center py-12 text-gray-500">
             <Camera className="w-16 h-16 mb-4 text-gray-300" />
             <p>暂无相关内容</p>
+            {(selectedFilters.difficulty.length > 0 || selectedFilters.duration.length > 0 || selectedFilters.tags.length > 0) && <button onClick={handleClearFilters} className="mt-4 px-4 py-2 bg-[#FF6B6B] text-white rounded-full text-sm">
+                清除筛选
+              </button>}
           </div> : <div className="grid grid-cols-2 gap-3">
             {filteredGuides.map(guide => <div key={guide.id} onClick={() => handleGuideClick(guide)} className="bg-white rounded-2xl overflow-hidden shadow-md hover:shadow-lg transition-all cursor-pointer group">
                 <div className="relative">
@@ -552,33 +537,30 @@ export default function PhotoGuide(props) {
 
       {/* 筛选弹窗 */}
       {showFilterModal && <div className="fixed inset-0 bg-black/50 z-50 flex items-end justify-center">
-          <div className="bg-white rounded-t-3xl w-full max-w-lg p-6 animate-slide-up">
+          <div className="bg-white w-full max-w-lg rounded-t-3xl p-6 animate-slide-up">
             <div className="flex items-center justify-between mb-6">
               <h3 className="text-lg font-bold text-[#2D3436]" style={{
             fontFamily: 'Nunito, sans-serif'
           }}>
                 筛选条件
               </h3>
-              <button onClick={() => setShowFilterModal(false)} className="text-gray-400 hover:text-gray-600 transition-colors">
-                <ChevronRight className="w-6 h-6 rotate-180" />
+              <button onClick={() => setShowFilterModal(false)} className="text-gray-500 hover:text-[#FF6B6B]">
+                <ChevronRight className="w-6 h-6 rotate-90" />
               </button>
             </div>
             
             {/* 难度筛选 */}
             <div className="mb-6">
               <h4 className="text-sm font-semibold text-[#2D3436] mb-3" style={{
-            fontFamily: 'Quicksand, sans-serif'
+            fontFamily: 'Nunito, sans-serif'
           }}>
-                难度等级
+                难度
               </h4>
-              <div className="flex gap-2">
-                {['all', '入门', '进阶', '高级'].map(level => <button key={level} onClick={() => setFilterOptions(prev => ({
-              ...prev,
-              difficulty: level
-            }))} className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${filterOptions.difficulty === level ? 'bg-[#FF6B6B] text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`} style={{
+              <div className="flex flex-wrap gap-2">
+                {filterOptions.difficulty.map(difficulty => <button key={difficulty} onClick={() => handleFilterToggle('difficulty', difficulty)} className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${selectedFilters.difficulty.includes(difficulty) ? 'bg-[#FF6B6B] text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`} style={{
               fontFamily: 'Quicksand, sans-serif'
             }}>
-                    {level === 'all' ? '全部' : level}
+                    {difficulty}
                   </button>)}
               </div>
             </div>
@@ -586,71 +568,97 @@ export default function PhotoGuide(props) {
             {/* 时长筛选 */}
             <div className="mb-6">
               <h4 className="text-sm font-semibold text-[#2D3436] mb-3" style={{
-            fontFamily: 'Quicksand, sans-serif'
+            fontFamily: 'Nunito, sans-serif'
           }}>
-                视频时长
+                时长
               </h4>
-              <div className="flex gap-2">
-                {[{
-              id: 'all',
-              label: '全部'
-            }, {
-              id: 'short',
-              label: '3分钟内'
-            }, {
-              id: 'medium',
-              label: '3-5分钟'
-            }, {
-              id: 'long',
-              label: '5分钟以上'
-            }].map(option => <button key={option.id} onClick={() => setFilterOptions(prev => ({
-              ...prev,
-              duration: option.id
-            }))} className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${filterOptions.duration === option.id ? 'bg-[#FF6B6B] text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`} style={{
+              <div className="flex flex-wrap gap-2">
+                {filterOptions.duration.map(duration => <button key={duration} onClick={() => handleFilterToggle('duration', duration)} className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${selectedFilters.duration.includes(duration) ? 'bg-[#FF6B6B] text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`} style={{
               fontFamily: 'Quicksand, sans-serif'
             }}>
-                    {option.label}
+                    {duration}
                   </button>)}
               </div>
             </div>
             
-            {/* 排序方式 */}
+            {/* 标签筛选 */}
             <div className="mb-6">
               <h4 className="text-sm font-semibold text-[#2D3436] mb-3" style={{
-            fontFamily: 'Quicksand, sans-serif'
+            fontFamily: 'Nunito, sans-serif'
           }}>
-                排序方式
+                标签
               </h4>
-              <div className="flex gap-2">
-                {[{
-              id: 'hot',
-              label: '最热'
-            }, {
-              id: 'new',
-              label: '最新'
-            }, {
-              id: 'views',
-              label: '最多浏览'
-            }].map(option => <button key={option.id} onClick={() => setFilterOptions(prev => ({
-              ...prev,
-              sortBy: option.id
-            }))} className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${filterOptions.sortBy === option.id ? 'bg-[#FF6B6B] text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`} style={{
+              <div className="flex flex-wrap gap-2">
+                {filterOptions.tags.map(tag => <button key={tag} onClick={() => handleFilterToggle('tags', tag)} className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${selectedFilters.tags.includes(tag) ? 'bg-[#FF6B6B] text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`} style={{
               fontFamily: 'Quicksand, sans-serif'
             }}>
-                    {option.label}
+                    {tag}
                   </button>)}
               </div>
             </div>
             
             {/* 操作按钮 */}
             <div className="flex gap-3">
-              <Button onClick={resetFilter} variant="outline" className="flex-1 rounded-xl border-gray-300 text-gray-600 hover:bg-gray-50">
-                重置
-              </Button>
-              <Button onClick={() => applyFilter(filterOptions)} className="flex-1 bg-[#FF6B6B] hover:bg-[#FF5252] text-white rounded-xl">
-                应用筛选
-              </Button>
+              <button onClick={handleClearFilters} className="flex-1 py-3 bg-gray-100 text-gray-600 rounded-xl font-semibold hover:bg-gray-200 transition-all" style={{
+            fontFamily: 'Quicksand, sans-serif'
+          }}>
+                清除筛选
+              </button>
+              <button onClick={() => setShowFilterModal(false)} className="flex-1 py-3 bg-[#FF6B6B] text-white rounded-xl font-semibold hover:bg-[#FF5252] transition-all" style={{
+            fontFamily: 'Quicksand, sans-serif'
+          }}>
+                确定
+              </button>
             </div>
+          </div>
+        </div>}
+
+      {/* 穿搭建议弹窗 */}
+      {showOutfitModal && <div className="fixed inset-0 bg-black/50 z-50 flex items-end justify-center">
+          <div className="bg-white w-full max-w-lg rounded-t-3xl p-6 animate-slide-up max-h-[80vh] overflow-y-auto">
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-lg font-bold text-[#2D3436]" style={{
+            fontFamily: 'Nunito, sans-serif'
+          }}>
+                穿搭建议
+              </h3>
+              <button onClick={() => setShowOutfitModal(false)} className="text-gray-500 hover:text-[#FF6B6B]">
+                <ChevronRight className="w-6 h-6 rotate-90" />
+              </button>
+            </div>
+            
+            <div className="space-y-4">
+              {outfitSuggestions.map(outfit => <div key={outfit.id} className="rounded-2xl overflow-hidden shadow-md hover:shadow-lg transition-all" style={{
+            backgroundColor: outfit.color
+          }}>
+                  <img src={outfit.image} alt={outfit.title} className="w-full h-48 object-cover" />
+                  <div className="p-4">
+                    <h4 className="font-bold text-[#2D3436] mb-2" style={{
+                fontFamily: 'Nunito, sans-serif'
+              }}>
+                      {outfit.title}
+                    </h4>
+                    <p className="text-sm text-gray-600 mb-3" style={{
+                fontFamily: 'Quicksand, sans-serif'
+              }}>
+                      {outfit.description}
+                    </p>
+                    <div className="flex flex-wrap gap-2">
+                      {outfit.tags.map(tag => <span key={tag} className="px-3 py-1 bg-white/60 text-gray-700 rounded-full text-xs font-medium" style={{
+                  fontFamily: 'Quicksand, sans-serif'
+                }}>
+                          {tag}
+                        </span>)}
+                    </div>
+                  </div>
+                </div>)}
+            </div>
+            
+            <button onClick={() => setShowOutfitModal(false)} className="w-full mt-6 py-3 bg-[#FF6B6B] text-white rounded-xl font-semibold hover:bg-[#FF5252] transition-all" style={{
+          fontFamily: 'Quicksand, sans-serif'
+        }}>
+              关闭
+            </button>
           </div>
         </div>}
 
