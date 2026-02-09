@@ -382,7 +382,8 @@ export default function AgentList(props) {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
                 </svg>
               </button>
-              <div>
+              <div className="flex items-center gap-3">
+                <Bot className="w-8 h-8 text-gray-700" />
                 <h1 className="text-3xl font-bold text-gray-800" style={{
                 fontFamily: 'Nunito, sans-serif'
               }}>
