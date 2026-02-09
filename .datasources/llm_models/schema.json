@@ -46,6 +46,21 @@
       "name": "status",
       "title": "状态",
       "type": "String"
+    },
+    {
+      "name": "apiKey",
+      "title": "API密钥",
+      "type": "String"
+    },
+    {
+      "name": "apiEndpoint",
+      "title": "API端点",
+      "type": "String"
+    },
+    {
+      "name": "temperature",
+      "title": "温度参数",
+      "type": "Number"
     }
   ]
 }

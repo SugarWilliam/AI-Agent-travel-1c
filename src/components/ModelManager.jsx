@@ -1,7 +1,7 @@
 // @ts-ignore;
 import React, { useState, useEffect } from 'react';
 // @ts-ignore;
-import { Plus, Edit, Trash2, Check, X, Settings, Brain, Database, FileText, Code, Zap } from 'lucide-react';
+import { Plus, Edit, Trash2, Check, X, Settings, Brain, Database, FileText, Code, Zap, Key, Globe, Lock, Unlock } from 'lucide-react';
 // @ts-ignore;
 import { useToast, Button, Input, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Switch, Textarea } from '@/components/ui';
 
@@ -15,6 +15,7 @@ export function ModelManager({
   const [loading, setLoading] = useState(true);
   const [showAddModal, setShowAddModal] = useState(false);
   const [editingModel, setEditingModel] = useState(null);
+  const [showApiKey, setShowApiKey] = useState({});
   const [formData, setFormData] = useState({
     modelName: '',
     modelId: '',
@@ -30,7 +31,9 @@ export function ModelManager({
       webScraping: true
     },
     isRecommended: false,
-    status: 'active'
+    status: 'active',
+    apiKey: '',
+    apiEndpoint: ''
   });
   const providers = ['OpenAI', 'Anthropic', 'Google', '阿里云', '百度', '腾讯', '字节跳动', '月之暗面', '智谱AI', '自定义'];
   const costLevels = ['low', 'medium', 'high'];
@@ -112,7 +115,7 @@ export function ModelManager({
         });
       }
     } catch (error) {
-      console.error('操作失败:', error);
+      console.error('保存模型失败:', error);
       toast({
         title: '操作失败',
         description: '网络错误，请重试',
@@ -123,9 +126,9 @@ export function ModelManager({
   const handleEdit = model => {
     setEditingModel(model);
     setFormData({
-      modelName: model.modelName,
-      modelId: model.modelId,
-      provider: model.provider,
+      modelName: model.modelName || '',
+      modelId: model.modelId || '',
+      provider: model.provider || 'OpenAI',
       description: model.description || '',
       maxTokens: model.maxTokens || 4096,
       temperature: model.temperature || 0.7,
@@ -137,29 +140,25 @@ export function ModelManager({
         webScraping: true
       },
       isRecommended: model.isRecommended || false,
-      status: model.status || 'active'
+      status: model.status || 'active',
+      apiKey: model.apiKey || '',
+      apiEndpoint: model.apiEndpoint || ''
     });
     setShowAddModal(true);
   };
-  const handleDelete = async model => {
-    if (!confirm(`确定要删除模型 ${model.modelName} 吗？`)) {
-      return;
-    }
+  const handleDelete = async modelId => {
     try {
       const result = await $w.cloud.callFunction({
         name: 'ai-assistant',
         data: {
           action: 'deleteModel',
-          data: {
-            _id: model._id,
-            userId: $w.auth.currentUser?.userId || 'anonymous'
-          }
+          modelId
         }
       });
       if (result.result.success) {
         toast({
           title: '删除成功',
-          description: `模型 ${model.modelName} 已删除`,
+          description: '模型已删除',
           variant: 'default'
         });
         loadModels();
@@ -171,7 +170,7 @@ export function ModelManager({
         });
       }
     } catch (error) {
-      console.error('删除失败:', error);
+      console.error('删除模型失败:', error);
       toast({
         title: '删除失败',
         description: '网络错误，请重试',
@@ -195,144 +194,196 @@ export function ModelManager({
         webScraping: true
       },
       isRecommended: false,
-      status: 'active'
+      status: 'active',
+      apiKey: '',
+      apiEndpoint: ''
     });
   };
-  const getCostLevelColor = level => {
-    switch (level) {
-      case 'low':
-        return 'text-green-600 bg-green-100';
-      case 'medium':
-        return 'text-yellow-600 bg-yellow-100';
-      case 'high':
-        return 'text-red-600 bg-red-100';
-      default:
-        return 'text-gray-600 bg-gray-100';
-    }
+  const toggleApiKeyVisibility = modelId => {
+    setShowApiKey(prev => ({
+      ...prev,
+      [modelId]: !prev[modelId]
+    }));
   };
   const getProviderColor = provider => {
     const colors = {
-      'OpenAI': 'bg-blue-100 text-blue-700',
+      'OpenAI': 'bg-green-100 text-green-700',
       'Anthropic': 'bg-orange-100 text-orange-700',
-      'Google': 'bg-green-100 text-green-700',
-      '阿里云': 'bg-red-100 text-red-700',
-      '百度': 'bg-purple-100 text-purple-700',
-      '腾讯': 'bg-indigo-100 text-indigo-700',
+      'Google': 'bg-blue-100 text-blue-700',
+      '阿里云': 'bg-purple-100 text-purple-700',
+      '百度': 'bg-red-100 text-red-700',
+      '腾讯': 'bg-cyan-100 text-cyan-700',
       '字节跳动': 'bg-pink-100 text-pink-700',
-      '月之暗面': 'bg-teal-100 text-teal-700',
-      '智谱AI': 'bg-cyan-100 text-cyan-700',
+      '月之暗面': 'bg-indigo-100 text-indigo-700',
+      '智谱AI': 'bg-teal-100 text-teal-700',
       '自定义': 'bg-gray-100 text-gray-700'
     };
     return colors[provider] || 'bg-gray-100 text-gray-700';
   };
+  const getCostLevelColor = level => {
+    const colors = {
+      'low': 'bg-green-100 text-green-700',
+      'medium': 'bg-yellow-100 text-yellow-700',
+      'high': 'bg-red-100 text-red-700'
+    };
+    return colors[level] || 'bg-gray-100 text-gray-700';
+  };
   if (loading) {
-    return <div className="flex items-center justify-center h-64">
-      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#FF6B6B]"></div>
-    </div>;
+    return <div className="flex items-center justify-center py-12">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#FF6B6B]"></div>
+      </div>;
   }
   return <div className="space-y-4">
-      <div className="bg-white rounded-xl p-4 shadow-md">
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="font-bold text-[#2D3436] flex items-center gap-2" style={{
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <Brain className="w-5 h-5 text-[#FF6B6B]" />
+          <h3 className="font-bold text-[#2D3436]" style={{
           fontFamily: 'Nunito, sans-serif'
         }}>
-            <Brain className="w-5 h-5" />
             模型管理
           </h3>
-          <Button onClick={() => setShowAddModal(true)} className="bg-[#FF6B6B] hover:bg-[#FF5252] text-white">
-            <Plus className="w-4 h-4 mr-2" />
-            添加模型
-          </Button>
         </div>
+        <Button onClick={() => {
+        resetForm();
+        setEditingModel(null);
+        setShowAddModal(true);
+      }} className="bg-[#FF6B6B] hover:bg-[#FF5252] text-white">
+          <Plus className="w-4 h-4 mr-2" />
+          添加模型
+        </Button>
+      </div>
 
-        <div className="grid gap-3">
-          {models.map(model => <div key={model._id} className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
-              <div className="flex items-start justify-between">
-                <div className="flex-1">
-                  <div className="flex items-center gap-2 mb-2">
-                    <h4 className="font-semibold text-gray-900">{model.modelName}</h4>
-                    {model.isRecommended && <span className="bg-[#FF6B6B] text-white text-xs px-2 py-1 rounded-full">推荐</span>}
-                    {model.status === 'active' ? <span className="bg-green-100 text-green-700 text-xs px-2 py-1 rounded-full">活跃</span> : <span className="bg-gray-100 text-gray-700 text-xs px-2 py-1 rounded-full">禁用</span>}
-                  </div>
-                  
-                  <div className="flex flex-wrap gap-2 mb-2">
-                    <span className={`text-xs px-2 py-1 rounded-full ${getProviderColor(model.provider)}`}>
-                      {model.provider}
-                    </span>
-                    <span className={`text-xs px-2 py-1 rounded-full ${getCostLevelColor(model.costLevel)}`}>
-                      {model.costLevel === 'low' ? '低成本' : model.costLevel === 'medium' ? '中成本' : '高成本'}
-                    </span>
-                    <span className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded-full">
-                      最大 {model.maxTokens} tokens
-                    </span>
-                  </div>
-
-                  {model.description && <p className="text-sm text-gray-600 mb-2">{model.description}</p>}
-
-                  <div className="flex gap-2 text-xs text-gray-500">
-                    {model.capabilities?.documentParsing && <span>📄 文档解析</span>}
-                    {model.capabilities?.imageRecognition && <span>🖼️ 图像识别</span>}
-                    {model.capabilities?.multimodal && <span>🔍 多模态</span>}
-                    {model.capabilities?.webScraping && <span>🌐 网页抓取</span>}
-                  </div>
+      {/* Model List */}
+      <div className="space-y-3">
+        {models.map(model => <div key={model._id} className="bg-white rounded-xl p-4 shadow-md hover:shadow-lg transition-all">
+            <div className="flex items-start justify-between mb-3">
+              <div className="flex-1">
+                <div className="flex items-center gap-2 mb-2">
+                  <h4 className="font-bold text-[#2D3436]" style={{
+                fontFamily: 'Nunito, sans-serif'
+              }}>
+                    {model.modelName}
+                  </h4>
+                  <span className={`px-2 py-1 rounded-full text-xs font-medium ${getProviderColor(model.provider)}`}>
+                    {model.provider}
+                  </span>
+                  {model.isRecommended && <span className="px-2 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-700">
+                      推荐
+                    </span>}
                 </div>
-
-                <div className="flex gap-2">
-                  <Button variant="ghost" size="sm" onClick={() => handleEdit(model)} className="text-blue-600 hover:text-blue-700">
-                    <Edit className="w-4 h-4" />
-                  </Button>
-                  <Button variant="ghost" size="sm" onClick={() => handleDelete(model)} className="text-red-600 hover:text-red-700">
-                    <Trash2 className="w-4 h-4" />
-                  </Button>
+                <p className="text-sm text-gray-600 mb-2">{model.description}</p>
+                <div className="flex items-center gap-2 text-xs text-gray-500">
+                  <span className={`px-2 py-1 rounded ${getCostLevelColor(model.costLevel)}`}>
+                    {model.costLevel === 'low' ? '低成本' : model.costLevel === 'medium' ? '中成本' : '高成本'}
+                  </span>
+                  <span>最大Tokens: {model.maxTokens}</span>
+                  <span>温度: {model.temperature}</span>
                 </div>
               </div>
-            </div>)}
-          
-          {models.length === 0 && <div className="text-center py-8 text-gray-500">
-              <Brain className="w-12 h-12 mx-auto mb-2 opacity-50" />
-              <p>暂无自定义模型</p>
-              <p className="text-sm">点击上方按钮添加您的第一个AI模型</p>
-            </div>}
-        </div>
+              <div className="flex gap-1">
+                <Button variant="ghost" size="sm" onClick={() => handleEdit(model)} className="text-[#FF6B6B] hover:text-[#FF5252]">
+                  <Edit className="w-4 h-4" />
+                </Button>
+                <Button variant="ghost" size="sm" onClick={() => handleDelete(model._id)} className="text-red-600 hover:text-red-700">
+                  <Trash2 className="w-4 h-4" />
+                </Button>
+              </div>
+            </div>
+
+            {/* API Key Display */}
+            {model.apiKey && <div className="mt-3 pt-3 border-t border-gray-100">
+                <div className="flex items-center gap-2">
+                  <Key className="w-4 h-4 text-gray-500" />
+                  <span className="text-xs text-gray-600">API Key:</span>
+                  <span className="text-xs font-mono text-gray-700 flex-1">
+                    {showApiKey[model._id] ? model.apiKey : '••••••••••••••••'}
+                  </span>
+                  <Button variant="ghost" size="sm" onClick={() => toggleApiKeyVisibility(model._id)} className="p-1">
+                    {showApiKey[model._id] ? <Unlock className="w-4 h-4 text-gray-500" /> : <Lock className="w-4 h-4 text-gray-500" />}
+                  </Button>
+                </div>
+              </div>}
+
+            {/* API Endpoint Display */}
+            {model.apiEndpoint && <div className="mt-2">
+                <div className="flex items-center gap-2">
+                  <Globe className="w-4 h-4 text-gray-500" />
+                  <span className="text-xs text-gray-600">API Endpoint:</span>
+                  <span className="text-xs font-mono text-gray-700 flex-1 truncate">
+                    {model.apiEndpoint}
+                  </span>
+                </div>
+              </div>}
+
+            {/* Capabilities */}
+            <div className="mt-3 pt-3 border-t border-gray-100">
+              <div className="flex flex-wrap gap-2">
+                {model.capabilities?.documentParsing && <span className="px-2 py-1 bg-blue-100 text-blue-700 rounded text-xs">
+                    文档解析
+                  </span>}
+                {model.capabilities?.imageRecognition && <span className="px-2 py-1 bg-purple-100 text-purple-700 rounded text-xs">
+                    图像识别
+                  </span>}
+                {model.capabilities?.multimodal && <span className="px-2 py-1 bg-pink-100 text-pink-700 rounded text-xs">
+                    多模态
+                  </span>}
+                {model.capabilities?.webScraping && <span className="px-2 py-1 bg-green-100 text-green-700 rounded text-xs">
+                    网页抓取
+                  </span>}
+              </div>
+            </div>
+
+            {/* Status */}
+            <div className="mt-3 pt-3 border-t border-gray-100">
+              <div className="flex items-center justify-between">
+                <span className={`text-xs font-medium ${model.status === 'active' ? 'text-green-600' : 'text-gray-500'}`}>
+                  {model.status === 'active' ? '● 已启用' : '○ 已禁用'}
+                </span>
+              </div>
+            </div>
+          </div>)}
       </div>
 
       {/* Add/Edit Modal */}
-      {showAddModal && <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-xl p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="font-bold text-lg text-[#2D3436]" style={{
-            fontFamily: 'Nunito, sans-serif'
-          }}>
-                {editingModel ? '编辑模型' : '添加模型'}
-              </h3>
-              <button onClick={() => {
-            setShowAddModal(false);
-            setEditingModel(null);
-            resetForm();
-          }} className="text-gray-500 hover:text-gray-700">
-                <X className="w-5 h-5" />
-              </button>
-            </div>
+      {showAddModal && <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto">
+            <div className="p-6">
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="text-xl font-bold text-[#2D3436]" style={{
+              fontFamily: 'Nunito, sans-serif'
+            }}>
+                  {editingModel ? '编辑模型' : '添加模型'}
+                </h3>
+                <Button variant="ghost" size="sm" onClick={() => {
+              setShowAddModal(false);
+              setEditingModel(null);
+              resetForm();
+            }}>
+                  <X className="w-5 h-5" />
+                </Button>
+              </div>
 
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
+              <form onSubmit={handleSubmit} className="space-y-4">
+                {/* Model Name */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">模型名称</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">模型名称 *</label>
                   <Input value={formData.modelName} onChange={e => setFormData({
                 ...formData,
                 modelName: e.target.value
-              })} placeholder="例如：GPT-4" required />
+              })} placeholder="例如: GPT-4" required />
                 </div>
+
+                {/* Model ID */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">模型ID</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">模型ID *</label>
                   <Input value={formData.modelId} onChange={e => setFormData({
                 ...formData,
                 modelId: e.target.value
-              })} placeholder="例如：gpt-4" required />
+              })} placeholder="例如: gpt-4" required />
                 </div>
-              </div>
 
-              <div className="grid grid-cols-2 gap-4">
+                {/* Provider */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">提供商</label>
                   <Select value={formData.provider} onValueChange={value => setFormData({
@@ -340,13 +391,70 @@ export function ModelManager({
                 provider: value
               })}>
                     <SelectTrigger>
-                      <SelectValue placeholder="选择提供商" />
+                      <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      {providers.map(provider => <SelectItem key={provider} value={provider}>{provider}</SelectItem>)}
+                      {providers.map(provider => <SelectItem key={provider} value={provider}>
+                          {provider}
+                        </SelectItem>)}
                     </SelectContent>
                   </Select>
                 </div>
+
+                {/* API Key */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">API Key</label>
+                  <div className="relative">
+                    <Input type={showApiKey['form'] ? 'text' : 'password'} value={formData.apiKey} onChange={e => setFormData({
+                  ...formData,
+                  apiKey: e.target.value
+                })} placeholder="输入API密钥" />
+                    <Button type="button" variant="ghost" size="sm" onClick={() => setShowApiKey(prev => ({
+                  ...prev,
+                  form: !prev.form
+                }))} className="absolute right-2 top-1/2 -translate-y-1/2 p-1">
+                      {showApiKey['form'] ? <Unlock className="w-4 h-4 text-gray-500" /> : <Lock className="w-4 h-4 text-gray-500" />}
+                    </Button>
+                  </div>
+                </div>
+
+                {/* API Endpoint */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">API Endpoint</label>
+                  <Input value={formData.apiEndpoint} onChange={e => setFormData({
+                ...formData,
+                apiEndpoint: e.target.value
+              })} placeholder="https://api.example.com/v1" />
+                </div>
+
+                {/* Description */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">描述</label>
+                  <Textarea value={formData.description} onChange={e => setFormData({
+                ...formData,
+                description: e.target.value
+              })} placeholder="模型描述" rows={2} />
+                </div>
+
+                {/* Max Tokens */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">最大Tokens</label>
+                  <Input type="number" value={formData.maxTokens} onChange={e => setFormData({
+                ...formData,
+                maxTokens: parseInt(e.target.value) || 4096
+              })} placeholder="4096" />
+                </div>
+
+                {/* Temperature */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">温度参数 (0-2)</label>
+                  <Input type="number" step="0.1" min="0" max="2" value={formData.temperature} onChange={e => setFormData({
+                ...formData,
+                temperature: parseFloat(e.target.value) || 0.7
+              })} placeholder="0.7" />
+                </div>
+
+                {/* Cost Level */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">成本等级</label>
                   <Select value={formData.costLevel} onValueChange={value => setFormData({
@@ -354,7 +462,7 @@ export function ModelManager({
                 costLevel: value
               })}>
                     <SelectTrigger>
-                      <SelectValue placeholder="选择成本等级" />
+                      <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
                       {costLevels.map(level => <SelectItem key={level} value={level}>
@@ -363,109 +471,95 @@ export function ModelManager({
                     </SelectContent>
                   </Select>
                 </div>
-              </div>
 
-              <div className="grid grid-cols-2 gap-4">
+                {/* Capabilities */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">最大Tokens</label>
-                  <Input type="number" value={formData.maxTokens} onChange={e => setFormData({
-                ...formData,
-                maxTokens: parseInt(e.target.value) || 4096
-              })} min="1" max="1000000" />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">温度参数</label>
-                  <Input type="number" step="0.1" min="0" max="2" value={formData.temperature} onChange={e => setFormData({
-                ...formData,
-                temperature: parseFloat(e.target.value) || 0.7
-              })} />
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">描述</label>
-                <Textarea value={formData.description} onChange={e => setFormData({
-              ...formData,
-              description: e.target.value
-            })} placeholder="模型的功能描述..." rows={2} />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">能力配置</label>
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="flex items-center gap-2">
-                    <Switch checked={formData.capabilities.documentParsing} onCheckedChange={checked => setFormData({
-                  ...formData,
-                  capabilities: {
-                    ...formData.capabilities,
-                    documentParsing: checked
-                  }
-                })} />
-                    <span className="text-sm">文档解析</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Switch checked={formData.capabilities.imageRecognition} onCheckedChange={checked => setFormData({
-                  ...formData,
-                  capabilities: {
-                    ...formData.capabilities,
-                    imageRecognition: checked
-                  }
-                })} />
-                    <span className="text-sm">图像识别</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Switch checked={formData.capabilities.multimodal} onCheckedChange={checked => setFormData({
-                  ...formData,
-                  capabilities: {
-                    ...formData.capabilities,
-                    multimodal: checked
-                  }
-                })} />
-                    <span className="text-sm">多模态</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Switch checked={formData.capabilities.webScraping} onCheckedChange={checked => setFormData({
-                  ...formData,
-                  capabilities: {
-                    ...formData.capabilities,
-                    webScraping: checked
-                  }
-                })} />
-                    <span className="text-sm">网页抓取</span>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">能力配置</label>
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-gray-600">文档解析</span>
+                      <Switch checked={formData.capabilities.documentParsing} onCheckedChange={checked => setFormData({
+                    ...formData,
+                    capabilities: {
+                      ...formData.capabilities,
+                      documentParsing: checked
+                    }
+                  })} />
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-gray-600">图像识别</span>
+                      <Switch checked={formData.capabilities.imageRecognition} onCheckedChange={checked => setFormData({
+                    ...formData,
+                    capabilities: {
+                      ...formData.capabilities,
+                      imageRecognition: checked
+                    }
+                  })} />
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-gray-600">多模态</span>
+                      <Switch checked={formData.capabilities.multimodal} onCheckedChange={checked => setFormData({
+                    ...formData,
+                    capabilities: {
+                      ...formData.capabilities,
+                      multimodal: checked
+                    }
+                  })} />
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-gray-600">网页抓取</span>
+                      <Switch checked={formData.capabilities.webScraping} onCheckedChange={checked => setFormData({
+                    ...formData,
+                    capabilities: {
+                      ...formData.capabilities,
+                      webScraping: checked
+                    }
+                  })} />
+                    </div>
                   </div>
                 </div>
-              </div>
 
-              <div className="grid grid-cols-2 gap-4">
-                <div className="flex items-center gap-2">
+                {/* Is Recommended */}
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-medium text-gray-700">推荐模型</span>
                   <Switch checked={formData.isRecommended} onCheckedChange={checked => setFormData({
                 ...formData,
                 isRecommended: checked
               })} />
-                  <span className="text-sm font-medium">推荐模型</span>
                 </div>
-                <div className="flex items-center gap-2">
-                  <Switch checked={formData.status === 'active'} onCheckedChange={checked => setFormData({
-                ...formData,
-                status: checked ? 'active' : 'inactive'
-              })} />
-                  <span className="text-sm font-medium">启用状态</span>
-                </div>
-              </div>
 
-              <div className="flex gap-3 pt-4">
-                <Button type="button" variant="outline" onClick={() => {
-              setShowAddModal(false);
-              setEditingModel(null);
-              resetForm();
-            }} className="flex-1">
-                  取消
-                </Button>
-                <Button type="submit" className="flex-1 bg-[#FF6B6B] hover:bg-[#FF5252] text-white">
-                  {editingModel ? '更新' : '添加'}
-                </Button>
-              </div>
-            </form>
+                {/* Status */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">状态</label>
+                  <Select value={formData.status} onValueChange={value => setFormData({
+                ...formData,
+                status: value
+              })}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="active">已启用</SelectItem>
+                      <SelectItem value="inactive">已禁用</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {/* Submit Buttons */}
+                <div className="flex gap-3 pt-4">
+                  <Button type="button" variant="outline" onClick={() => {
+                setShowAddModal(false);
+                setEditingModel(null);
+                resetForm();
+              }} className="flex-1">
+                    取消
+                  </Button>
+                  <Button type="submit" className="flex-1 bg-[#FF6B6B] hover:bg-[#FF5252] text-white">
+                    {editingModel ? '更新' : '添加'}
+                  </Button>
+                </div>
+              </form>
+            </div>
           </div>
         </div>}
     </div>;
