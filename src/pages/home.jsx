@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 // @ts-ignore;
 import { Plus, Search, MapPin, Calendar, DollarSign, Sparkles, Download, Trash2, Settings } from 'lucide-react';
 // @ts-ignore;
-import { useToast, Button, Input } from '@/components/ui';
+import { useToast, Button, Input, Airplane } from '@/components/ui';
 
 import TabBar from '@/components/TabBar';
 export default function Home(props) {
@@ -120,12 +120,18 @@ export default function Home(props) {
               让AI帮你规划完美旅程
             </p>
           </div>
+          <div className="flex flex-col items-center">
           <button onClick={() => props.$w.utils.navigateTo({
-          pageId: 'ai-config',
-          params: {}
-        })} className="bg-white/90 backdrop-blur-sm rounded-full p-3 shadow-lg hover:bg-white transition-colors">
-            <Settings className="w-6 h-6 text-[#2D3436]" />
+            pageId: 'ai-config',
+            params: {}
+          })} className="bg-white/90 backdrop-blur-sm rounded-full p-3 shadow-lg hover:bg-white transition-colors">
+            <div className="relative">
+              <Airplane className="w-5 h-5 text-[#2D3436] absolute -top-1 -right-1" />
+              <Settings className="w-6 h-6 text-[#2D3436]" />
+            </div>
           </button>
+          <span className="text-xs text-white mt-1 font-medium">AI旅行设置</span>
+        </div>
         </div>
       </div>
 
