@@ -5,7 +5,7 @@ import { Search, Plus, Power, PowerOff, Bot, Route, BookOpen, Camera, Sparkles, 
 // @ts-ignore;
 import { Button, useToast } from '@/components/ui';
 
-import { TabBar } from '@/components/TabBar';
+import TabBar from '@/components/TabBar';
 export default function AgentList(props) {
   const {
     toast

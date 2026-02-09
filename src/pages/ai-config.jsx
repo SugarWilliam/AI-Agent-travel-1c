@@ -201,6 +201,77 @@ export default function AIConfig(props) {
         </div>
       </div>
 
+      {/* 模型选择区域 */}
+      <div className="max-w-2xl mx-auto px-4 mt-4">
+        <div className="bg-white rounded-xl p-4 shadow-md">
+          <h3 className="font-bold text-[#2D3436] mb-3" style={{
+          fontFamily: 'Nunito, sans-serif'
+        }}>
+            当前模型配置
+          </h3>
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                选择AI模型
+              </label>
+              <Select value={selectedModel} onValueChange={setSelectedModel}>
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="选择AI模型" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="gpt-4">GPT-4</SelectItem>
+                  <SelectItem value="gpt-4-turbo">GPT-4 Turbo</SelectItem>
+                  <SelectItem value="gpt-3.5-turbo">GPT-3.5 Turbo</SelectItem>
+                  <SelectItem value="claude-3-sonnet">Claude 3 Sonnet</SelectItem>
+                  <SelectItem value="claude-3-opus">Claude 3 Opus</SelectItem>
+                  <SelectItem value="gemini-pro">Gemini Pro</SelectItem>
+                  <SelectItem value="custom">自定义模型</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            
+            {selectedModel === 'custom' && <div className="space-y-3 p-3 bg-gray-50 rounded-lg">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    自定义模型ID
+                  </label>
+                  <Input placeholder="输入自定义模型ID，如: gpt-4-custom" value={aiConfig?.modelId || ''} onChange={e => setAiConfig(prev => ({
+                ...prev,
+                modelId: e.target.value
+              }))} />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    API Key
+                  </label>
+                  <Input type="password" placeholder="输入API密钥" value={aiConfig?.apiKey || ''} onChange={e => setAiConfig(prev => ({
+                ...prev,
+                apiKey: e.target.value
+              }))} />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    API Endpoint (可选)
+                  </label>
+                  <Input placeholder="输入API端点，如: https://api.openai.com/v1" value={aiConfig?.apiEndpoint || ''} onChange={e => setAiConfig(prev => ({
+                ...prev,
+                apiEndpoint: e.target.value
+              }))} />
+                </div>
+              </div>}
+            
+            <div className="flex gap-2">
+              <Button onClick={handleSave} className="bg-gradient-to-r from-[#FF6B6B] to-[#4ECDC4] text-white hover:opacity-90">
+                保存配置
+              </Button>
+              <Button variant="outline" onClick={handleBack} className="border-gray-300 text-gray-700">
+                取消
+              </Button>
+            </div>
+          </div>
+        </div>
+      </div>
+
       {/* Tabs */}
       <div className="max-w-2xl mx-auto px-4 mt-4">
         <div className="flex gap-2 bg-white rounded-xl p-1 shadow-md">
