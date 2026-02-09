@@ -1,0 +1,76 @@
+{
+  "name": "Agent",
+  "title": "AI Agent",
+  "schemas": [
+    {
+      "name": "name",
+      "title": "Agent名称",
+      "type": "String"
+    },
+    {
+      "name": "description",
+      "title": "描述",
+      "type": "MultiLineString"
+    },
+    {
+      "name": "model",
+      "title": "模型",
+      "type": "String"
+    },
+    {
+      "name": "skills",
+      "title": "技能列表",
+      "type": "Array"
+    },
+    {
+      "name": "rules",
+      "title": "规则列表",
+      "type": "Array"
+    },
+    {
+      "name": "ragEnabled",
+      "title": "是否启用RAG",
+      "type": "Boolean"
+    },
+    {
+      "name": "ragSources",
+      "title": "RAG数据源",
+      "type": "Array"
+    },
+    {
+      "name": "mcpServers",
+      "title": "MCP服务器",
+      "type": "Array"
+    },
+    {
+      "name": "outputFormats",
+      "title": "输出格式",
+      "type": "Array"
+    },
+    {
+      "name": "status",
+      "title": "状态",
+      "type": "String"
+    },
+    {
+      "name": "usageCount",
+      "title": "使用次数",
+      "type": "Number"
+    },
+    {
+      "name": "icon",
+      "title": "图标",
+      "type": "String"
+    },
+    {
+      "name": "color",
+      "title": "颜色渐变",
+      "type": "String"
+    },
+    {
+      "name": "userId",
+      "title": "用户ID",
+      "type": "String"
+    }
+  ]
+}

@@ -15,6 +15,78 @@ export default function AgentList(props) {
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [showMenu, setShowMenu] = useState(null);
+  const [error, setError] = useState(null);
+
+  // 内置的4个AI Agent
+  const defaultAgents = [{
+    _id: '1',
+    name: '规划助手',
+    description: '专业的行程规划助手，根据用户需求生成详细的旅行行程安排',
+    model: 'GPT-4',
+    skills: ['行程规划', '路线优化', '时间安排'],
+    rules: ['安全优先', '时间合理', '交通便利'],
+    ragEnabled: true,
+    ragSources: ['旅行攻略数据库', '景点数据库'],
+    mcpServers: [],
+    outputFormats: ['文本', 'JSON'],
+    status: 'active',
+    usageCount: 156,
+    icon: 'Route',
+    color: 'from-orange-500 to-pink-500',
+    createdAt: '2024-01-15T10:00:00.000Z',
+    isBuiltIn: true
+  }, {
+    _id: '2',
+    name: '解说助手',
+    description: '提供专业的景点解说和文化背景介绍，让旅行更有深度',
+    model: 'GPT-4',
+    skills: ['景点解说', '文化介绍', '历史背景'],
+    rules: ['内容准确', '生动有趣', '文化尊重'],
+    ragEnabled: true,
+    ragSources: ['文化数据库', '历史数据库'],
+    mcpServers: [],
+    outputFormats: ['文本', '语音'],
+    status: 'active',
+    usageCount: 234,
+    icon: 'BookOpen',
+    color: 'from-yellow-500 to-orange-500',
+    createdAt: '2024-01-20T14:30:00.000Z',
+    isBuiltIn: true
+  }, {
+    _id: '3',
+    name: '拍照助手',
+    description: '提供专业的拍照建议和技巧，帮助用户拍出更好的旅行照片',
+    model: 'GPT-3.5',
+    skills: ['拍照技巧', '构图建议', '光线运用'],
+    rules: ['实用性强', '易于理解'],
+    ragEnabled: true,
+    ragSources: ['摄影数据库'],
+    mcpServers: [],
+    outputFormats: ['文本', '图片'],
+    status: 'active',
+    usageCount: 98,
+    icon: 'Camera',
+    color: 'from-purple-500 to-pink-500',
+    createdAt: '2024-02-10T11:20:00.000Z',
+    isBuiltIn: true
+  }, {
+    _id: '4',
+    name: '推荐助手',
+    description: '根据用户偏好和实时数据，推荐最适合的旅行目的地和活动',
+    model: 'GPT-4',
+    skills: ['目的地推荐', '活动推荐', '个性化匹配'],
+    rules: ['个性化', '实时更新', '精准匹配'],
+    ragEnabled: true,
+    ragSources: ['推荐数据库', '用户偏好数据库'],
+    mcpServers: [],
+    outputFormats: ['文本', 'JSON'],
+    status: 'active',
+    usageCount: 189,
+    icon: 'Sparkles',
+    color: 'from-teal-500 to-green-500',
+    createdAt: '2024-02-01T09:15:00.000Z',
+    isBuiltIn: true
+  }];
 
   // 加载Agent列表
   useEffect(() => {
@@ -39,121 +111,68 @@ export default function AgentList(props) {
   const loadAgents = async () => {
     try {
       setIsLoading(true);
+      setError(null);
+
+      // 首先尝试从数据库加载
       const tcb = await props.$w.cloud.getCloudInstance();
       const db = tcb.database();
-      const result = await db.collection('AIConfig').get();
+      let result;
+      try {
+        result = await db.collection('Agent').get();
+      } catch (dbError) {
+        console.log('Agent集合不存在，尝试使用AIConfig集合');
+        result = await db.collection('AIConfig').get();
+      }
       if (result.data && result.data.length > 0) {
-        setAgents(result.data);
+        // 如果数据库中有数据，使用数据库数据
+        const dbAgents = result.data.map(agent => ({
+          ...agent,
+          icon: getIconComponent(agent.icon),
+          isBuiltIn: false
+        }));
+
+        // 合并内置Agent和用户创建的Agent
+        const allAgents = [...defaultAgents];
+
+        // 添加用户创建的Agent（避免重复）
+        dbAgents.forEach(dbAgent => {
+          const exists = allAgents.find(agent => agent.name === dbAgent.name);
+          if (!exists) {
+            allAgents.push(dbAgent);
+          }
+        });
+        setAgents(allAgents);
       } else {
         // 如果没有数据，使用默认的AI Agent列表
-        setAgents([{
-          _id: '1',
-          name: '行程规划 Agent',
-          description: '专业的行程规划助手，根据用户需求生成详细的旅行行程安排',
-          model: 'GPT-4',
-          skills: ['行程规划', '路线优化', '时间安排'],
-          rules: ['安全优先', '时间合理', '交通便利'],
-          ragEnabled: true,
-          ragSources: ['旅行攻略数据库', '景点数据库'],
-          mcpServers: [],
-          outputFormats: ['文本', 'JSON'],
-          status: 'active',
-          usageCount: 156,
-          icon: Route,
-          color: 'from-orange-500 to-pink-500',
-          createdAt: '2024-01-15T10:00:00.000Z'
-        }, {
-          _id: '2',
-          name: '天气查询 Agent',
-          description: '实时获取目的地天气信息，提供穿衣和活动建议',
-          model: 'GPT-3.5',
-          skills: ['天气查询', '天气预报', '穿衣建议'],
-          rules: ['数据准确', '实时更新'],
-          ragEnabled: true,
-          ragSources: ['天气数据库'],
-          mcpServers: [],
-          outputFormats: ['文本', 'JSON'],
-          status: 'active',
-          usageCount: 234,
-          icon: Cloud,
-          color: 'from-blue-500 to-cyan-500',
-          createdAt: '2024-01-20T14:30:00.000Z'
-        }, {
-          _id: '3',
-          name: '攻略生成 Agent',
-          description: '生成详细的旅行攻略，包含景点介绍、美食推荐、实用信息等',
-          model: 'GPT-4',
-          skills: ['攻略生成', '景点介绍', '美食推荐'],
-          rules: ['内容丰富', '信息准确'],
-          ragEnabled: true,
-          ragSources: ['攻略数据库', '美食数据库'],
-          mcpServers: [],
-          outputFormats: ['文本', 'Markdown', 'PDF'],
-          status: 'active',
-          usageCount: 189,
-          icon: BookOpen,
-          color: 'from-yellow-500 to-orange-500',
-          createdAt: '2024-02-01T09:15:00.000Z'
-        }, {
-          _id: '4',
-          name: '拍照指导 Agent',
-          description: '提供专业的拍照建议和技巧，帮助用户拍出更好的旅行照片',
-          model: 'GPT-3.5',
-          skills: ['拍照技巧', '构图建议', '光线运用'],
-          rules: ['实用性强', '易于理解'],
-          ragEnabled: true,
-          ragSources: ['摄影数据库'],
-          mcpServers: [],
-          outputFormats: ['文本', '图片'],
-          status: 'active',
-          usageCount: 98,
-          icon: Camera,
-          color: 'from-purple-500 to-pink-500',
-          createdAt: '2024-02-10T11:20:00.000Z'
-        }, {
-          _id: '5',
-          name: '穿搭建议 Agent',
-          description: '根据天气和目的地提供合适的穿搭建议',
-          model: 'GPT-3.5',
-          skills: ['穿搭建议', '搭配技巧', '季节适应'],
-          rules: ['舒适实用', '时尚美观'],
-          ragEnabled: true,
-          ragSources: ['穿搭数据库'],
-          mcpServers: [],
-          outputFormats: ['文本', '图片'],
-          status: 'active',
-          usageCount: 145,
-          icon: Shirt,
-          color: 'from-teal-500 to-green-500',
-          createdAt: '2024-02-15T16:45:00.000Z'
-        }, {
-          _id: '6',
-          name: '天气刷新 Agent',
-          description: '实时刷新天气信息，确保数据的时效性',
-          model: 'GPT-3.5',
-          skills: ['天气刷新', '实时更新', '数据同步'],
-          rules: ['实时性', '准确性'],
-          ragEnabled: true,
-          ragSources: ['天气API'],
-          mcpServers: [],
-          outputFormats: ['JSON'],
-          status: 'active',
-          usageCount: 312,
-          icon: RefreshCw,
-          color: 'from-cyan-500 to-blue-500',
-          createdAt: '2024-02-20T08:30:00.000Z'
-        }]);
+        setAgents(defaultAgents);
       }
     } catch (error) {
       console.error('加载Agent列表失败:', error);
+      setError('网络错误，请重试');
+
+      // 网络错误时，仍然显示默认Agent
+      setAgents(defaultAgents);
       toast({
-        title: '加载失败',
-        description: '无法加载Agent列表，请稍后重试',
+        title: '网络错误',
+        description: '无法连接到服务器，显示默认Agent列表',
         variant: 'destructive'
       });
     } finally {
       setIsLoading(false);
     }
+  };
+  const getIconComponent = iconName => {
+    const iconMap = {
+      'Route': Route,
+      'BookOpen': BookOpen,
+      'Camera': Camera,
+      'Sparkles': Sparkles,
+      'Cloud': Cloud,
+      'Shirt': Shirt,
+      'RefreshCw': RefreshCw,
+      'Bot': Bot
+    };
+    return iconMap[iconName] || Bot;
   };
   const handleCreateAgent = () => {
     props.$w.utils.navigateTo({
@@ -183,9 +202,13 @@ export default function AgentList(props) {
         name: `${agent.name} (副本)`,
         status: 'inactive',
         usageCount: 0,
-        createdAt: new Date().toISOString()
+        createdAt: new Date().toISOString(),
+        isBuiltIn: false
       };
-      await db.collection('AIConfig').add(newAgent);
+
+      // 根据集合名称选择正确的集合
+      const collectionName = await getAgentCollectionName();
+      await db.collection(collectionName).add(newAgent);
       toast({
         title: '复制成功',
         description: `已成功复制Agent: ${agent.name}`
@@ -201,12 +224,39 @@ export default function AgentList(props) {
     }
     setShowMenu(null);
   };
+  const getAgentCollectionName = async () => {
+    try {
+      const tcb = await props.$w.cloud.getCloudInstance();
+      const db = tcb.database();
+
+      // 尝试检查Agent集合是否存在
+      try {
+        await db.collection('Agent').limit(1).get();
+        return 'Agent';
+      } catch (error) {
+        return 'AIConfig';
+      }
+    } catch (error) {
+      return 'AIConfig';
+    }
+  };
   const handleToggleStatus = async agent => {
     try {
       const tcb = await props.$w.cloud.getCloudInstance();
       const db = tcb.database();
       const newStatus = agent.status === 'active' ? 'inactive' : 'active';
-      await db.collection('AIConfig').doc(agent._id).update({
+
+      // 内置Agent不能修改状态
+      if (agent.isBuiltIn) {
+        toast({
+          title: '操作受限',
+          description: '内置Agent状态不能修改',
+          variant: 'destructive'
+        });
+        return;
+      }
+      const collectionName = await getAgentCollectionName();
+      await db.collection(collectionName).doc(agent._id).update({
         status: newStatus
       });
       toast({
@@ -228,7 +278,8 @@ export default function AgentList(props) {
     try {
       const tcb = await props.$w.cloud.getCloudInstance();
       const db = tcb.database();
-      await db.collection('AIConfig').doc(agentId).remove();
+      const collectionName = await getAgentCollectionName();
+      await db.collection(collectionName).doc(agentId).remove();
       toast({
         title: '删除成功',
         description: 'Agent已成功删除'
@@ -259,6 +310,9 @@ export default function AgentList(props) {
       day: '2-digit'
     });
   };
+  const handleRetry = () => {
+    loadAgents();
+  };
   return <div className="min-h-screen bg-gradient-to-br from-orange-50 via-pink-50 to-yellow-50">
       {/* Header */}
       <div className="bg-white/80 backdrop-blur-sm border-b border-orange-100 sticky top-0 z-10">
@@ -288,6 +342,19 @@ export default function AgentList(props) {
           </div>
         </div>
       </div>
+
+      {/* Error Message */}
+      {error && <div className="max-w-7xl mx-auto px-4 py-4">
+          <div className="bg-red-50 border border-red-200 rounded-xl p-4 flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-2 h-2 bg-red-500 rounded-full"></div>
+              <span className="text-red-700 font-medium">{error}</span>
+            </div>
+            <Button onClick={handleRetry} variant="outline" size="sm" className="border-red-300 text-red-700 hover:bg-red-50">
+              重试
+            </Button>
+          </div>
+        </div>}
 
       {/* Search and Filter */}
       <div className="max-w-7xl mx-auto px-4 py-6">
@@ -340,14 +407,18 @@ export default function AgentList(props) {
                 <Plus className="w-4 h-4" />
                 创建第一个Agent
               </Button>}
-          </div> : <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          </div> : <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-4 gap-6">
             {filteredAgents.map(agent => <div key={agent._id} className="bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all overflow-hidden group">
                 {/* Card Header */}
                 <div className={`bg-gradient-to-r ${agent.color || 'from-orange-500 to-pink-500'} p-6`}>
                   <div className="flex items-start justify-between">
                     <div className="flex items-center gap-3">
                       <div className="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center">
-                        {agent.icon ? <agent.icon className="w-6 h-6 text-white" /> : <Bot className="w-6 h-6 text-white" />}
+                        {agent.icon ? typeof agent.icon === 'string' ? React.createElement(getIconComponent(agent.icon), {
+                    className: "w-6 h-6 text-white"
+                  }) : React.createElement(agent.icon, {
+                    className: "w-6 h-6 text-white"
+                  }) : <Bot className="w-6 h-6 text-white" />}
                       </div>
                       <div>
                         <h3 className="text-lg font-bold text-white" style={{
