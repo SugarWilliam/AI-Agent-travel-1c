@@ -55,6 +55,10 @@ export default function Profile(props) {
     id: 'history',
     label: '历史记录',
     icon: TrendingUp
+  }, {
+    id: 'settings',
+    label: '系统设置',
+    icon: Settings
   }];
   const handleLogout = () => {
     toast({
