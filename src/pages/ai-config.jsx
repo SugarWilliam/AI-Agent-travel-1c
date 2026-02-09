@@ -6,7 +6,8 @@ import { ArrowLeft, Settings, Brain, Database, FileText, Image as ImageIcon, Lin
 import { useToast, Button, Input, Textarea, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Switch } from '@/components/ui';
 
 import TabBar from '@/components/TabBar';
-import { ModelManager, SkillManager } from '@/components/ModelManager';
+import { ModelManager } from '@/components/ModelManager';
+import { SkillManager } from '@/components/SkillManager';
 export default function AIConfig(props) {
   const {
     toast

@@ -1,21 +1,23 @@
 // @ts-ignore;
 import React, { useState, useEffect } from 'react';
 // @ts-ignore;
-import { ArrowLeft, Plus, Edit, Copy, Trash2, Power, PowerOff, Search, Filter, MoreVertical, Bot, Sparkles, Zap, Shield, Database, Globe, Route, Cloud, Camera, Shirt, BookOpen, RefreshCw } from 'lucide-react';
+import { Search, Plus, Power, PowerOff, Bot, Route, BookOpen, Camera, Sparkles, Cloud, Shirt, RefreshCw, MoreVertical, Copy, Edit, Trash2, RotateCcw } from 'lucide-react';
 // @ts-ignore;
-import { useToast, Button } from '@/components/ui';
+import { Button, useToast } from '@/components/ui';
 
+import { TabBar } from '@/components/TabBar';
 export default function AgentList(props) {
   const {
     toast
   } = useToast();
   const [agents, setAgents] = useState([]);
   const [filteredAgents, setFilteredAgents] = useState([]);
-  const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [showMenu, setShowMenu] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [retryCount, setRetryCount] = useState(0);
 
   // 内置的4个AI Agent
   const defaultAgents = [{
@@ -121,7 +123,14 @@ export default function AgentList(props) {
         result = await db.collection('Agent').get();
       } catch (dbError) {
         console.log('Agent集合不存在，尝试使用AIConfig集合');
-        result = await db.collection('AIConfig').get();
+        try {
+          result = await db.collection('AIConfig').get();
+        } catch (aiConfigError) {
+          console.log('AIConfig集合也不存在，使用默认Agent');
+          result = {
+            data: []
+          };
+        }
       }
       if (result.data && result.data.length > 0) {
         // 如果数据库中有数据，使用数据库数据
@@ -187,156 +196,153 @@ export default function AgentList(props) {
       pageId: 'ai-config',
       params: {
         mode: 'edit',
-        agentId
+        agentId: agentId
       }
     });
-    setShowMenu(null);
   };
   const handleCopyAgent = async agent => {
     try {
-      const tcb = await props.$w.cloud.getCloudInstance();
-      const db = tcb.database();
       const newAgent = {
         ...agent,
-        _id: undefined,
         name: `${agent.name} (副本)`,
-        status: 'inactive',
-        usageCount: 0,
+        _id: Date.now().toString(),
+        isBuiltIn: false,
         createdAt: new Date().toISOString(),
-        isBuiltIn: false
+        usageCount: 0
       };
+      const tcb = await props.$w.cloud.getCloudInstance();
+      const db = tcb.database();
+      try {
+        await db.collection('Agent').add(newAgent);
+      } catch (dbError) {
+        await db.collection('AIConfig').add(newAgent);
+      }
 
-      // 根据集合名称选择正确的集合
-      const collectionName = await getAgentCollectionName();
-      await db.collection(collectionName).add(newAgent);
+      // 重新加载列表
+      await loadAgents();
       toast({
         title: '复制成功',
-        description: `已成功复制Agent: ${agent.name}`
+        description: 'Agent已复制成功',
+        variant: 'default'
       });
-      loadAgents();
     } catch (error) {
       console.error('复制Agent失败:', error);
       toast({
         title: '复制失败',
-        description: '无法复制Agent，请稍后重试',
+        description: '复制Agent时出现错误',
         variant: 'destructive'
       });
-    }
-    setShowMenu(null);
-  };
-  const getAgentCollectionName = async () => {
-    try {
-      const tcb = await props.$w.cloud.getCloudInstance();
-      const db = tcb.database();
-
-      // 尝试检查Agent集合是否存在
-      try {
-        await db.collection('Agent').limit(1).get();
-        return 'Agent';
-      } catch (error) {
-        return 'AIConfig';
-      }
-    } catch (error) {
-      return 'AIConfig';
     }
   };
   const handleToggleStatus = async agent => {
     try {
-      const tcb = await props.$w.cloud.getCloudInstance();
-      const db = tcb.database();
       const newStatus = agent.status === 'active' ? 'inactive' : 'active';
 
       // 内置Agent不能修改状态
       if (agent.isBuiltIn) {
         toast({
           title: '操作受限',
-          description: '内置Agent状态不能修改',
+          description: '内置Agent不能修改状态',
           variant: 'destructive'
         });
         return;
       }
-      const collectionName = await getAgentCollectionName();
-      await db.collection(collectionName).doc(agent._id).update({
+      const tcb = await props.$w.cloud.getCloudInstance();
+      const db = tcb.database();
+      try {
+        await db.collection('Agent').doc(agent._id).update({
+          status: newStatus
+        });
+      } catch (dbError) {
+        await db.collection('AIConfig').doc(agent._id).update({
+          status: newStatus
+        });
+      }
+
+      // 更新本地状态
+      setAgents(prev => prev.map(a => a._id === agent._id ? {
+        ...a,
         status: newStatus
-      });
+      } : a));
       toast({
         title: '状态更新成功',
-        description: `Agent已${newStatus === 'active' ? '启用' : '禁用'}`
+        description: `Agent已${newStatus === 'active' ? '启用' : '禁用'}`,
+        variant: 'default'
       });
-      loadAgents();
     } catch (error) {
       console.error('更新状态失败:', error);
       toast({
         title: '更新失败',
-        description: '无法更新Agent状态，请稍后重试',
+        description: '更新Agent状态时出现错误',
         variant: 'destructive'
       });
     }
-    setShowMenu(null);
   };
-  const handleDeleteAgent = async agentId => {
+  const handleDeleteAgent = async agent => {
     try {
+      // 内置Agent不能删除
+      if (agent.isBuiltIn) {
+        toast({
+          title: '操作受限',
+          description: '内置Agent不能删除',
+          variant: 'destructive'
+        });
+        return;
+      }
       const tcb = await props.$w.cloud.getCloudInstance();
       const db = tcb.database();
-      const collectionName = await getAgentCollectionName();
-      await db.collection(collectionName).doc(agentId).remove();
+      try {
+        await db.collection('Agent').doc(agent._id).remove();
+      } catch (dbError) {
+        await db.collection('AIConfig').doc(agent._id).remove();
+      }
+
+      // 重新加载列表
+      await loadAgents();
       toast({
         title: '删除成功',
-        description: 'Agent已成功删除'
+        description: 'Agent已删除成功',
+        variant: 'default'
       });
-      loadAgents();
     } catch (error) {
       console.error('删除Agent失败:', error);
       toast({
         title: '删除失败',
-        description: '无法删除Agent，请稍后重试',
+        description: '删除Agent时出现错误',
         variant: 'destructive'
       });
     }
-    setShowMenu(null);
-  };
-  const getModelColor = model => {
-    if (!model) return 'bg-gray-100 text-gray-700';
-    if (model.includes('GPT-4')) return 'bg-purple-100 text-purple-700';
-    if (model.includes('GPT-3.5')) return 'bg-blue-100 text-blue-700';
-    if (model.includes('Claude')) return 'bg-orange-100 text-orange-700';
-    return 'bg-gray-100 text-gray-700';
-  };
-  const formatDate = dateString => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('zh-CN', {
-      year: 'numeric',
-      month: '2-digit',
-      day: '2-digit'
-    });
   };
   const handleRetry = () => {
+    setRetryCount(prev => prev + 1);
     loadAgents();
   };
-  return <div className="min-h-screen bg-gradient-to-br from-orange-50 via-pink-50 to-yellow-50">
+  return <div className="min-h-screen bg-gradient-to-br from-amber-50 via-orange-50 to-rose-50">
       {/* Header */}
-      <div className="bg-white/80 backdrop-blur-sm border-b border-orange-100 sticky top-0 z-10">
-        <div className="max-w-7xl mx-auto px-4 py-4">
+      <div className="bg-white/80 backdrop-blur-sm border-b border-gray-200">
+        <div className="max-w-7xl mx-auto px-4 py-6">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <button onClick={() => props.$w.utils.navigateBack()} className="p-2 hover:bg-orange-100 rounded-lg transition-colors">
-                <ArrowLeft className="w-5 h-5 text-gray-600" />
+            <div className="flex items-center gap-4">
+              <button onClick={() => props.$w.utils.navigateBack()} className="p-2 hover:bg-gray-100 rounded-xl transition-colors">
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                </svg>
               </button>
               <div>
-                <h1 className="text-2xl font-bold text-gray-800" style={{
-                fontFamily: 'Nunito, sans-serif'
+                <h1 className="text-3xl font-bold bg-gradient-to-r from-orange-600 to-pink-600 bg-clip-text text-transparent" style={{
+                fontFamily: 'Playfair Display, serif'
               }}>
                   AI Agent 列表
                 </h1>
-                <p className="text-sm text-gray-500" style={{
+                <p className="text-gray-600 mt-1" style={{
                 fontFamily: 'Quicksand, sans-serif'
               }}>
                   管理您的AI助手配置
                 </p>
               </div>
             </div>
-            <Button onClick={handleCreateAgent} className="bg-gradient-to-r from-orange-500 to-pink-500 hover:from-orange-600 hover:to-pink-600 text-white rounded-full px-6 py-2 flex items-center gap-2 shadow-lg hover:shadow-xl transition-all">
-              <Plus className="w-4 h-4" />
+            <Button onClick={handleCreateAgent} className="bg-gradient-to-r from-orange-500 to-pink-500 hover:from-orange-600 hover:to-pink-600 text-white rounded-full px-6 py-3 flex items-center gap-2 shadow-lg hover:shadow-xl transition-all">
+              <Plus className="w-5 h-5" />
               创建Agent
             </Button>
           </div>
@@ -350,7 +356,8 @@ export default function AgentList(props) {
               <div className="w-2 h-2 bg-red-500 rounded-full"></div>
               <span className="text-red-700 font-medium">{error}</span>
             </div>
-            <Button onClick={handleRetry} variant="outline" size="sm" className="border-red-300 text-red-700 hover:bg-red-50">
+            <Button onClick={handleRetry} variant="outline" size="sm" className="border-red-300 text-red-700 hover:bg-red-50 flex items-center gap-2">
+              <RotateCcw className="w-4 h-4" />
               重试
             </Button>
           </div>
@@ -420,15 +427,17 @@ export default function AgentList(props) {
                     className: "w-6 h-6 text-white"
                   }) : <Bot className="w-6 h-6 text-white" />}
                       </div>
-                      <div>
-                        <h3 className="text-lg font-bold text-white" style={{
+                      <div className="flex-1">
+                        <h3 className="text-white font-bold text-lg" style={{
                     fontFamily: 'Nunito, sans-serif'
                   }}>
                           {agent.name}
                         </h3>
-                        <span className={`inline-block px-2 py-1 rounded-full text-xs font-medium ${getModelColor(agent.model)}`}>
-                          {agent.model}
-                        </span>
+                        <p className="text-white/80 text-sm" style={{
+                    fontFamily: 'Quicksand, sans-serif'
+                  }}>
+                          {agent.description}
+                        </p>
                       </div>
                     </div>
                     <div className="relative">
@@ -436,62 +445,78 @@ export default function AgentList(props) {
                         <MoreVertical className="w-5 h-5 text-white" />
                       </button>
                       {showMenu === agent._id && <div className="absolute right-0 top-full mt-2 w-48 bg-white rounded-xl shadow-xl border border-gray-100 overflow-hidden z-20">
-                          <button onClick={() => handleEditAgent(agent._id)} className="w-full px-4 py-3 text-left hover:bg-gray-50 flex items-center gap-2 transition-colors" style={{
-                    fontFamily: 'Quicksand, sans-serif'
-                  }}>
+                          <button onClick={() => {
+                    handleEditAgent(agent._id);
+                    setShowMenu(null);
+                  }} className="w-full px-4 py-3 text-left hover:bg-gray-50 flex items-center gap-3 transition-colors">
                             <Edit className="w-4 h-4 text-gray-600" />
                             <span className="text-gray-700">编辑</span>
                           </button>
-                          <button onClick={() => handleCopyAgent(agent)} className="w-full px-4 py-3 text-left hover:bg-gray-50 flex items-center gap-2 transition-colors" style={{
-                    fontFamily: 'Quicksand, sans-serif'
-                  }}>
+                          <button onClick={() => {
+                    handleCopyAgent(agent);
+                    setShowMenu(null);
+                  }} className="w-full px-4 py-3 text-left hover:bg-gray-50 flex items-center gap-3 transition-colors">
                             <Copy className="w-4 h-4 text-gray-600" />
                             <span className="text-gray-700">复制</span>
                           </button>
-                          <button onClick={() => handleToggleStatus(agent)} className="w-full px-4 py-3 text-left hover:bg-gray-50 flex items-center gap-2 transition-colors" style={{
-                    fontFamily: 'Quicksand, sans-serif'
-                  }}>
+                          <button onClick={() => {
+                    handleToggleStatus(agent);
+                    setShowMenu(null);
+                  }} className="w-full px-4 py-3 text-left hover:bg-gray-50 flex items-center gap-3 transition-colors">
                             {agent.status === 'active' ? <PowerOff className="w-4 h-4 text-gray-600" /> : <Power className="w-4 h-4 text-gray-600" />}
                             <span className="text-gray-700">
                               {agent.status === 'active' ? '禁用' : '启用'}
                             </span>
                           </button>
-                          <button onClick={() => handleDeleteAgent(agent._id)} className="w-full px-4 py-3 text-left hover:bg-red-50 flex items-center gap-2 transition-colors" style={{
-                    fontFamily: 'Quicksand, sans-serif'
-                  }}>
-                            <Trash2 className="w-4 h-4 text-red-600" />
-                            <span className="text-red-600">删除</span>
-                          </button>
+                          {!agent.isBuiltIn && <button onClick={() => {
+                    handleDeleteAgent(agent);
+                    setShowMenu(null);
+                  }} className="w-full px-4 py-3 text-left hover:bg-red-50 flex items-center gap-3 transition-colors text-red-600">
+                              <Trash2 className="w-4 h-4" />
+                              <span>删除</span>
+                            </button>}
                         </div>}
                     </div>
                   </div>
                 </div>
 
-                {/* Card Body */}
+                {/* Card Content */}
                 <div className="p-6">
-                  <p className="text-gray-600 mb-4 line-clamp-2" style={{
-              fontFamily: 'Quicksand, sans-serif'
-            }}>
-                    {agent.description}
-                  </p>
+                  {/* Model Info */}
+                  <div className="mb-4">
+                    <div className="flex items-center gap-2 mb-2">
+                      <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
+                      <span className="text-sm font-medium text-gray-700" style={{
+                  fontFamily: 'Quicksand, sans-serif'
+                }}>
+                        {agent.model}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2 text-sm text-gray-600" style={{
+                fontFamily: 'Quicksand, sans-serif'
+              }}>
+                      <span>使用次数: {agent.usageCount || 0}</span>
+                      <span>•</span>
+                      <span>创建于: {new Date(agent.createdAt).toLocaleDateString('zh-CN')}</span>
+                    </div>
+                  </div>
 
                   {/* Skills */}
                   {agent.skills && agent.skills.length > 0 && <div className="mb-4">
-                      <div className="flex items-center gap-2 mb-2">
-                        <Sparkles className="w-4 h-4 text-orange-500" />
-                        <span className="text-sm font-medium text-gray-700" style={{
-                  fontFamily: 'Quicksand, sans-serif'
-                }}>
-                          Skills
-                        </span>
-                      </div>
+                      <h4 className="text-sm font-medium text-gray-700 mb-2" style={{
+                fontFamily: 'Nunito, sans-serif'
+              }}>
+                        技能
+                      </h4>
                       <div className="flex flex-wrap gap-2">
                         {agent.skills.slice(0, 3).map((skill, index) => <span key={index} className="px-2 py-1 bg-orange-100 text-orange-700 rounded-lg text-xs font-medium" style={{
                   fontFamily: 'Quicksand, sans-serif'
                 }}>
                             {skill}
                           </span>)}
-                        {agent.skills.length > 3 && <span className="px-2 py-1 bg-gray-100 text-gray-600 rounded-lg text-xs font-medium">
+                        {agent.skills.length > 3 && <span className="px-2 py-1 bg-gray-100 text-gray-600 rounded-lg text-xs font-medium" style={{
+                  fontFamily: 'Quicksand, sans-serif'
+                }}>
                             +{agent.skills.length - 3}
                           </span>}
                       </div>
@@ -499,21 +524,20 @@ export default function AgentList(props) {
 
                   {/* Rules */}
                   {agent.rules && agent.rules.length > 0 && <div className="mb-4">
-                      <div className="flex items-center gap-2 mb-2">
-                        <Shield className="w-4 h-4 text-pink-500" />
-                        <span className="text-sm font-medium text-gray-700" style={{
-                  fontFamily: 'Quicksand, sans-serif'
-                }}>
-                          Rules
-                        </span>
-                      </div>
+                      <h4 className="text-sm font-medium text-gray-700 mb-2" style={{
+                fontFamily: 'Nunito, sans-serif'
+              }}>
+                        规则
+                      </h4>
                       <div className="flex flex-wrap gap-2">
                         {agent.rules.slice(0, 2).map((rule, index) => <span key={index} className="px-2 py-1 bg-pink-100 text-pink-700 rounded-lg text-xs font-medium" style={{
                   fontFamily: 'Quicksand, sans-serif'
                 }}>
                             {rule}
                           </span>)}
-                        {agent.rules.length > 2 && <span className="px-2 py-1 bg-gray-100 text-gray-600 rounded-lg text-xs font-medium">
+                        {agent.rules.length > 2 && <span className="px-2 py-1 bg-gray-100 text-gray-600 rounded-lg text-xs font-medium" style={{
+                  fontFamily: 'Quicksand, sans-serif'
+                }}>
                             +{agent.rules.length - 2}
                           </span>}
                       </div>
@@ -521,47 +545,45 @@ export default function AgentList(props) {
 
                   {/* RAG Status */}
                   {agent.ragEnabled && <div className="mb-4">
-                      <div className="flex items-center gap-2">
-                        <Database className="w-4 h-4 text-teal-500" />
+                      <div className="flex items-center gap-2 mb-2">
+                        <div className="w-2 h-2 bg-green-500 rounded-full"></div>
                         <span className="text-sm font-medium text-gray-700" style={{
                   fontFamily: 'Quicksand, sans-serif'
                 }}>
-                          RAG 已启用
+                          RAG已启用
                         </span>
                       </div>
-                    </div>}
-
-                  {/* Stats */}
-                  <div className="flex items-center justify-between pt-4 border-t border-gray-100">
-                    <div className="flex items-center gap-2">
-                      <Zap className="w-4 h-4 text-yellow-500" />
-                      <span className="text-sm text-gray-600" style={{
-                  fontFamily: 'Quicksand, sans-serif'
-                }}>
-                        {agent.usageCount || 0} 次使用
-                      </span>
-                    </div>
-                    <span className="text-xs text-gray-400" style={{
+                      {agent.ragSources && agent.ragSources.length > 0 && <div className="text-xs text-gray-600" style={{
                 fontFamily: 'Quicksand, sans-serif'
               }}>
-                      {formatDate(agent.createdAt)}
-                    </span>
-                  </div>
+                          数据源: {agent.ragSources.join(', ')}
+                        </div>}
+                    </div>}
                 </div>
 
-                {/* Status Badge */}
+                {/* Card Footer */}
                 <div className={`px-6 py-3 ${agent.status === 'active' ? 'bg-green-50' : 'bg-gray-50'}`}>
-                  <div className="flex items-center gap-2">
-                    {agent.status === 'active' ? <Power className="w-4 h-4 text-green-600" /> : <PowerOff className="w-4 h-4 text-gray-400" />}
-                    <span className={`text-sm font-medium ${agent.status === 'active' ? 'text-green-700' : 'text-gray-500'}`} style={{
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      {agent.status === 'active' ? <Power className="w-4 h-4 text-green-600" /> : <PowerOff className="w-4 h-4 text-gray-400" />}
+                      <span className={`text-sm font-medium ${agent.status === 'active' ? 'text-green-700' : 'text-gray-500'}`} style={{
+                  fontFamily: 'Quicksand, sans-serif'
+                }}>
+                        {agent.status === 'active' ? '已启用' : '已禁用'}
+                      </span>
+                    </div>
+                    {agent.isBuiltIn && <span className="px-2 py-1 bg-orange-100 text-orange-700 rounded-lg text-xs font-medium" style={{
                 fontFamily: 'Quicksand, sans-serif'
               }}>
-                      {agent.status === 'active' ? '已启用' : '已禁用'}
-                    </span>
+                        内置
+                      </span>}
                   </div>
                 </div>
               </div>)}
           </div>}
       </div>
+
+      {/* TabBar */}
+      <TabBar />
     </div>;
 }
