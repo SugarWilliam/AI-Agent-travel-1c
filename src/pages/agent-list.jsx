@@ -1,7 +1,7 @@
 // @ts-ignore;
 import React, { useState, useEffect } from 'react';
 // @ts-ignore;
-import { Search, Plus, Power, PowerOff, Bot, Route, BookOpen, Camera, Sparkles, Cloud, Shirt, RefreshCw, MoreVertical, Copy, Edit, Trash2, RotateCcw } from 'lucide-react';
+import { Search, Plus, Power, PowerOff, Bot, Route, BookOpen, Camera, Sparkles, Cloud, Shirt, RefreshCw, MoreVertical, Copy, Edit, Trash2, RotateCcw, AlertCircle } from 'lucide-react';
 // @ts-ignore;
 import { Button, useToast } from '@/components/ui';
 
@@ -93,7 +93,7 @@ export default function AgentList(props) {
   // 加载Agent列表
   useEffect(() => {
     loadAgents();
-  }, []);
+  }, [retryCount]);
 
   // 筛选Agent
   useEffect(() => {
@@ -114,52 +114,106 @@ export default function AgentList(props) {
     try {
       setIsLoading(true);
       setError(null);
+      console.log(`开始加载Agent列表，重试次数: ${retryCount}`);
 
-      // 首先尝试从数据库加载
-      const tcb = await props.$w.cloud.getCloudInstance();
-      const db = tcb.database();
-      let result;
+      // 首先确保显示4个内置Agent
+      console.log('内置Agent列表:', defaultAgents.map(a => a.name));
+      let allAgents = [...defaultAgents]; // 始终包含4个内置Agent
+      let dbLoadSuccess = false;
+      let dbAgentCount = 0;
+
+      // 尝试从数据库加载用户Agent
       try {
-        result = await db.collection('Agent').get();
-      } catch (dbError) {
-        console.log('Agent集合不存在，尝试使用AIConfig集合');
+        const tcb = await props.$w.cloud.getCloudInstance();
+        const db = tcb.database();
+        let result;
         try {
-          result = await db.collection('AIConfig').get();
-        } catch (aiConfigError) {
-          console.log('AIConfig集合也不存在，使用默认Agent');
-          result = {
-            data: []
-          };
-        }
-      }
-      if (result.data && result.data.length > 0) {
-        // 如果数据库中有数据，使用数据库数据
-        const dbAgents = result.data.map(agent => ({
-          ...agent,
-          icon: getIconComponent(agent.icon),
-          isBuiltIn: false
-        }));
-
-        // 合并内置Agent和用户创建的Agent
-        const allAgents = [...defaultAgents];
-
-        // 添加用户创建的Agent（避免重复）
-        dbAgents.forEach(dbAgent => {
-          const exists = allAgents.find(agent => agent.name === dbAgent.name);
-          if (!exists) {
-            allAgents.push(dbAgent);
+          console.log('尝试从Agent集合加载数据...');
+          result = await db.collection('Agent').get();
+          console.log('Agent集合加载成功，数据量:', result.data?.length || 0);
+        } catch (dbError) {
+          console.log('Agent集合加载失败:', dbError.message);
+          console.log('尝试从AIConfig集合加载数据...');
+          try {
+            result = await db.collection('AIConfig').get();
+            console.log('AIConfig集合加载成功，数据量:', result.data?.length || 0);
+          } catch (aiConfigError) {
+            console.log('AIConfig集合加载失败:', aiConfigError.message);
+            throw new Error('数据库连接失败');
           }
-        });
-        setAgents(allAgents);
+        }
+        if (result.data && result.data.length > 0) {
+          console.log('成功加载数据库数据，开始处理...');
+          const dbAgents = result.data.map(agent => ({
+            ...agent,
+            icon: getIconComponent(agent.icon || 'Bot'),
+            isBuiltIn: false,
+            status: agent.status || 'enabled'
+          }));
+          dbAgentCount = dbAgents.length;
+          console.log(`数据库Agent数量: ${dbAgentCount}`);
+
+          // 合并数据库Agent，避免与内置Agent重复
+          dbAgents.forEach(dbAgent => {
+            const exists = allAgents.find(agent => agent.name === dbAgent.name || agent.id === dbAgent.id);
+            if (!exists) {
+              allAgents.push(dbAgent);
+              console.log(`添加用户Agent: ${dbAgent.name}`);
+            } else {
+              console.log(`跳过重复Agent: ${dbAgent.name}`);
+            }
+          });
+          dbLoadSuccess = true;
+          console.log(`合并后总Agent数量: ${allAgents.length}`);
+        } else {
+          console.log('数据库中没有Agent数据');
+        }
+      } catch (cloudError) {
+        console.error('云开发连接失败:', cloudError.message);
+        // 网络错误时，仍然确保显示4个内置Agent
+        console.log('网络错误，仅显示内置Agent');
+      }
+
+      // 确保最终列表包含所有4个内置Agent
+      const finalAgents = [...defaultAgents];
+
+      // 如果数据库加载成功，添加用户Agent
+      if (dbLoadSuccess && allAgents.length > defaultAgents.length) {
+        const userAgents = allAgents.filter(agent => !agent.isBuiltIn);
+        finalAgents.push(...userAgents);
+      }
+      console.log(`最终Agent列表: ${finalAgents.length} 个`);
+      finalAgents.forEach((agent, index) => {
+        console.log(`${index + 1}. ${agent.name} (${agent.isBuiltIn ? '内置' : '用户'}) - 状态: ${agent.status}`);
+      });
+      setAgents(finalAgents);
+
+      // 显示加载结果
+      if (dbLoadSuccess) {
+        if (dbAgentCount > 0) {
+          toast({
+            title: '加载成功',
+            description: `已加载 ${dbAgentCount} 个用户Agent和 ${defaultAgents.length} 个内置Agent`
+          });
+        } else {
+          toast({
+            title: '提示',
+            description: `正在使用 ${defaultAgents.length} 个内置Agent配置`
+          });
+        }
       } else {
-        // 如果没有数据，使用默认的AI Agent列表
-        setAgents(defaultAgents);
+        toast({
+          title: '网络提示',
+          description: `网络连接异常，正在使用离线Agent配置 (${defaultAgents.length} 个内置Agent)`,
+          variant: 'destructive'
+        });
       }
     } catch (error) {
       console.error('加载Agent列表失败:', error);
       setError('网络错误，请重试');
 
-      // 网络错误时，仍然显示默认Agent
+      // 任何错误情况下，都确保显示4个内置Agent
+      console.log('发生错误，强制显示内置Agent');
       setAgents(defaultAgents);
       toast({
         title: '网络错误',
@@ -169,6 +223,10 @@ export default function AgentList(props) {
     } finally {
       setIsLoading(false);
     }
+  };
+  const handleRetry = () => {
+    setRetryCount(prev => prev + 1);
+    loadAgents();
   };
   const getIconComponent = iconName => {
     const iconMap = {
@@ -313,10 +371,6 @@ export default function AgentList(props) {
       });
     }
   };
-  const handleRetry = () => {
-    setRetryCount(prev => prev + 1);
-    loadAgents();
-  };
   return <div className="min-h-screen bg-gradient-to-br from-amber-50 via-orange-50 to-rose-50">
       {/* Header */}
       <div className="bg-white/80 backdrop-blur-sm border-b border-gray-200">
@@ -351,15 +405,23 @@ export default function AgentList(props) {
 
       {/* Error Message */}
       {error && <div className="max-w-7xl mx-auto px-4 py-4">
-          <div className="bg-red-50 border border-red-200 rounded-xl p-4 flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="w-2 h-2 bg-red-500 rounded-full"></div>
-              <span className="text-red-700 font-medium">{error}</span>
+          <div className="bg-gradient-to-r from-red-50 to-orange-50 border-l-4 border-red-500 rounded-xl p-5 shadow-sm">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <div className="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center">
+                  <AlertCircle className="w-5 h-5 text-red-600" />
+                </div>
+                <div>
+                  <h3 className="text-red-800 font-semibold text-sm">网络连接异常</h3>
+                  <p className="text-red-600 text-sm mt-1">{error}</p>
+                  <p className="text-red-500 text-xs mt-1">正在使用离线Agent配置 (4个内置Agent可用)</p>
+                </div>
+              </div>
+              <Button onClick={handleRetry} variant="outline" size="sm" className="border-red-300 text-red-700 hover:bg-red-50 hover:border-red-400 flex items-center gap-2 px-4 py-2">
+                <RotateCcw className="w-4 h-4" />
+                重新连接
+              </Button>
             </div>
-            <Button onClick={handleRetry} variant="outline" size="sm" className="border-red-300 text-red-700 hover:bg-red-50 flex items-center gap-2">
-              <RotateCcw className="w-4 h-4" />
-              重试
-            </Button>
           </div>
         </div>}
 
