@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 // @ts-ignore;
 import { Plus, Search, MapPin, Calendar, DollarSign, Sparkles, Download, Trash2, Settings } from 'lucide-react';
 // @ts-ignore;
-import { useToast, Button, Input, Airplane } from '@/components/ui';
+import { useToast, Button, Input } from '@/components/ui';
 
 import TabBar from '@/components/TabBar';
 export default function Home(props) {
