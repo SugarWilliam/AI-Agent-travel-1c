@@ -382,11 +382,11 @@ export default function AgentList(props) {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
                 </svg>
               </button>
-              <div className="flex items-center gap-3">
-                <Bot className="w-8 h-8 text-gray-700" />
-                <h1 className="text-3xl font-bold text-gray-800" style={{
+              <div>
+                <h1 className="text-3xl font-bold text-gray-800 flex items-center gap-3" style={{
                 fontFamily: 'Nunito, sans-serif'
               }}>
+                  <Bot className="w-8 h-8 text-orange-500" />
                   AI Agent 列表
                 </h1>
                 <p className="text-gray-600 mt-1 text-sm" style={{
