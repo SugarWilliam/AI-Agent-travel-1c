@@ -383,13 +383,13 @@ export default function AgentList(props) {
                 </svg>
               </button>
               <div>
-                <h1 className="text-3xl font-bold bg-gradient-to-r from-orange-600 to-pink-600 bg-clip-text text-transparent" style={{
-                fontFamily: 'Playfair Display, serif'
+                <h1 className="text-3xl font-bold text-gray-800" style={{
+                fontFamily: 'Nunito, sans-serif'
               }}>
                   AI Agent 列表
                 </h1>
-                <p className="text-gray-600 mt-1" style={{
-                fontFamily: 'Quicksand, sans-serif'
+                <p className="text-gray-600 mt-1 text-sm" style={{
+                fontFamily: 'Nunito, sans-serif'
               }}>
                   管理您的AI助手配置
                 </p>
