@@ -388,6 +388,12 @@ export default function AIAssistant(props) {
               <Bot className="w-6 h-6 text-[#2D3436]" />
             </button>
             <button onClick={() => props.$w.utils.navigateTo({
+            pageId: 'agent-logs',
+            params: {}
+          })} className="bg-white/90 backdrop-blur-sm rounded-full p-2 shadow-lg hover:scale-105 transition-transform" title="Agent运行日志">
+              <FileClock className="w-6 h-6 text-[#2D3436]" />
+            </button>
+            <button onClick={() => props.$w.utils.navigateTo({
             pageId: 'ai-config',
             params: {}
           })} className="bg-white/90 backdrop-blur-sm rounded-full p-2 shadow-lg hover:scale-105 transition-transform" title="AI设置">
