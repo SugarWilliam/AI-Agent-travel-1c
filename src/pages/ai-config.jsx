@@ -186,7 +186,7 @@ export default function AIConfig(props) {
   return <div className="min-h-screen bg-[#FFF9F0] flex flex-col">
       {/* Header */}
       <div className="bg-gradient-to-r from-[#FF6B6B] to-[#4ECDC4] p-4 pt-12">
-        <div className="max-w-2xl mx-auto flex items-center gap-3">
+        <div className="max-w-7xl mx-auto flex items-center gap-3">
           <button onClick={handleBack} className="bg-white/90 backdrop-blur-sm rounded-full p-2 shadow-lg">
             <ArrowLeft className="w-6 h-6 text-[#2D3436]" />
           </button>
@@ -201,192 +201,215 @@ export default function AIConfig(props) {
         </div>
       </div>
 
-      {/* 模型选择区域 */}
-      <div className="max-w-2xl mx-auto px-4 mt-4">
-        <div className="bg-white rounded-xl p-4 shadow-md">
-          <h3 className="font-bold text-[#2D3436] mb-3" style={{
-          fontFamily: 'Nunito, sans-serif'
-        }}>
-            当前模型配置
-          </h3>
-          <div className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                选择AI模型
-              </label>
-              <Select value={selectedModel} onValueChange={setSelectedModel}>
-                <SelectTrigger className="w-full">
-                  <SelectValue placeholder="选择AI模型" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="gpt-4">GPT-4</SelectItem>
-                  <SelectItem value="gpt-4-turbo">GPT-4 Turbo</SelectItem>
-                  <SelectItem value="gpt-3.5-turbo">GPT-3.5 Turbo</SelectItem>
-                  <SelectItem value="claude-3-sonnet">Claude 3 Sonnet</SelectItem>
-                  <SelectItem value="claude-3-opus">Claude 3 Opus</SelectItem>
-                  <SelectItem value="gemini-pro">Gemini Pro</SelectItem>
-                  <SelectItem value="custom">自定义模型</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            
-            {selectedModel === 'custom' && <div className="space-y-3 p-3 bg-gray-50 rounded-lg">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    自定义模型ID
-                  </label>
-                  <Input placeholder="输入自定义模型ID，如: gpt-4-custom" value={aiConfig?.modelId || ''} onChange={e => setAiConfig(prev => ({
-                ...prev,
-                modelId: e.target.value
-              }))} />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    API Key
-                  </label>
-                  <Input type="password" placeholder="输入API密钥" value={aiConfig?.apiKey || ''} onChange={e => setAiConfig(prev => ({
-                ...prev,
-                apiKey: e.target.value
-              }))} />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    API Endpoint (可选)
-                  </label>
-                  <Input placeholder="输入API端点，如: https://api.openai.com/v1" value={aiConfig?.apiEndpoint || ''} onChange={e => setAiConfig(prev => ({
-                ...prev,
-                apiEndpoint: e.target.value
-              }))} />
-                </div>
-              </div>}
-            
-            <div className="flex gap-2">
-              <Button onClick={handleSave} className="bg-gradient-to-r from-[#FF6B6B] to-[#4ECDC4] text-white hover:opacity-90">
-                保存配置
-              </Button>
-              <Button variant="outline" onClick={handleBack} className="border-gray-300 text-gray-700">
-                取消
-              </Button>
-            </div>
+      {/* Main Content Area */}
+      <div className="flex-1 flex max-w-7xl mx-auto w-full">
+        {/* Left Sidebar Navigation */}
+        <div className="w-64 bg-white shadow-lg">
+          <div className="p-4">
+            <nav className="space-y-2">
+              {[{
+              id: 'models',
+              label: '模型管理',
+              icon: Brain
+            }, {
+              id: 'skills',
+              label: '技能管理',
+              icon: Zap
+            }, {
+              id: 'rules',
+              label: '规则配置',
+              icon: FileText
+            }, {
+              id: 'rag',
+              label: '知识库',
+              icon: Database
+            }, {
+              id: 'mcp',
+              label: 'MCP',
+              icon: Code
+            }].map(item => <button key={item.id} onClick={() => setActiveTab(item.id)} className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${activeTab === item.id ? 'bg-gradient-to-r from-[#FF6B6B] to-[#4ECDC4] text-white shadow-md' : 'text-gray-600 hover:bg-gray-100'}`}>
+                  <item.icon className="w-5 h-5" />
+                  <span className="font-medium">{item.label}</span>
+                </button>)}
+            </nav>
           </div>
         </div>
-      </div>
 
-      {/* Tabs */}
-      <div className="max-w-2xl mx-auto px-4 mt-4">
-        <div className="flex gap-2 bg-white rounded-xl p-1 shadow-md">
-          {[{
-          id: 'models',
-          label: '模型管理',
-          icon: Brain
-        }, {
-          id: 'skills',
-          label: '技能管理',
-          icon: Zap
-        }, {
-          id: 'rules',
-          label: '规则配置',
-          icon: FileText
-        }, {
-          id: 'rag',
-          label: '知识库',
-          icon: Database
-        }, {
-          id: 'mcp',
-          label: '外部服务',
-          icon: Code
-        }].map(tab => <button key={tab.id} onClick={() => setActiveTab(tab.id)} className={`flex-1 flex items-center justify-center gap-2 py-2 px-3 rounded-lg transition-all ${activeTab === tab.id ? 'bg-[#FF6B6B] text-white' : 'text-gray-600 hover:bg-gray-100'}`}>
-              <tab.icon className="w-4 h-4" />
-              <span className="text-sm font-medium">{tab.label}</span>
-            </button>)}
-        </div>
-      </div>
-
-      {/* Content */}
-      <div className="flex-1 overflow-y-auto p-4 max-w-2xl mx-auto w-full">
-        {activeTab === 'models' && <ModelManager $w={props.$w} />}
-        
-        {activeTab === 'skills' && <SkillManager $w={props.$w} />}
-
-        {activeTab === 'rules' && <div className="space-y-4">
-            <div className="bg-white rounded-xl p-4 shadow-md">
-              <h3 className="font-bold text-[#2D3436] mb-4" style={{
-            fontFamily: 'Nunito, sans-serif'
-          }}>
-                行为规则
-              </h3>
-              <div className="space-y-3">
-                {rules.map(rule => <div key={rule.id} className="flex items-center justify-between p-3 border border-gray-200 rounded-lg">
-                    <div className="flex-1">
-                      <h4 className="font-medium text-gray-900">{rule.name}</h4>
-                      <p className="text-sm text-gray-600">{rule.description}</p>
+        {/* Right Content Area */}
+        <div className="flex-1 p-6">
+          <div className="bg-white rounded-xl shadow-lg p-6">
+            {/* Model Management */}
+            {activeTab === 'models' && <div className="space-y-6">
+                <div className="border-b pb-4">
+                  <h2 className="text-2xl font-bold text-[#2D3436]" style={{
+                fontFamily: 'Nunito, sans-serif'
+              }}>
+                    模型管理
+                  </h2>
+                  <p className="text-gray-600 mt-1">配置和管理AI模型设置</p>
+                </div>
+                
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  <div className="space-y-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        选择AI模型
+                      </label>
+                      <Select value={selectedModel} onValueChange={setSelectedModel}>
+                        <SelectTrigger className="w-full">
+                          <SelectValue placeholder="选择AI模型" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="gpt-4">GPT-4</SelectItem>
+                          <SelectItem value="gpt-4-turbo">GPT-4 Turbo</SelectItem>
+                          <SelectItem value="gpt-3.5-turbo">GPT-3.5 Turbo</SelectItem>
+                          <SelectItem value="claude-3-sonnet">Claude 3 Sonnet</SelectItem>
+                          <SelectItem value="claude-3-opus">Claude 3 Opus</SelectItem>
+                          <SelectItem value="gemini-pro">Gemini Pro</SelectItem>
+                          <SelectItem value="custom">自定义模型</SelectItem>
+                        </SelectContent>
+                      </Select>
                     </div>
-                    <Switch checked={rule.enabled} onCheckedChange={() => toggleRule(rule.id)} />
-                  </div>)}
-              </div>
-            </div>
-          </div>}
+                    
+                    {selectedModel === 'custom' && <div className="space-y-3 p-4 bg-gray-50 rounded-lg">
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-2">
+                            自定义模型ID
+                          </label>
+                          <Input placeholder="输入自定义模型ID，如: gpt-4-custom" value={aiConfig?.modelId || ''} onChange={e => setAiConfig(prev => ({
+                      ...prev,
+                      modelId: e.target.value
+                    }))} />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-2">
+                            API Key
+                          </label>
+                          <Input type="password" placeholder="输入API密钥" value={aiConfig?.apiKey || ''} onChange={e => setAiConfig(prev => ({
+                      ...prev,
+                      apiKey: e.target.value
+                    }))} />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-2">
+                            API Endpoint (可选)
+                          </label>
+                          <Input placeholder="输入API端点，如: https://api.openai.com/v1" value={aiConfig?.apiEndpoint || ''} onChange={e => setAiConfig(prev => ({
+                      ...prev,
+                      apiEndpoint: e.target.value
+                    }))} />
+                        </div>
+                      </div>}
+                  </div>
+                  
+                  <div className="space-y-4">
+                    <ModelManager $w={props.$w} />
+                  </div>
+                </div>
+              </div>}
 
-        {activeTab === 'rag' && <div className="space-y-4">
-            <div className="bg-white rounded-xl p-4 shadow-md">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="font-bold text-[#2D3436]" style={{
-              fontFamily: 'Nunito, sans-serif'
-            }}>
-                  知识库增强
-                </h3>
-                <Switch checked={ragEnabled} onCheckedChange={setRagEnabled} />
-              </div>
-              
-              {ragEnabled && <div className="space-y-3">
-                  {ragSources.map(source => <div key={source.id} className="flex items-center justify-between p-3 border border-gray-200 rounded-lg">
-                      <div className="flex-1">
-                        <h4 className="font-medium text-gray-900">{source.name}</h4>
-                        <p className="text-sm text-gray-600">类型: {source.type === 'database' ? '数据库' : 'API'}</p>
+            {/* Skills Management */}
+            {activeTab === 'skills' && <div className="space-y-6">
+                <div className="border-b pb-4">
+                  <h2 className="text-2xl font-bold text-[#2D3436]" style={{
+                fontFamily: 'Nunito, sans-serif'
+              }}>
+                    技能管理
+                  </h2>
+                  <p className="text-gray-600 mt-1">配置AI助手的技能和能力</p>
+                </div>
+                <SkillManager $w={props.$w} />
+              </div>}
+
+            {/* Rules Configuration */}
+            {activeTab === 'rules' && <div className="space-y-6">
+                <div className="border-b pb-4">
+                  <h2 className="text-2xl font-bold text-[#2D3436]" style={{
+                fontFamily: 'Nunito, sans-serif'
+              }}>
+                    规则配置
+                  </h2>
+                  <p className="text-gray-600 mt-1">设置AI助手的行为规则</p>
+                </div>
+                
+                <div className="grid gap-4">
+                  {rules.map(rule => <div key={rule.id} className="p-4 border border-gray-200 rounded-lg hover:shadow-md transition-shadow">
+                      <div className="flex items-center justify-between">
+                        <div className="flex-1">
+                          <h4 className="font-medium text-gray-900 text-lg">{rule.name}</h4>
+                          <p className="text-gray-600 mt-1">{rule.description}</p>
+                        </div>
+                        <Switch checked={rule.enabled} onCheckedChange={() => toggleRule(rule.id)} />
                       </div>
-                      <Switch checked={source.enabled} onCheckedChange={() => toggleRagSource(source.id)} />
                     </div>)}
-                </div>}
-            </div>
-          </div>}
+                </div>
+              </div>}
 
-        {activeTab === 'mcp' && <div className="space-y-4">
-            <div className="bg-white rounded-xl p-4 shadow-md">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="font-bold text-[#2D3436]" style={{
-              fontFamily: 'Nunito, sans-serif'
-            }}>
-                  外部服务集成
-                </h3>
-                <Button onClick={addMcpServer} className="bg-[#FF6B6B] hover:bg-[#FF5252] text-white">
-                  <Plus className="w-4 h-4 mr-2" />
-                  添加服务
-                </Button>
-              </div>
-              
-              <div className="space-y-3">
-                {mcpServers.map(server => <div key={server.id} className="p-3 border border-gray-200 rounded-lg">
-                    <div className="flex items-center justify-between mb-2">
-                      <Input value={server.name} onChange={e => updateMcpServer(server.id, 'name', e.target.value)} placeholder="服务名称" className="flex-1 mr-2" />
-                      <Switch checked={server.enabled} onCheckedChange={() => toggleMcpServer(server.id)} />
-                    </div>
-                    <Input value={server.url} onChange={e => updateMcpServer(server.id, 'url', e.target.value)} placeholder="服务URL" className="mb-2" />
-                    <Button variant="ghost" size="sm" onClick={() => removeMcpServer(server.id)} className="text-red-600 hover:text-red-700">
-                      <Trash2 className="w-4 h-4" />
-                    </Button>
-                  </div>)}
-              </div>
-            </div>
-          </div>}
-      </div>
+            {/* Knowledge Base */}
+            {activeTab === 'rag' && <div className="space-y-6">
+                <div className="border-b pb-4">
+                  <h2 className="text-2xl font-bold text-[#2D3436]" style={{
+                fontFamily: 'Nunito, sans-serif'
+              }}>
+                    知识库
+                  </h2>
+                  <p className="text-gray-600 mt-1">管理AI助手的知识库资源</p>
+                </div>
+                
+                <div className="bg-gray-50 rounded-lg p-4">
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="font-bold text-[#2D3436]">知识库增强</h3>
+                    <Switch checked={ragEnabled} onCheckedChange={setRagEnabled} />
+                  </div>
+                  
+                  {ragEnabled && <div className="space-y-3">
+                      {ragSources.map(source => <div key={source.id} className="flex items-center justify-between p-3 bg-white rounded-lg border">
+                          <div className="flex-1">
+                            <h4 className="font-medium text-gray-900">{source.name}</h4>
+                            <p className="text-sm text-gray-600">类型: {source.type === 'database' ? '数据库' : 'API'}</p>
+                          </div>
+                          <Switch checked={source.enabled} onCheckedChange={() => toggleRagSource(source.id)} />
+                        </div>)}
+                    </div>}
+                </div>
+              </div>}
 
-      {/* Save Button */}
-      <div className="p-4 bg-white border-t">
-        <div className="max-w-2xl mx-auto">
-          <Button onClick={handleSave} className="w-full bg-[#FF6B6B] hover:bg-[#FF5252] text-white">
-            <Check className="w-4 h-4 mr-2" />
-            保存配置
-          </Button>
+            {/* MCP Configuration */}
+            {activeTab === 'mcp' && <div className="space-y-6">
+                <div className="border-b pb-4">
+                  <h2 className="text-2xl font-bold text-[#2D3436]" style={{
+                fontFamily: 'Nunito, sans-serif'
+              }}>
+                    MCP
+                  </h2>
+                  <p className="text-gray-600 mt-1">管理外部服务集成</p>
+                </div>
+                
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="font-bold text-[#2D3436]">外部服务集成</h3>
+                  <Button onClick={addMcpServer} className="bg-gradient-to-r from-[#FF6B6B] to-[#4ECDC4] hover:opacity-90 text-white">
+                    <Plus className="w-4 h-4 mr-2" />
+                    添加服务
+                  </Button>
+                </div>
+                
+                <div className="space-y-4">
+                  {mcpServers.map(server => <div key={server.id} className="p-4 border border-gray-200 rounded-lg">
+                      <div className="flex items-center justify-between mb-3">
+                        <Input value={server.name} onChange={e => updateMcpServer(server.id, 'name', e.target.value)} placeholder="服务名称" className="flex-1 mr-3" />
+                        <Switch checked={server.enabled} onCheckedChange={() => toggleMcpServer(server.id)} />
+                      </div>
+                      <Input value={server.url} onChange={e => updateMcpServer(server.id, 'url', e.target.value)} placeholder="服务URL" className="mb-3" />
+                      <div className="flex justify-end">
+                        <Button variant="ghost" size="sm" onClick={() => removeMcpServer(server.id)} className="text-red-600 hover:text-red-700 hover:bg-red-50">
+                          <Trash2 className="w-4 h-4 mr-1" />
+                          删除
+                        </Button>
+                      </div>
+                    </div>)}
+                </div>
+              </div>}
+          </div>
         </div>
       </div>
 
