@@ -16,6 +16,24 @@ export default function Companions(props) {
   const {
     navigateTo
   } = $w.utils;
+
+  // 深色模式支持
+  const [darkMode, setDarkMode] = useState(() => {
+    const saved = localStorage.getItem('app-darkMode');
+    return saved === 'true';
+  });
+  useEffect(() => {
+    const handleStorageChange = () => {
+      const savedDarkMode = localStorage.getItem('app-darkMode');
+      setDarkMode(savedDarkMode === 'true');
+    };
+    window.addEventListener('storage', handleStorageChange);
+    window.addEventListener('theme-change', handleStorageChange);
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+      window.removeEventListener('theme-change', handleStorageChange);
+    };
+  }, []);
   const [companions, setCompanions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showAddModal, setShowAddModal] = useState(false);
@@ -202,7 +220,7 @@ export default function Companions(props) {
 
       <div className="max-w-lg mx-auto p-4">
         {/* Stats */}
-        <div className="bg-white rounded-2xl p-4 shadow-lg mb-4">
+        <div className={`rounded-2xl p-4 shadow-lg mb-4 ${darkMode ? 'bg-gray-800' : 'bg-white'}`}>
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="bg-[#4ECDC4]/20 p-3 rounded-xl">
@@ -245,7 +263,7 @@ export default function Companions(props) {
           }}>
                 暂无同伴，点击上方按钮添加
               </p>
-            </div> : filteredCompanions.map(companion => <div key={companion.id} className="bg-white rounded-2xl p-4 shadow-lg hover:shadow-xl transition-shadow">
+            </div> : filteredCompanions.map(companion => <div key={companion.id} className={`rounded-2xl p-4 shadow-lg hover:shadow-xl transition-shadow ${darkMode ? 'bg-gray-800' : 'bg-white'}`}>
                 <div className="flex items-start gap-3">
                   <img src={companion.avatar} alt={companion.name} className="w-14 h-14 rounded-full object-cover border-2 border-[#FF6B6B]" />
                   <div className="flex-1">
@@ -303,7 +321,7 @@ export default function Companions(props) {
 
       {/* Add Companion Modal */}
       {showAddModal && <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-2xl p-6 w-full max-w-md">
+          <div className={`rounded-2xl p-6 w-full max-w-md ${darkMode ? 'bg-gray-800' : 'bg-white'}`}>
             <h2 className="text-xl font-bold mb-4" style={{
           fontFamily: 'Nunito, sans-serif'
         }}>

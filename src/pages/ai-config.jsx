@@ -383,7 +383,7 @@ export default function AIConfig(props) {
     } : server));
   };
   if (loading) {
-    return <div className="min-h-screen bg-[#FFF9F0] flex items-center justify-center">
+    return <div className={`min-h-screen flex items-center justify-center ${darkMode ? 'bg-gray-900' : 'bg-[#FFF9F0]'}`}>
       <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#FF6B6B]"></div>
     </div>;
   }

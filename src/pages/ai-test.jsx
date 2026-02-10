@@ -1,5 +1,5 @@
 // @ts-ignore;
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 // @ts-ignore;
 import { ArrowLeft, Play, CheckCircle, XCircle, Loader2, RefreshCw, Sparkles, MapPin, Calendar, Camera, Shirt, Cloud, BookOpen, Route } from 'lucide-react';
 // @ts-ignore;
@@ -10,6 +10,24 @@ export default function AITest(props) {
   const {
     toast
   } = useToast();
+
+  // 深色模式支持
+  const [darkMode, setDarkMode] = useState(() => {
+    const saved = localStorage.getItem('app-darkMode');
+    return saved === 'true';
+  });
+  useEffect(() => {
+    const handleStorageChange = () => {
+      const savedDarkMode = localStorage.getItem('app-darkMode');
+      setDarkMode(savedDarkMode === 'true');
+    };
+    window.addEventListener('storage', handleStorageChange);
+    window.addEventListener('theme-change', handleStorageChange);
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+      window.removeEventListener('theme-change', handleStorageChange);
+    };
+  }, []);
   const [testResults, setTestResults] = useState([]);
   const [isRunning, setIsRunning] = useState(false);
   const [currentTest, setCurrentTest] = useState(null);
@@ -341,7 +359,7 @@ export default function AITest(props) {
   };
   const passedCount = testResults.filter(r => r.success).length;
   const failedCount = testResults.filter(r => !r.success).length;
-  return <div className="min-h-screen bg-[#FFF9F0] flex flex-col">
+  return <div className={`min-h-screen flex flex-col ${darkMode ? 'bg-gray-900' : 'bg-[#FFF9F0]'}`}>
       {/* Header */}
       <div className="bg-gradient-to-r from-[#FF6B6B] to-[#4ECDC4] p-4 pt-12">
         <div className="max-w-2xl mx-auto flex items-center gap-3">
@@ -361,7 +379,7 @@ export default function AITest(props) {
 
       <div className="flex-1 overflow-y-auto p-4 max-w-2xl mx-auto w-full">
         {/* 测试统计 */}
-        {testResults.length > 0 && <div className="bg-white rounded-xl p-4 shadow-md mb-4">
+        {testResults.length > 0 && <div className={`rounded-xl p-4 shadow-md mb-4 ${darkMode ? 'bg-gray-800' : 'bg-white'}`}>
             <div className="flex items-center justify-between mb-3">
               <h2 className="font-bold text-[#2D3436]" style={{
             fontFamily: 'Nunito, sans-serif'
@@ -379,7 +397,7 @@ export default function AITest(props) {
                 </div>
               </div>
             </div>
-            <div className="w-full bg-gray-200 rounded-full h-2">
+            <div className={`w-full rounded-full h-2 ${darkMode ? 'bg-gray-700' : 'bg-gray-200'}`}>
               <div className="bg-gradient-to-r from-[#4ECDC4] to-[#FF6B6B] h-2 rounded-full transition-all" style={{
             width: `${testResults.length > 0 ? passedCount / testResults.length * 100 : 0}%`
           }}></div>
@@ -391,9 +409,9 @@ export default function AITest(props) {
           {testCases.map(testCase => {
           const testResult = testResults.find(r => r.id === testCase.id);
           const isRunning = currentTest === testCase.id;
-          return <div key={testCase.id} className={`bg-white rounded-xl p-4 shadow-md transition-all ${isRunning ? 'ring-2 ring-[#4ECDC4]' : ''}`}>
+          return <div key={testCase.id} className={`rounded-xl p-4 shadow-md transition-all ${isRunning ? 'ring-2 ring-[#4ECDC4]' : ''} ${darkMode ? 'bg-gray-800' : 'bg-white'}`}>
                 <div className="flex items-start gap-3">
-                  <div className={`p-2 rounded-lg ${testResult?.success ? 'bg-green-100' : testResult?.success === false ? 'bg-red-100' : 'bg-gray-100'}`}>
+                  <div className={`p-2 rounded-lg ${testResult?.success ? 'bg-green-100' : testResult?.success === false ? 'bg-red-100' : darkMode ? 'bg-gray-700' : 'bg-gray-100'}`}>
                     {isRunning ? <Loader2 className="w-5 h-5 text-[#4ECDC4] animate-spin" /> : testResult?.success ? <CheckCircle className="w-5 h-5 text-green-500" /> : testResult?.success === false ? <XCircle className="w-5 h-5 text-red-500" /> : <testCase.icon className="w-5 h-5 text-gray-500" />}
                   </div>
                   <div className="flex-1">
@@ -402,7 +420,7 @@ export default function AITest(props) {
                 }}>
                       {testCase.name}
                     </h3>
-                    <p className="text-sm text-gray-600 mb-2" style={{
+                    <p className={`text-sm mb-2 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`} style={{
                   fontFamily: 'Quicksand, sans-serif'
                 }}>
                       {testCase.description}
