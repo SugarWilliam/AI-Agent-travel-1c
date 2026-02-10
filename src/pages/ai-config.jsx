@@ -52,6 +52,18 @@ export default function AIConfig(props) {
   const [aiConfig, setAiConfig] = useState(null);
   const [loading, setLoading] = useState(true);
 
+  // Agent 编辑模式
+  const [isEditMode, setIsEditMode] = useState(false);
+  const [editingAgent, setEditingAgent] = useState(null);
+  const [agentId, setAgentId] = useState(null);
+
+  // 从数据源加载的配置数据
+  const [availableModels, setAvailableModels] = useState([]);
+  const [availableSkills, setAvailableSkills] = useState([]);
+  const [availableRules, setAvailableRules] = useState([]);
+  const [availableKnowledgeBases, setAvailableKnowledgeBases] = useState([]);
+  const [availableMcpServers, setAvailableMcpServers] = useState([]);
+
   // 尝试使用全局设置，如果没有 Provider 则使用本地状态
   let globalSettings;
   try {
@@ -248,7 +260,19 @@ export default function AIConfig(props) {
     image: true
   });
   useEffect(() => {
-    loadAIConfig();
+    // 检查是否是编辑模式
+    const mode = props.$w.page.dataset.params.mode;
+    const agentIdParam = props.$w.page.dataset.params.agentId;
+    if (mode === 'edit' && agentIdParam) {
+      setIsEditMode(true);
+      setAgentId(agentIdParam);
+      loadAgentConfig(agentIdParam);
+    } else {
+      loadAIConfig();
+    }
+
+    // 加载可用的配置数据
+    loadAvailableConfigurations();
   }, []);
   const loadAIConfig = async () => {
     try {
@@ -281,49 +305,157 @@ export default function AIConfig(props) {
       setLoading(false);
     }
   };
+
+  // 加载 Agent 配置
+  const loadAgentConfig = async id => {
+    try {
+      setLoading(true);
+      const tcb = await props.$w.cloud.getCloudInstance();
+      const db = tcb.database();
+      let agent;
+      try {
+        const result = await db.collection('Agent').doc(id).get();
+        agent = result.data[0];
+      } catch (dbError) {
+        const result = await db.collection('AIConfig').doc(id).get();
+        agent = result.data[0];
+      }
+      if (agent) {
+        setEditingAgent(agent);
+        setSelectedModel(agent.model || 'gpt-4');
+        setRagEnabled(agent.ragEnabled || false);
+        setRagSources(agent.ragSources || []);
+        setRules(agent.rules || []);
+        setMcpServers(agent.mcpServers || []);
+      }
+    } catch (error) {
+      console.error('加载Agent配置失败:', error);
+      toast({
+        title: '加载失败',
+        description: '无法加载Agent配置',
+        variant: 'destructive'
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // 加载可用的配置数据
+  const loadAvailableConfigurations = async () => {
+    try {
+      const tcb = await props.$w.cloud.getCloudInstance();
+      const db = tcb.database();
+
+      // 加载可用模型
+      try {
+        const modelsResult = await db.collection('llm_models').where({
+          status: 'active'
+        }).get();
+        setAvailableModels(modelsResult.data || []);
+      } catch (e) {
+        console.log('加载模型失败，使用默认列表');
+      }
+
+      // 加载可用规则
+      try {
+        const rulesResult = await db.collection('Rule').where({
+          isEnabled: true
+        }).get();
+        setAvailableRules(rulesResult.data || []);
+      } catch (e) {
+        console.log('加载规则失败，使用默认列表');
+      }
+
+      // 加载可用知识库
+      try {
+        const kbResult = await db.collection('KnowledgeBase').where({
+          isEnabled: true
+        }).get();
+        setAvailableKnowledgeBases(kbResult.data || []);
+      } catch (e) {
+        console.log('加载知识库失败，使用默认列表');
+      }
+    } catch (error) {
+      console.error('加载配置数据失败:', error);
+    }
+  };
   const handleBack = () => {
     props.$w.utils.navigateBack();
   };
   const handleSave = async () => {
     try {
-      const configData = {
-        userId: props.$w.auth.currentUser?.userId || 'anonymous',
-        modelId: selectedModel,
-        modelName: aiConfig?.modelName || 'GPT-4',
-        provider: aiConfig?.provider || 'OpenAI',
-        isDefault: true,
-        temperature: 0.7,
-        maxTokens: 4096,
-        systemPrompt: '你是一个智能旅行助手',
-        capabilities: {
-          documentParsing: true,
-          imageRecognition: true,
-          multimodal: true,
-          webScraping: true
-        },
-        ragEnabled: ragEnabled,
-        ragSources: ragSources,
-        agentKnowledgeBases: agentKnowledgeBases
-      };
-      const result = await props.$w.cloud.callFunction({
-        name: 'ai-assistant',
-        data: {
-          action: 'saveAIConfig',
-          data: configData
+      if (isEditMode && editingAgent) {
+        // 保存 Agent 配置
+        const agentData = {
+          ...editingAgent,
+          model: selectedModel,
+          ragEnabled: ragEnabled,
+          ragSources: ragSources.filter(s => s.enabled).map(s => s.name),
+          rules: rules.filter(r => r.enabled).map(r => r.name),
+          mcpServers: mcpServers.filter(s => s.enabled).map(s => ({
+            name: s.name,
+            url: s.url
+          })),
+          updatedAt: new Date().toISOString()
+        };
+        const tcb = await props.$w.cloud.getCloudInstance();
+        const db = tcb.database();
+        try {
+          await db.collection('Agent').doc(agentId).update(agentData);
+        } catch (dbError) {
+          await db.collection('AIConfig').doc(agentId).update(agentData);
         }
-      });
-      if (result.result.success) {
         toast({
-          title: '配置已保存',
-          description: 'AI配置已更新',
+          title: 'Agent已更新',
+          description: `${editingAgent.name} 配置已保存`,
           variant: 'default'
         });
+
+        // 返回列表页
+        setTimeout(() => {
+          props.$w.utils.navigateBack();
+        }, 1000);
       } else {
-        toast({
-          title: '保存失败',
-          description: result.result.error || '请重试',
-          variant: 'destructive'
+        // 保存全局配置
+        const configData = {
+          userId: props.$w.auth.currentUser?.userId || 'anonymous',
+          modelId: selectedModel,
+          modelName: aiConfig?.modelName || 'GPT-4',
+          provider: aiConfig?.provider || 'OpenAI',
+          isDefault: true,
+          temperature: 0.7,
+          maxTokens: 4096,
+          systemPrompt: '你是一个智能旅行助手',
+          capabilities: {
+            documentParsing: true,
+            imageRecognition: true,
+            multimodal: true,
+            webScraping: true
+          },
+          ragEnabled: ragEnabled,
+          ragSources: ragSources,
+          agentKnowledgeBases: agentKnowledgeBases
+        };
+        const result = await props.$w.cloud.callFunction({
+          name: 'ai-assistant',
+          data: {
+            action: 'saveAIConfig',
+            data: configData
+          }
         });
+        if (result.result.success) {
+          toast({
+            title: '配置已保存',
+            description: 'AI配置已更新',
+            variant: 'default'
+          });
+        } else {
+          toast({
+            title: '保存失败',
+            description: result.result.error || '请重试',
+            variant: 'destructive'
+          });
+        }
       }
     } catch (error) {
       console.error('保存配置失败:', error);
@@ -400,7 +532,7 @@ export default function AIConfig(props) {
               <h1 className="text-xl font-bold text-white" style={{
               fontFamily: 'Nunito, sans-serif'
             }}>
-                {t.title}
+                {isEditMode ? `${editingAgent?.name || '编辑 Agent'}` : t.title}
               </h1>
             </div>
           </div>
@@ -466,16 +598,20 @@ export default function AIConfig(props) {
                           <SelectValue placeholder="选择AI模型" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="gpt-4">GPT-4</SelectItem>
-                          <SelectItem value="gpt-4-turbo">GPT-4 Turbo</SelectItem>
-                          <SelectItem value="gpt-3.5-turbo">GPT-3.5 Turbo</SelectItem>
-                          <SelectItem value="claude-3-sonnet">Claude 3 Sonnet</SelectItem>
-                          <SelectItem value="claude-3-opus">Claude 3 Opus</SelectItem>
-                          <SelectItem value="gemini-pro">Gemini Pro</SelectItem>
-                          <SelectItem value="deepseek-chat">DeepSeek Chat</SelectItem>
-                          <SelectItem value="glm-4">GLM-4</SelectItem>
-                          <SelectItem value="moonshot-v1">Kimi (Moonshot)</SelectItem>
-                          <SelectItem value="custom">自定义模型</SelectItem>
+                          {availableModels.length > 0 ? availableModels.map(model => <SelectItem key={model._id} value={model.modelId}>
+                              {model.modelName} {model.isRecommended && '⭐'}
+                            </SelectItem>) : <>
+                              <SelectItem value="gpt-4">GPT-4</SelectItem>
+                              <SelectItem value="gpt-4-turbo">GPT-4 Turbo</SelectItem>
+                              <SelectItem value="gpt-3.5-turbo">GPT-3.5 Turbo</SelectItem>
+                              <SelectItem value="claude-3-sonnet">Claude 3 Sonnet</SelectItem>
+                              <SelectItem value="claude-3-opus">Claude 3 Opus</SelectItem>
+                              <SelectItem value="gemini-pro">Gemini Pro</SelectItem>
+                              <SelectItem value="deepseek-chat">DeepSeek Chat</SelectItem>
+                              <SelectItem value="glm-4">GLM-4</SelectItem>
+                              <SelectItem value="moonshot-v1">Kimi (Moonshot)</SelectItem>
+                              <SelectItem value="custom">自定义模型</SelectItem>
+                            </>}
                         </SelectContent>
                       </Select>
                     </div>
@@ -575,15 +711,39 @@ export default function AIConfig(props) {
                 </div>
                 
                 <div className="grid gap-4">
-                  {rules.map(rule => <div key={rule.id} className={`p-4 rounded-lg hover:shadow-md transition-shadow border ${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'}`}>
-                      <div className="flex items-center justify-between">
-                        <div className="flex-1">
-                          <h4 className={`font-medium text-lg ${darkMode ? 'text-white' : 'text-gray-900'}`}>{rule.name}</h4>
-                          <p className={`mt-1 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>{rule.description}</p>
+                  {isEditMode ?
+              // 编辑模式：显示可用规则供选择
+              availableRules.length > 0 ? availableRules.map(rule => <div key={rule._id} className={`p-4 rounded-lg hover:shadow-md transition-shadow border ${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'}`}>
+                        <div className="flex items-center justify-between">
+                          <div className="flex-1">
+                            <h4 className={`font-medium text-lg ${darkMode ? 'text-white' : 'text-gray-900'}`}>{rule.name}</h4>
+                            <p className={`mt-1 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>{rule.description}</p>
+                          </div>
+                          <Switch checked={rules.some(r => r.name === rule.name)} onCheckedChange={() => {
+                    if (rules.some(r => r.name === rule.name)) {
+                      setRules(rules.filter(r => r.name !== rule.name));
+                    } else {
+                      setRules([...rules, {
+                        name: rule.name,
+                        enabled: true,
+                        description: rule.description
+                      }]);
+                    }
+                  }} />
                         </div>
-                        <Switch checked={rule.enabled} onCheckedChange={() => toggleRule(rule.id)} />
-                      </div>
-                    </div>)}
+                      </div>) : <div className={`p-4 rounded-lg ${darkMode ? 'bg-gray-800' : 'bg-white'}`}>
+                        <p className={darkMode ? 'text-gray-400' : 'text-gray-600'}>暂无可用规则</p>
+                      </div> :
+              // 全局配置模式：显示默认规则
+              rules.map(rule => <div key={rule.id} className={`p-4 rounded-lg hover:shadow-md transition-shadow border ${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'}`}>
+                        <div className="flex items-center justify-between">
+                          <div className="flex-1">
+                            <h4 className={`font-medium text-lg ${darkMode ? 'text-white' : 'text-gray-900'}`}>{rule.name}</h4>
+                            <p className={`mt-1 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>{rule.description}</p>
+                          </div>
+                          <Switch checked={rule.enabled} onCheckedChange={() => toggleRule(rule.id)} />
+                        </div>
+                      </div>)}
                 </div>
               </div>}
 
@@ -625,29 +785,57 @@ export default function AIConfig(props) {
                   </div>
                   
                   {ragEnabled && <div className="space-y-3">
-                      {ragSources.map(source => <div key={source.id} className={`flex items-start justify-between p-4 rounded-lg border ${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'}`}>
-                          <div className="flex-1">
-                            <div className="flex items-center gap-2 mb-2">
-                              <h4 className={`font-medium ${darkMode ? 'text-white' : 'text-gray-900'}`}>{source.name}</h4>
-                              <span className={`px-2 py-0.5 rounded text-xs ${source.type === 'database' ? 'bg-blue-100 text-blue-700' : 'bg-green-100 text-green-700'}`}>
-                                {source.type === 'database' ? '数据库' : 'API'}
-                              </span>
+                      {isEditMode ?
+                // 编辑模式：显示可用知识库供选择
+                availableKnowledgeBases.length > 0 ? availableKnowledgeBases.map(kb => <div key={kb._id} className={`flex items-start justify-between p-4 rounded-lg border ${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'}`}>
+                            <div className="flex-1">
+                              <div className="flex items-center gap-2 mb-2">
+                                <h4 className={`font-medium ${darkMode ? 'text-white' : 'text-gray-900'}`}>{kb.name}</h4>
+                                <span className={`px-2 py-0.5 rounded text-xs ${kb.type === 'database' ? 'bg-blue-100 text-blue-700' : 'bg-green-100 text-green-700'}`}>
+                                  {kb.type === 'database' ? '数据库' : 'API'}
+                                </span>
+                              </div>
+                              <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>{kb.description}</p>
                             </div>
-                            <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>{source.description}</p>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <Switch checked={source.enabled} onCheckedChange={() => toggleRagSource(source.id)} />
-                            <Button variant="ghost" size="sm" onClick={() => {
+                            <Switch checked={ragSources.some(s => s.name === kb.name)} onCheckedChange={() => {
+                    if (ragSources.some(s => s.name === kb.name)) {
+                      setRagSources(ragSources.filter(s => s.name !== kb.name));
+                    } else {
+                      setRagSources([...ragSources, {
+                        name: kb.name,
+                        enabled: true,
+                        type: kb.type,
+                        description: kb.description
+                      }]);
+                    }
+                  }} />
+                          </div>) : <div className={`p-4 rounded-lg ${darkMode ? 'bg-gray-800' : 'bg-white'}`}>
+                            <p className={darkMode ? 'text-gray-400' : 'text-gray-600'}>暂无可用知识库</p>
+                          </div> :
+                // 全局配置模式：显示默认知识库
+                ragSources.map(source => <div key={source.id} className={`flex items-start justify-between p-4 rounded-lg border ${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'}`}>
+                            <div className="flex-1">
+                              <div className="flex items-center gap-2 mb-2">
+                                <h4 className={`font-medium ${darkMode ? 'text-white' : 'text-gray-900'}`}>{source.name}</h4>
+                                <span className={`px-2 py-0.5 rounded text-xs ${source.type === 'database' ? 'bg-blue-100 text-blue-700' : 'bg-green-100 text-green-700'}`}>
+                                  {source.type === 'database' ? '数据库' : 'API'}
+                                </span>
+                              </div>
+                              <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>{source.description}</p>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <Switch checked={source.enabled} onCheckedChange={() => toggleRagSource(source.id)} />
+                              <Button variant="ghost" size="sm" onClick={() => {
                       setRagSources(ragSources.filter(s => s.id !== source.id));
                       toast({
                         title: '知识库已删除',
                         description: `${source.name} 已从知识库列表中移除`
                       });
                     }} className={`text-red-600 hover:text-red-700 ${darkMode ? 'hover:bg-red-900/20' : 'hover:bg-red-50'}`}>
-                              <Trash2 className="w-4 h-4" />
-                            </Button>
-                          </div>
-                        </div>)}
+                                <Trash2 className="w-4 h-4" />
+                              </Button>
+                            </div>
+                          </div>)}
                     </div>}
                 </div>
                 
@@ -705,22 +893,34 @@ export default function AIConfig(props) {
                 </div>
                 
                 <div className="space-y-4">
-                  {mcpServers.map(server => <div key={server.id} className={`p-4 rounded-lg border ${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'}`}>
-                      <div className="flex items-center justify-between mb-3">
-                        <Input value={server.name} onChange={e => updateMcpServer(server.id, 'name', e.target.value)} placeholder="服务名称" className={`flex-1 mr-3 ${darkMode ? 'bg-gray-700 border-gray-600 text-white' : ''}`} />
-                        <Switch checked={server.enabled} onCheckedChange={() => toggleMcpServer(server.id)} />
-                      </div>
-                      <Input value={server.url} onChange={e => updateMcpServer(server.id, 'url', e.target.value)} placeholder="服务URL" className={`mb-3 ${darkMode ? 'bg-gray-700 border-gray-600 text-white' : ''}`} />
-                      {server.description && <p className={`text-sm mb-3 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                          {server.description}
-                        </p>}
-                      <div className="flex justify-end">
-                        <Button variant="ghost" size="sm" onClick={() => removeMcpServer(server.id)} className={`text-red-600 hover:text-red-700 ${darkMode ? 'hover:bg-red-900/20' : 'hover:bg-red-50'}`}>
-                          <Trash2 className="w-4 h-4 mr-1" />
-                          {language === 'zh' ? '删除' : 'Delete'}
-                        </Button>
-                      </div>
-                    </div>)}
+                  {isEditMode ?
+              // 编辑模式：显示可用 MCP 服务器供选择
+              mcpServers.map((server, index) => <div key={index} className={`p-4 rounded-lg border ${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'}`}>
+                        <div className="flex items-center justify-between mb-3">
+                          <div className="flex-1">
+                            <h4 className={`font-medium ${darkMode ? 'text-white' : 'text-gray-900'}`}>{server.name}</h4>
+                            <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>{server.url}</p>
+                          </div>
+                          <Switch checked={server.enabled} onCheckedChange={() => toggleMcpServer(index)} />
+                        </div>
+                      </div>) :
+              // 全局配置模式：显示可编辑的 MCP 服务器
+              mcpServers.map(server => <div key={server.id} className={`p-4 rounded-lg border ${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'}`}>
+                        <div className="flex items-center justify-between mb-3">
+                          <Input value={server.name} onChange={e => updateMcpServer(server.id, 'name', e.target.value)} placeholder="服务名称" className={`flex-1 mr-3 ${darkMode ? 'bg-gray-700 border-gray-600 text-white' : ''}`} />
+                          <Switch checked={server.enabled} onCheckedChange={() => toggleMcpServer(server.id)} />
+                        </div>
+                        <Input value={server.url} onChange={e => updateMcpServer(server.id, 'url', e.target.value)} placeholder="服务URL" className={`mb-3 ${darkMode ? 'bg-gray-700 border-gray-600 text-white' : ''}`} />
+                        {server.description && <p className={`text-sm mb-3 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                            {server.description}
+                          </p>}
+                        <div className="flex justify-end">
+                          <Button variant="ghost" size="sm" onClick={() => removeMcpServer(server.id)} className={`text-red-600 hover:text-red-700 ${darkMode ? 'hover:bg-red-900/20' : 'hover:bg-red-50'}`}>
+                            <Trash2 className="w-4 h-4 mr-1" />
+                            {language === 'zh' ? '删除' : 'Delete'}
+                          </Button>
+                        </div>
+                      </div>)}
                 </div>
               </div>}
           </div>

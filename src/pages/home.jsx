@@ -74,13 +74,19 @@ export default function Home(props) {
     const saved = localStorage.getItem('app-language');
     return saved || 'zh';
   });
+  const [localDarkMode, setLocalDarkMode] = useState(() => {
+    const saved = localStorage.getItem('app-darkMode');
+    return saved === 'true';
+  });
 
   // 同步 localStorage 的变化到本地状态
   useEffect(() => {
     if (!globalSettings) {
       const handleStorageChange = () => {
         const savedLanguage = localStorage.getItem('app-language');
+        const savedDarkMode = localStorage.getItem('app-darkMode');
         if (savedLanguage) setLocalLanguage(savedLanguage);
+        if (savedDarkMode) setLocalDarkMode(savedDarkMode === 'true');
       };
       window.addEventListener('storage', handleStorageChange);
       return () => window.removeEventListener('storage', handleStorageChange);
@@ -94,13 +100,22 @@ export default function Home(props) {
         const savedLanguage = localStorage.getItem('app-language');
         if (savedLanguage) setLocalLanguage(savedLanguage);
       };
+      const handleThemeChange = () => {
+        const savedDarkMode = localStorage.getItem('app-darkMode');
+        if (savedDarkMode) setLocalDarkMode(savedDarkMode === 'true');
+      };
       window.addEventListener('language-change', handleLanguageChange);
-      return () => window.removeEventListener('language-change', handleLanguageChange);
+      window.addEventListener('theme-change', handleThemeChange);
+      return () => {
+        window.removeEventListener('language-change', handleLanguageChange);
+        window.removeEventListener('theme-change', handleThemeChange);
+      };
     }
   }, [globalSettings]);
 
   // 使用全局设置或本地状态
   const language = globalSettings?.language || localLanguage;
+  const darkMode = globalSettings?.darkMode || localDarkMode;
   const t = i18n[language] || i18n.zh;
   const [plans, setPlans] = useState([{
     id: '1',
@@ -175,19 +190,19 @@ export default function Home(props) {
   const getStatusColor = status => {
     switch (status) {
       case 'planning':
-        return 'bg-yellow-100 text-yellow-800';
+        return darkMode ? 'bg-yellow-900/50 text-yellow-300' : 'bg-yellow-100 text-yellow-800';
       case 'confirmed':
-        return 'bg-green-100 text-green-800';
+        return darkMode ? 'bg-green-900/50 text-green-300' : 'bg-green-100 text-green-800';
       case 'completed':
-        return 'bg-blue-100 text-blue-800';
+        return darkMode ? 'bg-blue-900/50 text-blue-300' : 'bg-blue-100 text-blue-800';
       default:
-        return 'bg-gray-100 text-gray-800';
+        return darkMode ? 'bg-gray-700 text-gray-300' : 'bg-gray-100 text-gray-800';
     }
   };
   const getStatusText = status => {
     return t.status[status] || t.status.unknown;
   };
-  return <div className="min-h-screen bg-[#FFF9F0] pb-24">
+  return <div className={`min-h-screen pb-24 ${darkMode ? 'bg-gray-900' : 'bg-[#FFF9F0]'}`}>
       {/* Header */}
       <div className="bg-gradient-to-r from-[#FF6B6B] to-[#4ECDC4] p-6 pt-12">
         <div className="max-w-lg mx-auto flex items-center justify-between">
@@ -209,9 +224,9 @@ export default function Home(props) {
 
       {/* Search Bar */}
       <div className="max-w-lg mx-auto px-4 -mt-6">
-        <div className="bg-white rounded-2xl shadow-lg p-4 flex items-center gap-3">
-          <Search className="w-5 h-5 text-gray-400" />
-          <Input placeholder={t.searchPlaceholder} value={searchQuery} onChange={e => setSearchQuery(e.target.value)} className="border-0 focus-visible:ring-0 text-base" />
+        <div className={`rounded-2xl shadow-lg p-4 flex items-center gap-3 ${darkMode ? 'bg-gray-800' : 'bg-white'}`}>
+          <Search className={`w-5 h-5 ${darkMode ? 'text-gray-400' : 'text-gray-400'}`} />
+          <Input placeholder={t.searchPlaceholder} value={searchQuery} onChange={e => setSearchQuery(e.target.value)} className={`border-0 focus-visible:ring-0 text-base ${darkMode ? 'text-white' : ''}`} />
         </div>
       </div>
 
@@ -234,7 +249,7 @@ export default function Home(props) {
 
       {/* Plans List */}
       <div className="max-w-lg mx-auto px-4 mt-8">
-        <h2 className="text-xl font-bold text-[#2D3436] mb-4" style={{
+        <h2 className={`text-xl font-bold mb-4 ${darkMode ? 'text-white' : 'text-[#2D3436]'}`} style={{
         fontFamily: 'Nunito, sans-serif'
       }}>
           {t.myPlans} ({filteredPlans.length})
@@ -242,13 +257,13 @@ export default function Home(props) {
         
         {filteredPlans.length === 0 ? <div className="text-center py-12">
             <div className="text-6xl mb-4">🗺️</div>
-            <p className="text-gray-500" style={{
+            <p className={darkMode ? 'text-gray-400' : 'text-gray-500'} style={{
           fontFamily: 'Quicksand, sans-serif'
         }}>
               {t.noPlans}
             </p>
           </div> : <div className="space-y-4">
-            {filteredPlans.map(plan => <div key={plan.id} onClick={() => handleViewPlan(plan.id)} className="bg-white rounded-2xl shadow-md overflow-hidden cursor-pointer hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
+            {filteredPlans.map(plan => <div key={plan.id} onClick={() => handleViewPlan(plan.id)} className={`rounded-2xl shadow-md overflow-hidden cursor-pointer hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 ${darkMode ? 'bg-gray-800' : 'bg-white'}`}>
                 <div className="relative h-40">
                   <img src={plan.coverImage} alt={plan.title} className="w-full h-full object-cover" />
                   <div className="absolute top-3 right-3">
@@ -266,14 +281,14 @@ export default function Home(props) {
                 </div>
                 
                 <div className="p-4">
-                  <div className="flex items-center gap-2 text-gray-600 mb-3" style={{
+                  <div className={`flex items-center gap-2 mb-3 ${darkMode ? 'text-gray-300' : 'text-gray-600'}`} style={{
               fontFamily: 'Quicksand, sans-serif'
             }}>
                     <MapPin className="w-4 h-4 text-[#FF6B6B]" />
                     <span className="text-sm">{plan.destination}</span>
                   </div>
                   
-                  <div className="flex items-center gap-4 text-gray-600 mb-3" style={{
+                  <div className={`flex items-center gap-4 mb-3 ${darkMode ? 'text-gray-300' : 'text-gray-600'}`} style={{
               fontFamily: 'Quicksand, sans-serif'
             }}>
                     <div className="flex items-center gap-1">
@@ -286,13 +301,13 @@ export default function Home(props) {
                     </div>
                   </div>
                   
-                  {plan.aiSuggestions && plan.aiSuggestions.length > 0 && <div className="bg-[#FFE66D]/20 rounded-lg p-3 mb-3">
+                  {plan.aiSuggestions && plan.aiSuggestions.length > 0 && <div className={`rounded-lg p-3 mb-3 ${darkMode ? 'bg-gray-700/30' : 'bg-[#FFE66D]/20'}`}>
                       <div className="flex items-center gap-2 mb-2">
                         <Sparkles className="w-4 h-4 text-[#FF6B6B]" />
-                        <span className="text-sm font-semibold text-[#2D3436]">{t.aiRecommendations}</span>
+                        <span className={`text-sm font-semibold ${darkMode ? 'text-white' : 'text-[#2D3436]'}`}>{t.aiRecommendations}</span>
                       </div>
                       <div className="flex flex-wrap gap-2">
-                        {plan.aiSuggestions.slice(0, 3).map((suggestion, idx) => <span key={idx} className="px-2 py-1 bg-white rounded-md text-xs text-gray-700">
+                        {plan.aiSuggestions.slice(0, 3).map((suggestion, idx) => <span key={idx} className={`px-2 py-1 rounded-md text-xs ${darkMode ? 'bg-gray-700 text-gray-300' : 'bg-white text-gray-700'}`}>
                             {suggestion}
                           </span>)}
                       </div>
