@@ -90,14 +90,40 @@ export default function AIConfig(props) {
   }]);
   const [mcpServers, setMcpServers] = useState([{
     id: 1,
-    name: '天气服务',
-    url: 'https://api.weather.com',
-    enabled: true
+    name: '高德地图',
+    url: 'https://mcp.amap.com',
+    enabled: true,
+    description: '提供地图导航、路线规划、POI搜索等服务'
   }, {
     id: 2,
+    name: '携程',
+    url: 'https://mcp.ctrip.com',
+    enabled: true,
+    description: '提供酒店预订、机票查询、景点门票等服务'
+  }, {
+    id: 3,
+    name: '飞猪',
+    url: 'https://mcp.fliggy.com',
+    enabled: true,
+    description: '提供旅行产品、度假套餐、机票酒店等服务'
+  }, {
+    id: 4,
+    name: '马蜂窝',
+    url: 'https://mcp.mafengwo.cn',
+    enabled: true,
+    description: '提供旅游攻略、游记分享、景点推荐等服务'
+  }, {
+    id: 5,
+    name: '天气服务',
+    url: 'https://api.weather.com',
+    enabled: true,
+    description: '提供实时天气、天气预报、气象预警等服务'
+  }, {
+    id: 6,
     name: '汇率转换',
     url: 'https://api.exchange.com',
-    enabled: true
+    enabled: true,
+    description: '提供实时汇率、货币换算、汇率查询等服务'
   }]);
   const [outputFormats, setOutputFormats] = useState({
     document: true,
@@ -299,11 +325,11 @@ export default function AIConfig(props) {
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                   <div className="space-y-4">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                      <label className={`block text-sm font-medium mb-2 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
                         选择AI模型
                       </label>
                       <Select value={selectedModel} onValueChange={setSelectedModel}>
-                        <SelectTrigger className="w-full">
+                        <SelectTrigger className={`w-full ${darkMode ? 'bg-gray-700 border-gray-600 text-white' : ''}`}>
                           <SelectValue placeholder="选择AI模型" />
                         </SelectTrigger>
                         <SelectContent>
@@ -313,38 +339,41 @@ export default function AIConfig(props) {
                           <SelectItem value="claude-3-sonnet">Claude 3 Sonnet</SelectItem>
                           <SelectItem value="claude-3-opus">Claude 3 Opus</SelectItem>
                           <SelectItem value="gemini-pro">Gemini Pro</SelectItem>
+                          <SelectItem value="deepseek-chat">DeepSeek Chat</SelectItem>
+                          <SelectItem value="glm-4">GLM-4</SelectItem>
+                          <SelectItem value="moonshot-v1">Kimi (Moonshot)</SelectItem>
                           <SelectItem value="custom">自定义模型</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
                     
-                    {selectedModel === 'custom' && <div className="space-y-3 p-4 bg-gray-50 rounded-lg">
+                    {selectedModel === 'custom' && <div className={`space-y-3 p-4 rounded-lg ${darkMode ? 'bg-gray-700' : 'bg-gray-50'}`}>
                         <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-2">
-                            自定义模型ID
+                          <label className={`block text-sm font-medium mb-2 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                            {language === 'zh' ? '自定义模型ID' : 'Custom Model ID'}
                           </label>
-                          <Input placeholder="输入自定义模型ID，如: gpt-4-custom" value={aiConfig?.modelId || ''} onChange={e => setAiConfig(prev => ({
+                          <Input placeholder={language === 'zh' ? '输入自定义模型ID，如: gpt-4-custom' : 'Enter custom model ID, e.g., gpt-4-custom'} value={aiConfig?.modelId || ''} onChange={e => setAiConfig(prev => ({
                       ...prev,
                       modelId: e.target.value
-                    }))} />
+                    }))} className={darkMode ? 'bg-gray-800 border-gray-600 text-white' : ''} />
                         </div>
                         <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-2">
+                          <label className={`block text-sm font-medium mb-2 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
                             API Key
                           </label>
-                          <Input type="password" placeholder="输入API密钥" value={aiConfig?.apiKey || ''} onChange={e => setAiConfig(prev => ({
+                          <Input type="password" placeholder={language === 'zh' ? '输入API密钥' : 'Enter API Key'} value={aiConfig?.apiKey || ''} onChange={e => setAiConfig(prev => ({
                       ...prev,
                       apiKey: e.target.value
-                    }))} />
+                    }))} className={darkMode ? 'bg-gray-800 border-gray-600 text-white' : ''} />
                         </div>
                         <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-2">
-                            API Endpoint (可选)
+                          <label className={`block text-sm font-medium mb-2 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                            API Endpoint ({language === 'zh' ? '可选' : 'Optional'})
                           </label>
-                          <Input placeholder="输入API端点，如: https://api.openai.com/v1" value={aiConfig?.apiEndpoint || ''} onChange={e => setAiConfig(prev => ({
+                          <Input placeholder={language === 'zh' ? '输入API端点，如: https://api.openai.com/v1' : 'Enter API endpoint, e.g., https://api.openai.com/v1'} value={aiConfig?.apiEndpoint || ''} onChange={e => setAiConfig(prev => ({
                       ...prev,
                       apiEndpoint: e.target.value
-                    }))} />
+                    }))} className={darkMode ? 'bg-gray-800 border-gray-600 text-white' : ''} />
                         </div>
                       </div>}
                   </div>
@@ -358,12 +387,25 @@ export default function AIConfig(props) {
             {/* Skills Management */}
             {activeTab === 'skills' && <div className="space-y-6">
                 <div className={`border-b pb-4 ${darkMode ? 'border-gray-700' : ''}`}>
-                  <h2 className={`text-2xl font-bold ${darkMode ? 'text-white' : 'text-[#2D3436]'}`} style={{
-                fontFamily: 'Nunito, sans-serif'
-              }}>
-                    {t.skills}
-                  </h2>
-                  <p className={`mt-1 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>{t.skillsDesc}</p>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h2 className={`text-2xl font-bold ${darkMode ? 'text-white' : 'text-[#2D3436]'}`} style={{
+                    fontFamily: 'Nunito, sans-serif'
+                  }}>
+                        {t.skills}
+                      </h2>
+                      <p className={`mt-1 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>{t.skillsDesc}</p>
+                    </div>
+                    <Button onClick={() => {
+                  toast({
+                    title: '新增技能',
+                    description: '请在下方技能管理区域添加新技能'
+                  });
+                }} className="bg-gradient-to-r from-[#FF6B6B] to-[#4ECDC4] hover:opacity-90 text-white">
+                      <Plus className="w-4 h-4 mr-2" />
+                      新增技能
+                    </Button>
+                  </div>
                 </div>
                 <SkillManager $w={props.$w} />
               </div>}
@@ -371,20 +413,40 @@ export default function AIConfig(props) {
             {/* Rules Configuration */}
             {activeTab === 'rules' && <div className="space-y-6">
                 <div className={`border-b pb-4 ${darkMode ? 'border-gray-700' : ''}`}>
-                  <h2 className={`text-2xl font-bold ${darkMode ? 'text-white' : 'text-[#2D3436]'}`} style={{
-                fontFamily: 'Nunito, sans-serif'
-              }}>
-                    {t.rules}
-                  </h2>
-                  <p className={`mt-1 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>{t.rulesDesc}</p>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h2 className={`text-2xl font-bold ${darkMode ? 'text-white' : 'text-[#2D3436]'}`} style={{
+                    fontFamily: 'Nunito, sans-serif'
+                  }}>
+                        {t.rules}
+                      </h2>
+                      <p className={`mt-1 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>{t.rulesDesc}</p>
+                    </div>
+                    <Button onClick={() => {
+                  const newRule = {
+                    id: Date.now(),
+                    name: '新规则',
+                    enabled: true,
+                    description: '请输入规则描述'
+                  };
+                  setRules([...rules, newRule]);
+                  toast({
+                    title: '规则已添加',
+                    description: '新规则已成功添加到规则列表'
+                  });
+                }} className="bg-gradient-to-r from-[#FF6B6B] to-[#4ECDC4] hover:opacity-90 text-white">
+                      <Plus className="w-4 h-4 mr-2" />
+                      新增规则
+                    </Button>
+                  </div>
                 </div>
                 
                 <div className="grid gap-4">
-                  {rules.map(rule => <div key={rule.id} className="p-4 border border-gray-200 rounded-lg hover:shadow-md transition-shadow">
+                  {rules.map(rule => <div key={rule.id} className={`p-4 rounded-lg hover:shadow-md transition-shadow border ${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'}`}>
                       <div className="flex items-center justify-between">
                         <div className="flex-1">
-                          <h4 className="font-medium text-gray-900 text-lg">{rule.name}</h4>
-                          <p className="text-gray-600 mt-1">{rule.description}</p>
+                          <h4 className={`font-medium text-lg ${darkMode ? 'text-white' : 'text-gray-900'}`}>{rule.name}</h4>
+                          <p className={`mt-1 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>{rule.description}</p>
                         </div>
                         <Switch checked={rule.enabled} onCheckedChange={() => toggleRule(rule.id)} />
                       </div>
@@ -395,12 +457,32 @@ export default function AIConfig(props) {
             {/* Knowledge Base */}
             {activeTab === 'rag' && <div className="space-y-6">
                 <div className={`border-b pb-4 ${darkMode ? 'border-gray-700' : ''}`}>
-                  <h2 className={`text-2xl font-bold ${darkMode ? 'text-white' : 'text-[#2D3436]'}`} style={{
-                fontFamily: 'Nunito, sans-serif'
-              }}>
-                    {t.rag}
-                  </h2>
-                  <p className={`mt-1 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>{t.ragDesc}</p>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h2 className={`text-2xl font-bold ${darkMode ? 'text-white' : 'text-[#2D3436]'}`} style={{
+                    fontFamily: 'Nunito, sans-serif'
+                  }}>
+                        {t.rag}
+                      </h2>
+                      <p className={`mt-1 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>{t.ragDesc}</p>
+                    </div>
+                    <Button onClick={() => {
+                  const newSource = {
+                    id: Date.now(),
+                    name: '新知识库',
+                    enabled: true,
+                    type: 'database'
+                  };
+                  setRagSources([...ragSources, newSource]);
+                  toast({
+                    title: '知识库已添加',
+                    description: '新知识库已成功添加到知识库列表'
+                  });
+                }} className="bg-gradient-to-r from-[#FF6B6B] to-[#4ECDC4] hover:opacity-90 text-white">
+                      <Plus className="w-4 h-4 mr-2" />
+                      新增知识库
+                    </Button>
+                  </div>
                 </div>
                 
                 <div className={`rounded-lg p-4 ${darkMode ? 'bg-gray-700' : 'bg-gray-50'}`}>
@@ -433,24 +515,27 @@ export default function AIConfig(props) {
                 </div>
                 
                 <div className="flex items-center justify-between mb-4">
-                  <h3 className={`font-bold ${darkMode ? 'text-white' : 'text-[#2D3436]'}`}>外部服务集成</h3>
+                  <h3 className={`font-bold ${darkMode ? 'text-white' : 'text-[#2D3436]'}`}>{language === 'zh' ? '外部服务集成' : 'External Service Integration'}</h3>
                   <Button onClick={addMcpServer} className="bg-gradient-to-r from-[#FF6B6B] to-[#4ECDC4] hover:opacity-90 text-white">
                     <Plus className="w-4 h-4 mr-2" />
-                    添加服务
+                    {language === 'zh' ? '添加服务' : 'Add Service'}
                   </Button>
                 </div>
                 
                 <div className="space-y-4">
-                  {mcpServers.map(server => <div key={server.id} className="p-4 border border-gray-200 rounded-lg">
+                  {mcpServers.map(server => <div key={server.id} className={`p-4 rounded-lg border ${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'}`}>
                       <div className="flex items-center justify-between mb-3">
-                        <Input value={server.name} onChange={e => updateMcpServer(server.id, 'name', e.target.value)} placeholder="服务名称" className="flex-1 mr-3" />
+                        <Input value={server.name} onChange={e => updateMcpServer(server.id, 'name', e.target.value)} placeholder="服务名称" className={`flex-1 mr-3 ${darkMode ? 'bg-gray-700 border-gray-600 text-white' : ''}`} />
                         <Switch checked={server.enabled} onCheckedChange={() => toggleMcpServer(server.id)} />
                       </div>
-                      <Input value={server.url} onChange={e => updateMcpServer(server.id, 'url', e.target.value)} placeholder="服务URL" className="mb-3" />
+                      <Input value={server.url} onChange={e => updateMcpServer(server.id, 'url', e.target.value)} placeholder="服务URL" className={`mb-3 ${darkMode ? 'bg-gray-700 border-gray-600 text-white' : ''}`} />
+                      {server.description && <p className={`text-sm mb-3 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                          {server.description}
+                        </p>}
                       <div className="flex justify-end">
-                        <Button variant="ghost" size="sm" onClick={() => removeMcpServer(server.id)} className="text-red-600 hover:text-red-700 hover:bg-red-50">
+                        <Button variant="ghost" size="sm" onClick={() => removeMcpServer(server.id)} className={`text-red-600 hover:text-red-700 ${darkMode ? 'hover:bg-red-900/20' : 'hover:bg-red-50'}`}>
                           <Trash2 className="w-4 h-4 mr-1" />
-                          删除
+                          {language === 'zh' ? '删除' : 'Delete'}
                         </Button>
                       </div>
                     </div>)}
