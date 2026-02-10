@@ -6,6 +6,7 @@ import { Plus, Search, MapPin, Calendar, DollarSign, Sparkles, Download, Trash2,
 import { useToast, Button, Input } from '@/components/ui';
 
 import TabBar from '@/components/TabBar';
+import { LanguageThemeToggle } from '@/components/GlobalSettings';
 export default function Home(props) {
   const {
     toast
@@ -120,7 +121,7 @@ export default function Home(props) {
               让AI帮你规划完美旅程
             </p>
           </div>
-
+          <LanguageThemeToggle />
         </div>
       </div>
 

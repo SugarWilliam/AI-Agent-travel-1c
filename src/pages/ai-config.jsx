@@ -1,13 +1,14 @@
 // @ts-ignore;
 import React, { useState, useEffect } from 'react';
 // @ts-ignore;
-import { ArrowLeft, Settings, Brain, Database, FileText, Image as ImageIcon, Link2, ChevronRight, Plus, Trash2, Check, Zap, Code, Languages, Moon, Sun } from 'lucide-react';
+import { ArrowLeft, Settings, Brain, Database, FileText, Image as ImageIcon, Link2, ChevronRight, Plus, Trash2, Check, Zap, Code, Languages, Sun, Moon } from 'lucide-react';
 // @ts-ignore;
 import { useToast, Button, Input, Textarea, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Switch } from '@/components/ui';
 
 import TabBar from '@/components/TabBar';
 import { ModelManager } from '@/components/ModelManager';
 import { SkillManager } from '@/components/SkillManager';
+import { useGlobalSettings } from '@/components/GlobalSettings';
 
 // 语言配置
 const translations = {
@@ -50,8 +51,10 @@ export default function AIConfig(props) {
   const [selectedModel, setSelectedModel] = useState('gpt-4');
   const [aiConfig, setAiConfig] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [language, setLanguage] = useState('zh');
-  const [darkMode, setDarkMode] = useState(false);
+  const {
+    language,
+    darkMode
+  } = useGlobalSettings();
   const t = translations[language];
 
   // 原有的状态管理
@@ -386,14 +389,6 @@ export default function AIConfig(props) {
                 {t.title}
               </h1>
             </div>
-          </div>
-          <div className="flex items-center gap-2">
-            <button onClick={() => setLanguage(language === 'zh' ? 'en' : 'zh')} className="bg-white/90 backdrop-blur-sm rounded-full p-2 shadow-lg hover:scale-105 transition-transform" title={language === 'zh' ? 'Switch to English' : '切换到中文'}>
-              <Languages className="w-5 h-5 text-[#2D3436]" />
-            </button>
-            <button onClick={() => setDarkMode(!darkMode)} className="bg-white/90 backdrop-blur-sm rounded-full p-2 shadow-lg hover:scale-105 transition-transform" title={darkMode ? 'Light Mode' : 'Dark Mode'}>
-              {darkMode ? <Sun className="w-5 h-5 text-[#2D3436]" /> : <Moon className="w-5 h-5 text-[#2D3436]" />}
-            </button>
           </div>
         </div>
       </div>

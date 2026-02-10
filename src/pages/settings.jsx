@@ -1,28 +1,19 @@
 // @ts-ignore;
 import React, { useState } from 'react';
 // @ts-ignore;
-import { ArrowLeft, Bell, Lock, Database, HelpCircle, Info, ChevronRight, Moon, Sun } from 'lucide-react';
+import { ArrowLeft, Bell, Lock, Database, HelpCircle, Info, ChevronRight } from 'lucide-react';
 // @ts-ignore;
-import { useToast, Button, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Switch } from '@/components/ui';
+import { useToast, Button, Switch, Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/ui';
 
 import TabBar from '@/components/TabBar';
 export default function Settings(props) {
   const {
     toast
   } = useToast();
-  const [darkMode, setDarkMode] = useState(false);
   const [notifications, setNotifications] = useState(true);
   const [autoSync, setAutoSync] = useState(true);
-  const [language, setLanguage] = useState('zh-CN');
   const handleBack = () => {
     props.$w.utils.navigateBack();
-  };
-  const handleToggleDarkMode = () => {
-    setDarkMode(!darkMode);
-    toast({
-      title: darkMode ? '已切换到浅色模式' : '已切换到深色模式',
-      variant: 'default'
-    });
   };
   const handleToggleNotifications = () => {
     setNotifications(!notifications);
@@ -35,13 +26,6 @@ export default function Settings(props) {
     setAutoSync(!autoSync);
     toast({
       title: autoSync ? '自动同步已关闭' : '自动同步已开启',
-      variant: 'default'
-    });
-  };
-  const handleLanguageChange = value => {
-    setLanguage(value);
-    toast({
-      title: '语言设置已更新',
       variant: 'default'
     });
   };
@@ -60,33 +44,6 @@ export default function Settings(props) {
     });
   };
   const settingsGroups = [{
-    title: '通用设置',
-    items: [{
-      id: 'language',
-      label: '语言',
-      icon: null,
-      type: 'select',
-      value: language,
-      onChange: handleLanguageChange,
-      options: [{
-        value: 'zh-CN',
-        label: '简体中文'
-      }, {
-        value: 'en-US',
-        label: 'English'
-      }, {
-        value: 'ja-JP',
-        label: '日本語'
-      }]
-    }, {
-      id: 'darkMode',
-      label: '深色模式',
-      icon: darkMode ? Moon : Sun,
-      type: 'switch',
-      value: darkMode,
-      onChange: handleToggleDarkMode
-    }]
-  }, {
     title: '通知与同步',
     items: [{
       id: 'notifications',

@@ -4,3 +4,4 @@ export * from './ItineraryNodeEditor.jsx';
 export * from './ShareModal.jsx';
 export * from './ModelManager.jsx';
 export * from './SkillManager.jsx';
+export * from './GlobalSettings.jsx';
