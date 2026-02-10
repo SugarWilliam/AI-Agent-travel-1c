@@ -940,7 +940,8 @@ export default function AgentEdit(props) {
             )}
 
             {/* MCP 标签页 */}
-            {activeTab === 'mcp' && <div className={`space-y-6 ${darkMode ? 'bg-gray-800 rounded-xl p-6' : 'bg-white rounded-xl p-6 shadow-sm'}`}>
+            {activeTab === 'mcp' && (
+              <div className={`space-y-6 ${darkMode ? 'bg-gray-800 rounded-xl p-6' : 'bg-white rounded-xl p-6 shadow-sm'}`}>
                 <div className="flex items-center gap-3 mb-6">
                   <Code className={`w-6 h-6 ${darkMode ? 'text-[#4ECDC4]' : 'text-[#FF6B6B]'}`} />
                   <h2 className={`text-xl font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>
@@ -961,7 +962,8 @@ export default function AgentEdit(props) {
 
                 {/* MCP 服务列表 */}
                 <div className="space-y-3">
-                  {mcpServers.map((server, index) => <div key={index} className={`flex items-center justify-between p-4 rounded-lg ${darkMode ? 'bg-gray-700' : 'bg-gray-50'}`}>
+                  {mcpServers.map((server, index) => (
+                    <div key={index} className={`flex items-center justify-between p-4 rounded-lg ${darkMode ? 'bg-gray-700' : 'bg-gray-50'}`}>
                       <div className="flex items-center gap-3">
                         <Switch checked={server.enabled} onCheckedChange={() => handleToggleMcpServer(index)} />
                         <span className={darkMode ? 'text-white' : 'text-gray-900'}>{server.name}</span>
@@ -969,10 +971,11 @@ export default function AgentEdit(props) {
                       <Button onClick={() => handleDeleteMcpServer(index)} variant="ghost" size="icon" className={darkMode ? 'text-gray-400 hover:text-white hover:bg-gray-600' : 'text-gray-600 hover:text-gray-900 hover:bg-gray-200'}>
                         <Trash2 className="w-4 h-4" />
                       </Button>
-                    </div>)}
+                    </div>
+                  ))}
                 </div>
               </div>
-            </div>
+            )}
           </div>
         </div>
       </div>
