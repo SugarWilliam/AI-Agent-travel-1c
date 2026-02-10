@@ -1,7 +1,7 @@
 // @ts-ignore;
 import React, { useState, useEffect } from 'react';
 // @ts-ignore;
-import { ArrowLeft, Settings, Brain, Database, FileText, Image as ImageIcon, Link2, ChevronRight, Plus, Trash2, Check, Zap, Code, Languages, Sun, Moon } from 'lucide-react';
+import { ArrowLeft, Settings, Brain, Database, FileText, Image as ImageIcon, Link2, ChevronRight, Plus, Trash2, Check, Zap, Code, Languages, Sun, Moon, Bot, Type, Save } from 'lucide-react';
 // @ts-ignore;
 import { useToast, Button, Input, Textarea, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Switch } from '@/components/ui';
 
@@ -14,6 +14,8 @@ import { useGlobalSettings } from '@/components/GlobalSettings';
 const translations = {
   zh: {
     title: 'AI配置',
+    createAgent: '新建 Agent',
+    editAgent: '编辑 Agent',
     models: '模型管理',
     modelsDesc: '配置和管理AI模型设置',
     skills: '技能管理',
@@ -25,10 +27,22 @@ const translations = {
     mcp: 'MCP',
     mcpDesc: '管理外部服务集成',
     save: '保存配置',
-    cancel: '取消'
+    cancel: '取消',
+    agentName: 'Agent 名称',
+    agentDescription: 'Agent 描述',
+    agentType: 'Agent 类型',
+    selectModel: '选择模型',
+    selectSkills: '选择技能',
+    selectRules: '选择规则',
+    selectKnowledge: '选择知识库',
+    selectMcp: '选择 MCP 服务',
+    basicInfo: '基本信息',
+    configInfo: '配置信息'
   },
   en: {
     title: 'AI Configuration',
+    createAgent: 'Create Agent',
+    editAgent: 'Edit Agent',
     models: 'Model Management',
     modelsDesc: 'Configure and manage AI model settings',
     skills: 'Skill Management',
@@ -40,7 +54,17 @@ const translations = {
     mcp: 'MCP',
     mcpDesc: 'Manage external service integrations',
     save: 'Save Configuration',
-    cancel: 'Cancel'
+    cancel: 'Cancel',
+    agentName: 'Agent Name',
+    agentDescription: 'Agent Description',
+    agentType: 'Agent Type',
+    selectModel: 'Select Model',
+    selectSkills: 'Select Skills',
+    selectRules: 'Select Rules',
+    selectKnowledge: 'Select Knowledge Base',
+    selectMcp: 'Select MCP Services',
+    basicInfo: 'Basic Information',
+    configInfo: 'Configuration Information'
   }
 };
 export default function AIConfig(props) {
@@ -52,10 +76,18 @@ export default function AIConfig(props) {
   const [aiConfig, setAiConfig] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // Agent 编辑模式
+  // Agent 编辑/新建模式
+  const [isAgentMode, setIsAgentMode] = useState(false);
   const [isEditMode, setIsEditMode] = useState(false);
   const [editingAgent, setEditingAgent] = useState(null);
   const [agentId, setAgentId] = useState(null);
+
+  // Agent 基本信息表单
+  const [agentName, setAgentName] = useState('');
+  const [agentDescription, setAgentDescription] = useState('');
+  const [agentType, setAgentType] = useState('custom');
+  const [agentIcon, setAgentIcon] = useState('Bot');
+  const [agentColor, setAgentColor] = useState('from-blue-500 to-purple-500');
 
   // 从数据源加载的配置数据
   const [availableModels, setAvailableModels] = useState([]);
@@ -260,14 +292,26 @@ export default function AIConfig(props) {
     image: true
   });
   useEffect(() => {
-    // 检查是否是编辑模式
+    // 检查是否是 Agent 模式
     const mode = props.$w.page.dataset.params.mode;
     const agentIdParam = props.$w.page.dataset.params.agentId;
-    if (mode === 'edit' && agentIdParam) {
+    if (mode === 'create') {
+      // 新建 Agent 模式
+      setIsAgentMode(true);
+      setIsEditMode(false);
+      setActiveTab('basic');
+      setLoading(false);
+    } else if (mode === 'edit' && agentIdParam) {
+      // 编辑 Agent 模式
+      setIsAgentMode(true);
       setIsEditMode(true);
       setAgentId(agentIdParam);
+      setActiveTab('basic');
       loadAgentConfig(agentIdParam);
     } else {
+      // 全局配置模式
+      setIsAgentMode(false);
+      setIsEditMode(false);
       loadAIConfig();
     }
 
@@ -322,6 +366,11 @@ export default function AIConfig(props) {
       }
       if (agent) {
         setEditingAgent(agent);
+        setAgentName(agent.name || '');
+        setAgentDescription(agent.description || '');
+        setAgentType(agent.agentType || 'custom');
+        setAgentIcon(agent.icon || 'Bot');
+        setAgentColor(agent.color || 'from-blue-500 to-purple-500');
         setSelectedModel(agent.model || 'gpt-4');
         setRagEnabled(agent.ragEnabled || false);
         setRagSources(agent.ragSources || []);
@@ -384,11 +433,15 @@ export default function AIConfig(props) {
   };
   const handleSave = async () => {
     try {
-      if (isEditMode && editingAgent) {
-        // 保存 Agent 配置
+      if (isAgentMode) {
+        // 保存 Agent 配置（新建或编辑）
         const agentData = {
-          ...editingAgent,
+          name: agentName,
+          description: agentDescription,
+          agentType: agentType,
           model: selectedModel,
+          icon: agentIcon,
+          color: agentColor,
           ragEnabled: ragEnabled,
           ragSources: ragSources.filter(s => s.enabled).map(s => s.name),
           rules: rules.filter(r => r.enabled).map(r => r.name),
@@ -396,20 +449,44 @@ export default function AIConfig(props) {
             name: s.name,
             url: s.url
           })),
+          status: 'active',
+          usageCount: 0,
+          isBuiltIn: false,
+          createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString()
         };
         const tcb = await props.$w.cloud.getCloudInstance();
         const db = tcb.database();
-        try {
-          await db.collection('Agent').doc(agentId).update(agentData);
-        } catch (dbError) {
-          await db.collection('AIConfig').doc(agentId).update(agentData);
+        if (isEditMode && editingAgent) {
+          // 编辑模式：更新现有 Agent
+          const updateData = {
+            ...agentData,
+            usageCount: editingAgent.usageCount || 0,
+            createdAt: editingAgent.createdAt || agentData.createdAt
+          };
+          try {
+            await db.collection('Agent').doc(agentId).update(updateData);
+          } catch (dbError) {
+            await db.collection('AIConfig').doc(agentId).update(updateData);
+          }
+          toast({
+            title: 'Agent已更新',
+            description: `${agentName} 配置已保存`,
+            variant: 'default'
+          });
+        } else {
+          // 新建模式：创建新 Agent
+          try {
+            await db.collection('Agent').add(agentData);
+          } catch (dbError) {
+            await db.collection('AIConfig').add(agentData);
+          }
+          toast({
+            title: 'Agent已创建',
+            description: `${agentName} 已成功创建`,
+            variant: 'default'
+          });
         }
-        toast({
-          title: 'Agent已更新',
-          description: `${editingAgent.name} 配置已保存`,
-          variant: 'default'
-        });
 
         // 返回列表页
         setTimeout(() => {
@@ -528,11 +605,11 @@ export default function AIConfig(props) {
               <ArrowLeft className="w-6 h-6 text-[#2D3436]" />
             </button>
             <div className="flex items-center gap-2">
-              <Settings className="w-6 h-6 text-white" />
+              {isAgentMode ? <Bot className="w-6 h-6 text-white" /> : <Settings className="w-6 h-6 text-white" />}
               <h1 className="text-xl font-bold text-white" style={{
               fontFamily: 'Nunito, sans-serif'
             }}>
-                {isEditMode ? `${editingAgent?.name || '编辑 Agent'}` : t.title}
+                {isAgentMode ? isEditMode ? t.editAgent : t.createAgent : t.title}
               </h1>
             </div>
           </div>
@@ -576,6 +653,61 @@ export default function AIConfig(props) {
         {/* Right Content Area */}
         <div className="flex-1 p-6">
           <div className={`rounded-xl shadow-lg p-6 ${darkMode ? 'bg-gray-800' : 'bg-white'}`}>
+            {/* Agent Basic Information */}
+            {isAgentMode && activeTab === 'basic' && <div className="space-y-6">
+                <div className={`border-b pb-4 ${darkMode ? 'border-gray-700' : ''}`}>
+                  <h2 className={`text-2xl font-bold ${darkMode ? 'text-white' : 'text-[#2D3436]'}`} style={{
+                fontFamily: 'Nunito, sans-serif'
+              }}>
+                    {t.basicInfo}
+                  </h2>
+                  <p className={`mt-1 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>{isEditMode ? '编辑 Agent 基本信息' : '填写 Agent 基本信息'}</p>
+                </div>
+                
+                <div className="space-y-4">
+                  <div>
+                    <label className={`block text-sm font-medium mb-2 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                      {t.agentName} *
+                    </label>
+                    <Input value={agentName} onChange={e => setAgentName(e.target.value)} placeholder={language === 'zh' ? '输入 Agent 名称' : 'Enter Agent name'} className={darkMode ? 'bg-gray-700 border-gray-600 text-white' : ''} />
+                  </div>
+                  
+                  <div>
+                    <label className={`block text-sm font-medium mb-2 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                      {t.agentDescription}
+                    </label>
+                    <Textarea value={agentDescription} onChange={e => setAgentDescription(e.target.value)} placeholder={language === 'zh' ? '输入 Agent 描述' : 'Enter Agent description'} rows={4} className={darkMode ? 'bg-gray-700 border-gray-600 text-white' : ''} />
+                  </div>
+                  
+                  <div>
+                    <label className={`block text-sm font-medium mb-2 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                      {t.agentType}
+                    </label>
+                    <Select value={agentType} onValueChange={setAgentType}>
+                      <SelectTrigger className={`w-full ${darkMode ? 'bg-gray-700 border-gray-600 text-white' : ''}`}>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="custom">自定义 Agent</SelectItem>
+                        <SelectItem value="travel">旅行助手</SelectItem>
+                        <SelectItem value="planning">行程规划</SelectItem>
+                        <SelectItem value="companion">旅行伴侣</SelectItem>
+                        <SelectItem value="guide">导游助手</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  
+                  <div>
+                    <label className={`block text-sm font-medium mb-2 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                      {language === 'zh' ? '图标颜色' : 'Icon Color'}
+                    </label>
+                    <div className="flex gap-2">
+                      {['from-blue-500 to-purple-500', 'from-orange-500 to-pink-500', 'from-yellow-500 to-orange-500', 'from-purple-500 to-pink-500', 'from-teal-500 to-green-500'].map(color => <button key={color} onClick={() => setAgentColor(color)} className={`w-10 h-10 rounded-lg bg-gradient-to-r ${color} ${agentColor === color ? 'ring-2 ring-offset-2 ring-[#FF6B6B]' : ''}`} />)}
+                    </div>
+                  </div>
+                </div>
+              </div>}
+            
             {/* Model Management */}
             {activeTab === 'models' && <div className="space-y-6">
                 <div className={`border-b pb-4 ${darkMode ? 'border-gray-700' : ''}`}>
