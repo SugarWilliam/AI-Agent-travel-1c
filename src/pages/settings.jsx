@@ -169,7 +169,7 @@ export default function Settings(props) {
                       </SelectContent>
                     </Select>}
                   
-                  {item.type === 'link' && <ChevronRight className={`w-5 h-5 ${darkMode ? 'text-gray-500' : 'text-gray-400'}`} />
+                  {item.type === 'link' && <ChevronRight className={`w-5 h-5 ${darkMode ? 'text-gray-500' : 'text-gray-400'}`} />}
                   
                   {item.type === 'button' && <Button size="sm" variant="outline" onClick={item.onClick} className="border-[#FF6B6B] text-[#FF6B6B] hover:bg-[#FF6B6B] hover:text-white">
                       执行
