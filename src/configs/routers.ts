@@ -16,6 +16,7 @@ import PHOTO_GUIDE from '../pages/photo-guide.jsx';
 import PHOTO_GUIDE-DETAIL from '../pages/photo-guide-detail.jsx';
 import AI_TEST from '../pages/ai-test.jsx';
 import PLAN_GENERATOR from '../pages/plan-generator.jsx';
+import AGENT_EDIT from '../pages/agent-edit.jsx';
 export const routers = [{
   id: "home",
   component: HOME
@@ -70,4 +71,7 @@ export const routers = [{
 }, {
   id: "plan-generator",
   component: PLAN_GENERATOR
+}, {
+  id: "agent-edit",
+  component: AGENT_EDIT
 }]

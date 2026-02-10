@@ -271,7 +271,7 @@ export default function AgentList(props) {
   };
   const handleCreateAgent = () => {
     props.$w.utils.navigateTo({
-      pageId: 'ai-config',
+      pageId: 'agent-edit',
       params: {
         mode: 'create'
       }
@@ -279,7 +279,7 @@ export default function AgentList(props) {
   };
   const handleEditAgent = agentId => {
     props.$w.utils.navigateTo({
-      pageId: 'ai-config',
+      pageId: 'agent-edit',
       params: {
         mode: 'edit',
         agentId: agentId
