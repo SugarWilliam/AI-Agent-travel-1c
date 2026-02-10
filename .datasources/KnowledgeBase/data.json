@@ -21,6 +21,55 @@
       "recordCount": 50000,
       "lastUpdated": "2026-02-01"
     },
+    "ragConfig": {
+      "vectorDimension": 1536,
+      "embeddingModel": "text-embedding-ada-002",
+      "chunkSize": 500,
+      "chunkOverlap": 50,
+      "retrievalStrategy": "hybrid",
+      "topK": 5,
+      "similarityThreshold": 0.7,
+      "rerankingEnabled": true,
+      "rerankingModel": "text-rerank-001"
+    },
+    "accessControl": {
+      "publicAccess": true,
+      "allowedAgents": ["itinerary", "guide", "recommendation"],
+      "rateLimitPerMinute": 100,
+      "requireAuth": false
+    },
+    "performanceConfig": {
+      "cacheEnabled": true,
+      "cacheTTL": 3600,
+      "maxConcurrentRequests": 50,
+      "queryTimeout": 30000,
+      "indexOptimized": true
+    },
+    "monitoringConfig": {
+      "logQueries": true,
+      "logRetrievals": true,
+      "trackLatency": true,
+      "alertOnErrors": true,
+      "metricsRetentionDays": 30
+    },
+    "versionInfo": {
+      "currentVersion": "2.0.0",
+      "previousVersion": "1.0.0",
+      "updateDate": "2026-02-10",
+      "updateNotes": "添加RAG配置和性能优化",
+      "changelog": [
+        {
+          "version": "2.0.0",
+          "date": "2026-02-10",
+          "changes": ["添加RAG配置", "优化检索策略", "添加性能监控"]
+        },
+        {
+          "version": "1.0.0",
+          "date": "2026-02-01",
+          "changes": ["初始版本"]
+        }
+      ]
+    },
     "createdAt": 1739078400000,
     "updatedAt": 1739078400000,
     "_openid": "system"
@@ -46,6 +95,58 @@
       "version": "1.0.0",
       "recordCount": 100000,
       "lastUpdated": "2026-02-10"
+    },
+    "ragConfig": {
+      "vectorDimension": 1536,
+      "embeddingModel": "text-embedding-ada-002",
+      "chunkSize": 300,
+      "chunkOverlap": 30,
+      "retrievalStrategy": "semantic",
+      "topK": 10,
+      "similarityThreshold": 0.6,
+      "rerankingEnabled": false,
+      "rerankingModel": null,
+      "personalizationWeight": 0.8
+    },
+    "accessControl": {
+      "publicAccess": false,
+      "allowedAgents": ["itinerary", "recommendation", "companion"],
+      "rateLimitPerMinute": 200,
+      "requireAuth": true,
+      "userIsolation": true
+    },
+    "performanceConfig": {
+      "cacheEnabled": true,
+      "cacheTTL": 1800,
+      "maxConcurrentRequests": 100,
+      "queryTimeout": 15000,
+      "indexOptimized": true
+    },
+    "monitoringConfig": {
+      "logQueries": true,
+      "logRetrievals": true,
+      "trackLatency": true,
+      "alertOnErrors": true,
+      "metricsRetentionDays": 90,
+      "privacyCompliance": true
+    },
+    "versionInfo": {
+      "currentVersion": "2.0.0",
+      "previousVersion": "1.0.0",
+      "updateDate": "2026-02-10",
+      "updateNotes": "添加RAG配置和隐私保护",
+      "changelog": [
+        {
+          "version": "2.0.0",
+          "date": "2026-02-10",
+          "changes": ["添加RAG配置", "增强隐私保护", "添加个性化权重"]
+        },
+        {
+          "version": "1.0.0",
+          "date": "2026-02-01",
+          "changes": ["初始版本"]
+        }
+      ]
     },
     "createdAt": 1739078400000,
     "updatedAt": 1739078400000,
@@ -73,6 +174,57 @@
       "provider": "Weather.com",
       "lastUpdated": "2026-02-10"
     },
+    "ragConfig": {
+      "vectorDimension": 768,
+      "embeddingModel": "text-embedding-small",
+      "chunkSize": 200,
+      "chunkOverlap": 20,
+      "retrievalStrategy": "keyword",
+      "topK": 3,
+      "similarityThreshold": 0.5,
+      "rerankingEnabled": false,
+      "rerankingModel": null,
+      "realtimeUpdate": true
+    },
+    "accessControl": {
+      "publicAccess": true,
+      "allowedAgents": ["itinerary", "guide"],
+      "rateLimitPerMinute": 500,
+      "requireAuth": false
+    },
+    "performanceConfig": {
+      "cacheEnabled": true,
+      "cacheTTL": 600,
+      "maxConcurrentRequests": 200,
+      "queryTimeout": 5000,
+      "indexOptimized": false
+    },
+    "monitoringConfig": {
+      "logQueries": true,
+      "logRetrievals": false,
+      "trackLatency": true,
+      "alertOnErrors": true,
+      "metricsRetentionDays": 7,
+      "apiHealthCheck": true
+    },
+    "versionInfo": {
+      "currentVersion": "2.0.0",
+      "previousVersion": "1.0.0",
+      "updateDate": "2026-02-10",
+      "updateNotes": "添加RAG配置和API监控",
+      "changelog": [
+        {
+          "version": "2.0.0",
+          "date": "2026-02-10",
+          "changes": ["添加RAG配置", "优化缓存策略", "添加API健康检查"]
+        },
+        {
+          "version": "1.0.0",
+          "date": "2026-02-01",
+          "changes": ["初始版本"]
+        }
+      ]
+    },
     "createdAt": 1739078400000,
     "updatedAt": 1739078400000,
     "_openid": "system"
@@ -91,13 +243,65 @@
       "index": "destination,category,rating"
     },
     "icon": "🏛️",
-      "color": "#8B5CF6",
+    "color": "#8B5CF6",
     "priority": 4,
     "tags": ["景点", "全球", "详细信息"],
     "metadata": {
       "version": "1.0.0",
       "recordCount": 100000,
       "lastUpdated": "2026-02-05"
+    },
+    "ragConfig": {
+      "vectorDimension": 1536,
+      "embeddingModel": "text-embedding-ada-002",
+      "chunkSize": 400,
+      "chunkOverlap": 40,
+      "retrievalStrategy": "hybrid",
+      "topK": 8,
+      "similarityThreshold": 0.65,
+      "rerankingEnabled": true,
+      "rerankingModel": "text-rerank-001",
+      "filterByRating": true,
+      "minRating": 4.0
+    },
+    "accessControl": {
+      "publicAccess": true,
+      "allowedAgents": ["itinerary", "guide", "recommendation", "photo"],
+      "rateLimitPerMinute": 150,
+      "requireAuth": false
+    },
+    "performanceConfig": {
+      "cacheEnabled": true,
+      "cacheTTL": 7200,
+      "maxConcurrentRequests": 80,
+      "queryTimeout": 25000,
+      "indexOptimized": true
+    },
+    "monitoringConfig": {
+      "logQueries": true,
+      "logRetrievals": true,
+      "trackLatency": true,
+      "alertOnErrors": true,
+      "metricsRetentionDays": 60,
+      "trackUserFeedback": true
+    },
+    "versionInfo": {
+      "currentVersion": "2.0.0",
+      "previousVersion": "1.0.0",
+      "updateDate": "2026-02-10",
+      "updateNotes": "添加RAG配置和评分过滤",
+      "changelog": [
+        {
+          "version": "2.0.0",
+          "date": "2026-02-10",
+          "changes": ["添加RAG配置", "添加评分过滤", "优化检索策略"]
+        },
+        {
+          "version": "1.0.0",
+          "date": "2026-02-01",
+          "changes": ["初始版本"]
+        }
+      ]
     },
     "createdAt": 1739078400000,
     "updatedAt": 1739078400000,
@@ -125,6 +329,57 @@
       "recordCount": 30000,
       "lastUpdated": "2026-02-03"
     },
+    "ragConfig": {
+      "vectorDimension": 1536,
+      "embeddingModel": "text-embedding-ada-002",
+      "chunkSize": 600,
+      "chunkOverlap": 60,
+      "retrievalStrategy": "semantic",
+      "topK": 6,
+      "similarityThreshold": 0.7,
+      "rerankingEnabled": true,
+      "rerankingModel": "text-rerank-001",
+      "contextualExpansion": true
+    },
+    "accessControl": {
+      "publicAccess": true,
+      "allowedAgents": ["guide", "itinerary"],
+      "rateLimitPerMinute": 80,
+      "requireAuth": false
+    },
+    "performanceConfig": {
+      "cacheEnabled": true,
+      "cacheTTL": 5400,
+      "maxConcurrentRequests": 60,
+      "queryTimeout": 20000,
+      "indexOptimized": true
+    },
+    "monitoringConfig": {
+      "logQueries": true,
+      "logRetrievals": true,
+      "trackLatency": true,
+      "alertOnErrors": true,
+      "metricsRetentionDays": 45,
+      "trackCulturalAccuracy": true
+    },
+    "versionInfo": {
+      "currentVersion": "2.0.0",
+      "previousVersion": "1.0.0",
+      "updateDate": "2026-02-10",
+      "updateNotes": "添加RAG配置和上下文扩展",
+      "changelog": [
+        {
+          "version": "2.0.0",
+          "date": "2026-02-10",
+          "changes": ["添加RAG配置", "添加上下文扩展", "优化检索策略"]
+        },
+        {
+          "version": "1.0.0",
+          "date": "2026-02-01",
+          "changes": ["初始版本"]
+        }
+      ]
+    },
     "createdAt": 1739078400000,
     "updatedAt": 1739078400000,
     "_openid": "system"
@@ -150,6 +405,58 @@
       "version": "1.0.0",
       "recordCount": 20000,
       "lastUpdated": "2026-02-08"
+    },
+    "ragConfig": {
+      "vectorDimension": 1536,
+      "embeddingModel": "text-embedding-ada-002",
+      "chunkSize": 350,
+      "chunkOverlap": 35,
+      "retrievalStrategy": "hybrid",
+      "topK": 7,
+      "similarityThreshold": 0.68,
+      "rerankingEnabled": true,
+      "rerankingModel": "text-rerank-001",
+      "visualContext": true,
+      "equipmentFilter": true
+    },
+    "accessControl": {
+      "publicAccess": true,
+      "allowedAgents": ["photo", "guide"],
+      "rateLimitPerMinute": 120,
+      "requireAuth": false
+    },
+    "performanceConfig": {
+      "cacheEnabled": true,
+      "cacheTTL": 4800,
+      "maxConcurrentRequests": 70,
+      "queryTimeout": 22000,
+      "indexOptimized": true
+    },
+    "monitoringConfig": {
+      "logQueries": true,
+      "logRetrievals": true,
+      "trackLatency": true,
+      "alertOnErrors": true,
+      "metricsRetentionDays": 30,
+      "trackPhotoQuality": true
+    },
+    "versionInfo": {
+      "currentVersion": "2.0.0",
+      "previousVersion": "1.0.0",
+      "updateDate": "2026-02-10",
+      "updateNotes": "添加RAG配置和视觉上下文",
+      "changelog": [
+        {
+          "version": "2.0.0",
+          "date": "2026-02-10",
+          "changes": ["添加RAG配置", "添加视觉上下文", "优化检索策略"]
+        },
+        {
+          "version": "1.0.0",
+          "date": "2026-02-01",
+          "changes": ["初始版本"]
+        }
+      ]
     },
     "createdAt": 1739078400000,
     "updatedAt": 1739078400000,

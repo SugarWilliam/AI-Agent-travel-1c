@@ -46,6 +46,31 @@
       "name": "capabilities",
       "title": "能力配置",
       "type": "Object"
+    },
+    {
+      "name": "ragEnabled",
+      "title": "知识库增强",
+      "type": "Boolean"
+    },
+    {
+      "name": "ragSources",
+      "title": "知识库源",
+      "type": "Array"
+    },
+    {
+      "name": "agentRules",
+      "title": "Agent规则配置",
+      "type": "Array"
+    },
+    {
+      "name": "agentSkills",
+      "title": "Agent技能配置",
+      "type": "Array"
+    },
+    {
+      "name": "agentKnowledgeBases",
+      "title": "Agent知识库关联",
+      "type": "Array"
     }
   ]
 }

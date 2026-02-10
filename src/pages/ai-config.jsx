@@ -76,17 +76,117 @@ export default function AIConfig(props) {
     id: 1,
     name: '旅游攻略库',
     enabled: true,
-    type: 'database'
+    type: 'database',
+    agentTypes: ['travel', 'planning'],
+    description: '包含全球热门旅游目的地的详细攻略'
   }, {
     id: 2,
     name: '用户历史记录',
     enabled: true,
-    type: 'database'
+    type: 'database',
+    agentTypes: ['travel', 'planning', 'companion'],
+    description: '用户的旅行历史和偏好记录'
   }, {
     id: 3,
     name: '实时天气数据',
     enabled: false,
-    type: 'api'
+    type: 'api',
+    agentTypes: ['travel', 'planning'],
+    description: '全球各地的实时天气信息'
+  }, {
+    id: 4,
+    name: '酒店信息库',
+    enabled: true,
+    type: 'database',
+    agentTypes: ['travel', 'planning'],
+    description: '全球酒店信息、价格、评价等'
+  }, {
+    id: 5,
+    name: '景点信息库',
+    enabled: true,
+    type: 'database',
+    agentTypes: ['travel', 'planning', 'companion'],
+    description: '景点介绍、门票、开放时间等'
+  }, {
+    id: 6,
+    name: '交通信息库',
+    enabled: true,
+    type: 'database',
+    agentTypes: ['travel', 'planning'],
+    description: '航班、火车、公交等交通信息'
+  }, {
+    id: 7,
+    name: '美食推荐库',
+    enabled: false,
+    type: 'database',
+    agentTypes: ['travel', 'companion'],
+    description: '当地餐厅、美食推荐和评价'
+  }, {
+    id: 8,
+    name: '购物指南库',
+    enabled: false,
+    type: 'database',
+    agentTypes: ['travel', 'companion'],
+    description: '购物场所、特产、折扣信息'
+  }, {
+    id: 9,
+    name: '紧急服务库',
+    enabled: true,
+    type: 'database',
+    agentTypes: ['travel', 'companion'],
+    description: '医院、警察、大使馆等紧急信息'
+  }, {
+    id: 10,
+    name: '当地文化库',
+    enabled: false,
+    type: 'database',
+    agentTypes: ['travel', 'companion'],
+    description: '当地文化、习俗、礼仪等'
+  }, {
+    id: 11,
+    name: '货币汇率库',
+    enabled: false,
+    type: 'api',
+    agentTypes: ['travel', 'planning'],
+    description: '实时货币汇率信息'
+  }, {
+    id: 12,
+    name: '签证信息库',
+    enabled: false,
+    type: 'database',
+    agentTypes: ['travel', 'planning'],
+    description: '各国签证要求、流程等'
+  }, {
+    id: 13,
+    name: '保险信息库',
+    enabled: false,
+    type: 'database',
+    agentTypes: ['travel', 'planning'],
+    description: '旅游保险产品、理赔流程等'
+  }]);
+
+  // Agent 知识库关联配置
+  const [agentKnowledgeBases, setAgentKnowledgeBases] = useState([{
+    id: 1,
+    agentType: 'travel',
+    agentName: '旅行规划助手',
+    knowledgeBases: ['旅游攻略库', '用户历史记录', '酒店信息库', '景点信息库', '交通信息库', '紧急服务库'],
+    ragEnabled: true,
+    priority: 1
+  }, {
+    id: 2,
+    agentType: 'planning',
+    agentName: '行程规划助手',
+    knowledgeBases: ['旅游攻略库', '实时天气数据', '酒店信息库', '景点信息库', '交通信息库', '货币汇率库', '签证信息库', '保险信息库'],
+    ragEnabled: true,
+    priority: 2
+  }, {
+    id: 3,
+    agentType: 'companion',
+    agentName: '旅行伴侣',
+    knowledgeBases: ['用户历史记录', '景点信息库', '美食推荐库', '购物指南库', '紧急服务库', '当地文化库'],
+    ragEnabled: false,
+    priority: 3
   }]);
   const [mcpServers, setMcpServers] = useState([{
     id: 1,
@@ -148,6 +248,15 @@ export default function AIConfig(props) {
         if (result.result.data.modelId) {
           setSelectedModel(result.result.data.modelId);
         }
+        if (result.result.data.ragEnabled !== undefined) {
+          setRagEnabled(result.result.data.ragEnabled);
+        }
+        if (result.result.data.ragSources) {
+          setRagSources(result.result.data.ragSources);
+        }
+        if (result.result.data.agentKnowledgeBases) {
+          setAgentKnowledgeBases(result.result.data.agentKnowledgeBases);
+        }
       }
     } catch (error) {
       console.error('加载AI配置失败:', error);
@@ -174,7 +283,10 @@ export default function AIConfig(props) {
           imageRecognition: true,
           multimodal: true,
           webScraping: true
-        }
+        },
+        ragEnabled: ragEnabled,
+        ragSources: ragSources,
+        agentKnowledgeBases: agentKnowledgeBases
       };
       const result = await props.$w.cloud.callFunction({
         name: 'ai-assistant',
@@ -216,6 +328,18 @@ export default function AIConfig(props) {
       ...source,
       enabled: !source.enabled
     } : source));
+  };
+  const toggleAgentRag = id => {
+    setAgentKnowledgeBases(agentKnowledgeBases.map(agent => agent.id === id ? {
+      ...agent,
+      ragEnabled: !agent.ragEnabled
+    } : agent));
+  };
+  const updateAgentKnowledgeBases = (id, knowledgeBases) => {
+    setAgentKnowledgeBases(agentKnowledgeBases.map(agent => agent.id === id ? {
+      ...agent,
+      knowledgeBases
+    } : agent));
   };
   const toggleMcpServer = id => {
     setMcpServers(mcpServers.map(server => server.id === id ? {
@@ -492,14 +616,63 @@ export default function AIConfig(props) {
                   </div>
                   
                   {ragEnabled && <div className="space-y-3">
-                      {ragSources.map(source => <div key={source.id} className={`flex items-center justify-between p-3 rounded-lg border ${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'}`}>
+                      {ragSources.map(source => <div key={source.id} className={`flex items-start justify-between p-4 rounded-lg border ${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'}`}>
                           <div className="flex-1">
-                            <h4 className={`font-medium ${darkMode ? 'text-white' : 'text-gray-900'}`}>{source.name}</h4>
-                            <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>类型: {source.type === 'database' ? '数据库' : 'API'}</p>
+                            <div className="flex items-center gap-2 mb-2">
+                              <h4 className={`font-medium ${darkMode ? 'text-white' : 'text-gray-900'}`}>{source.name}</h4>
+                              <span className={`px-2 py-0.5 rounded text-xs ${source.type === 'database' ? 'bg-blue-100 text-blue-700' : 'bg-green-100 text-green-700'}`}>
+                                {source.type === 'database' ? '数据库' : 'API'}
+                              </span>
+                            </div>
+                            <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>{source.description}</p>
                           </div>
-                          <Switch checked={source.enabled} onCheckedChange={() => toggleRagSource(source.id)} />
+                          <div className="flex items-center gap-2">
+                            <Switch checked={source.enabled} onCheckedChange={() => toggleRagSource(source.id)} />
+                            <Button variant="ghost" size="sm" onClick={() => {
+                      setRagSources(ragSources.filter(s => s.id !== source.id));
+                      toast({
+                        title: '知识库已删除',
+                        description: `${source.name} 已从知识库列表中移除`
+                      });
+                    }} className={`text-red-600 hover:text-red-700 ${darkMode ? 'hover:bg-red-900/20' : 'hover:bg-red-50'}`}>
+                              <Trash2 className="w-4 h-4" />
+                            </Button>
+                          </div>
                         </div>)}
                     </div>}
+                </div>
+                
+                {/* Agent 知识库关联配置 */}
+                <div className={`rounded-lg p-4 ${darkMode ? 'bg-gray-700' : 'bg-gray-50'}`}>
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className={`font-bold ${darkMode ? 'text-white' : 'text-[#2D3436]'}`}>Agent 知识库关联</h3>
+                    <span className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>配置每个 Agent 使用的知识库</span>
+                  </div>
+                  
+                  <div className="space-y-3">
+                    {agentKnowledgeBases.map(agent => <div key={agent.id} className={`p-4 rounded-lg border ${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'}`}>
+                        <div className="flex items-center justify-between mb-3">
+                          <div className="flex-1">
+                            <h4 className={`font-medium text-lg ${darkMode ? 'text-white' : 'text-gray-900'}`}>{agent.agentName}</h4>
+                            <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>类型: {agent.agentType}</p>
+                          </div>
+                          <Switch checked={agent.ragEnabled} onCheckedChange={() => toggleAgentRag(agent.id)} />
+                        </div>
+                        
+                        {agent.ragEnabled && <div className="space-y-2">
+                            <label className={`text-sm font-medium ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>关联的知识库</label>
+                            <div className="flex flex-wrap gap-2">
+                              {ragSources.filter(source => source.enabled).map(source => <button key={source.id} onClick={() => {
+                        const currentKBs = agent.knowledgeBases || [];
+                        const newKBs = currentKBs.includes(source.name) ? currentKBs.filter(kb => kb !== source.name) : [...currentKBs, source.name];
+                        updateAgentKnowledgeBases(agent.id, newKBs);
+                      }} className={`px-3 py-1.5 rounded-full text-sm font-medium transition-all ${agent.knowledgeBases?.includes(source.name) ? 'bg-gradient-to-r from-[#FF6B6B] to-[#4ECDC4] text-white' : darkMode ? 'bg-gray-700 text-gray-300 hover:bg-gray-600' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}>
+                                  {source.name}
+                                </button>)}
+                            </div>
+                          </div>}
+                      </div>)}
+                  </div>
                 </div>
               </div>}
 

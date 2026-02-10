@@ -61,6 +61,31 @@
       "name": "metadata",
       "title": "元数据",
       "type": "Object"
+    },
+    {
+      "name": "ragConfig",
+      "title": "RAG配置",
+      "type": "Object"
+    },
+    {
+      "name": "accessControl",
+      "title": "访问控制",
+      "type": "Object"
+    },
+    {
+      "name": "performanceConfig",
+      "title": "性能配置",
+      "type": "Object"
+    },
+    {
+      "name": "monitoringConfig",
+      "title": "监控配置",
+      "type": "Object"
+    },
+    {
+      "name": "versionInfo",
+      "title": "版本信息",
+      "type": "Object"
     }
   ]
 }
