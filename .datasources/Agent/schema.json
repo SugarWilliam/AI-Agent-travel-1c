@@ -13,6 +13,11 @@
       "type": "MultiLineString"
     },
     {
+      "name": "agentType",
+      "title": "Agent类型",
+      "type": "String"
+    },
+    {
       "name": "model",
       "title": "模型",
       "type": "String"
@@ -68,9 +73,39 @@
       "type": "String"
     },
     {
-      "name": "userId",
-      "title": "用户ID",
-      "type": "String"
+      "name": "isBuiltIn",
+      "title": "是否内置",
+      "type": "Boolean"
+    },
+    {
+      "name": "capabilities",
+      "title": "能力列表",
+      "type": "Array"
+    },
+    {
+      "name": "systemPrompt",
+      "title": "系统提示词",
+      "type": "MultiLineString"
+    },
+    {
+      "name": "temperature",
+      "title": "温度参数",
+      "type": "Number"
+    },
+    {
+      "name": "maxTokens",
+      "title": "最大Token数",
+      "type": "Number"
+    },
+    {
+      "name": "priority",
+      "title": "优先级",
+      "type": "Number"
+    },
+    {
+      "name": "config",
+      "title": "配置参数",
+      "type": "Object"
     }
   ]
 }

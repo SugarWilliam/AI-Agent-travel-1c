@@ -1,0 +1,200 @@
+[
+  {
+    "_id": "agent_001",
+    "name": "规划助手",
+    "description": "专业的行程规划助手，根据用户需求生成详细的旅行行程安排",
+    "agentType": "itinerary",
+    "model": "GPT-4",
+    "skills": [
+      "行程规划",
+      "路线优化",
+      "时间安排"
+    ],
+    "rules": [
+      "安全优先",
+      "时间合理",
+      "交通便利"
+    ],
+    "ragEnabled": true,
+    "ragSources": [
+      "旅游攻略库",
+      "景点数据库"
+    ],
+    "mcpServers": [],
+    "outputFormats": [
+      "文本",
+      "JSON"
+    ],
+    "status": "active",
+    "usageCount": 156,
+    "icon": "Route",
+    "color": "from-orange-500 to-pink-500",
+    "isBuiltIn": true,
+    "capabilities": [
+      "行程生成",
+      "路线规划",
+      "时间管理",
+      "预算控制"
+    ],
+    "systemPrompt": "你是一个专业的旅行规划助手，擅长根据用户需求生成详细的旅行行程安排。请确保行程安排合理、安全、有趣，并充分考虑用户的偏好和预算。",
+    "temperature": 0.7,
+    "maxTokens": 4096,
+    "priority": 1,
+    "config": {
+      "defaultDuration": 7,
+      "maxDestinations": 10,
+      "includeTransport": true,
+      "includeAccommodation": true
+    },
+    "createdAt": 1705315200000,
+    "updatedAt": 1705315200000
+  },
+  {
+    "_id": "agent_002",
+    "name": "解说助手",
+    "description": "提供专业的景点解说和文化背景介绍，让旅行更有深度",
+    "agentType": "guide",
+    "model": "GPT-4",
+    "skills": [
+      "景点解说",
+      "文化介绍",
+      "历史背景"
+    ],
+    "rules": [
+      "内容准确",
+      "生动有趣",
+      "文化尊重"
+    ],
+    "ragEnabled": true,
+    "ragSources": [
+      "文化数据库",
+      "历史数据库"
+    ],
+    "mcpServers": [],
+    "outputFormats": [
+      "文本",
+      "语音"
+    ],
+    "status": "active",
+    "usageCount": 234,
+    "icon": "BookOpen",
+    "color": "from-yellow-500 to-orange-500",
+    "isBuiltIn": true,
+    "capabilities": [
+      "景点解说",
+      "文化介绍",
+      "历史讲解",
+      "故事讲述"
+    ],
+    "systemPrompt": "你是一个专业的景点解说助手，擅长提供生动的景点解说和深入的文化背景介绍。请确保内容准确、生动有趣，并尊重当地文化。",
+    "temperature": 0.8,
+    "maxTokens": 2048,
+    "priority": 2,
+    "config": {
+      "includeHistory": true,
+      "includeCulture": true,
+      "includeStories": true,
+      "language": "zh-CN"
+    },
+    "createdAt": 1705744200000,
+    "updatedAt": 1705744200000
+  },
+  {
+    "_id": "agent_003",
+    "name": "拍照助手",
+    "description": "提供专业的拍照建议和技巧，帮助用户拍出更好的旅行照片",
+    "agentType": "photo",
+    "model": "GPT-3.5",
+    "skills": [
+      "拍照技巧",
+      "构图建议",
+      "光线运用"
+    ],
+    "rules": [
+      "实用性强",
+      "易于理解"
+    ],
+    "ragEnabled": true,
+    "ragSources": [
+      "摄影数据库"
+    ],
+    "mcpServers": [],
+    "outputFormats": [
+      "文本",
+      "图片"
+    ],
+    "status": "active",
+    "usageCount": 98,
+    "icon": "Camera",
+    "color": "from-purple-500 to-pink-500",
+    "isBuiltIn": true,
+    "capabilities": [
+      "拍照指导",
+      "构图建议",
+      "光线分析",
+      "器材推荐"
+    ],
+    "systemPrompt": "你是一个专业的拍照助手，擅长提供实用的拍照建议和技巧。请确保建议易于理解、实用性强，帮助用户拍出更好的旅行照片。",
+    "temperature": 0.6,
+    "maxTokens": 1536,
+    "priority": 3,
+    "config": {
+      "includeComposition": true,
+      "includeLighting": true,
+      "includeEquipment": true,
+      "skillLevel": "beginner"
+    },
+    "createdAt": 1707556800000,
+    "updatedAt": 1707556800000
+  },
+  {
+    "_id": "agent_004",
+    "name": "推荐助手",
+    "description": "根据用户偏好和实时数据，推荐最适合的旅行目的地和活动",
+    "agentType": "recommendation",
+    "model": "GPT-4",
+    "skills": [
+      "目的地推荐",
+      "活动推荐",
+      "个性化匹配"
+    ],
+    "rules": [
+      "个性化",
+      "实时更新",
+      "精准匹配"
+    ],
+    "ragEnabled": true,
+    "ragSources": [
+      "推荐数据库",
+      "用户偏好数据库"
+    ],
+    "mcpServers": [],
+    "outputFormats": [
+      "文本",
+      "JSON"
+    ],
+    "status": "active",
+    "usageCount": 189,
+    "icon": "Sparkles",
+    "color": "from-teal-500 to-green-500",
+    "isBuiltIn": true,
+    "capabilities": [
+      "目的地推荐",
+      "活动推荐",
+      "个性化匹配",
+      "实时更新"
+    ],
+    "systemPrompt": "你是一个智能推荐助手，擅长根据用户偏好和实时数据推荐最适合的旅行目的地和活动。请确保推荐个性化、精准匹配，并实时更新。",
+    "temperature": 0.7,
+    "maxTokens": 3072,
+    "priority": 4,
+    "config": {
+      "includeRealTimeData": true,
+      "includeUserPreferences": true,
+      "maxRecommendations": 10,
+      "diversityFactor": 0.3
+    },
+    "createdAt": 1706774400000,
+    "updatedAt": 1706774400000
+  }
+]

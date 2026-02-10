@@ -461,5 +461,919 @@
     "createdAt": 1739078400000,
     "updatedAt": 1739078400000,
     "_openid": "system"
+  },
+  {
+    "_id": "kb_007",
+    "name": "酒店信息库",
+    "description": "包含全球酒店信息、价格、评价等",
+    "type": "database",
+    "isEnabled": true,
+    "category": "accommodation",
+    "content": "酒店信息库包含全球酒店信息，包括酒店介绍、房型、价格、设施、服务、用户评价、预订方式等。",
+    "config": {
+      "dataSource": "mongodb",
+      "collection": "hotels",
+      "index": "destination,category,price"
+    },
+    "icon": "🏨",
+    "color": "#F97316",
+    "priority": 7,
+    "tags": ["酒店", "住宿", "预订"],
+    "metadata": {
+      "version": "1.0.0",
+      "recordCount": 80000,
+      "lastUpdated": "2026-02-06"
+    },
+    "ragConfig": {
+      "vectorDimension": 1536,
+      "embeddingModel": "text-embedding-ada-002",
+      "chunkSize": 450,
+      "chunkOverlap": 45,
+      "retrievalStrategy": "hybrid",
+      "topK": 6,
+      "similarityThreshold": 0.65,
+      "rerankingEnabled": true,
+      "rerankingModel": "text-rerank-001",
+      "filterByPrice": true,
+      "filterByRating": true
+    },
+    "accessControl": {
+      "publicAccess": true,
+      "allowedAgents": ["itinerary", "recommendation"],
+      "rateLimitPerMinute": 100,
+      "requireAuth": false
+    },
+    "performanceConfig": {
+      "cacheEnabled": true,
+      "cacheTTL": 3600,
+      "maxConcurrentRequests": 60,
+      "queryTimeout": 20000,
+      "indexOptimized": true
+    },
+    "monitoringConfig": {
+      "logQueries": true,
+      "logRetrievals": true,
+      "trackLatency": true,
+      "alertOnErrors": true,
+      "metricsRetentionDays": 30
+    },
+    "versionInfo": {
+      "currentVersion": "2.0.0",
+      "previousVersion": "1.0.0",
+      "updateDate": "2026-02-10",
+      "updateNotes": "添加RAG配置和价格过滤",
+      "changelog": [
+        {
+          "version": "2.0.0",
+          "date": "2026-02-10",
+          "changes": ["添加RAG配置", "添加价格过滤", "优化检索策略"]
+        },
+        {
+          "version": "1.0.0",
+          "date": "2026-02-01",
+          "changes": ["初始版本"]
+        }
+      ]
+    },
+    "createdAt": 1739078400000,
+    "updatedAt": 1739078400000,
+    "_openid": "system"
+  },
+  {
+    "_id": "kb_008",
+    "name": "交通信息库",
+    "description": "包含航班、火车、公交等交通信息",
+    "type": "database",
+    "isEnabled": true,
+    "category": "transport",
+    "content": "交通信息库包含全球交通信息，包括航班、火车、公交、地铁、出租车、租车等交通方式的信息。",
+    "config": {
+      "dataSource": "mongodb",
+      "collection": "transport",
+      "index": "origin,destination,type"
+    },
+    "icon": "🚗",
+    "color": "#6366F1",
+    "priority": 8,
+    "tags": ["交通", "航班", "火车"],
+    "metadata": {
+      "version": "1.0.0",
+      "recordCount": 150000,
+      "lastUpdated": "2026-02-07"
+    },
+    "ragConfig": {
+      "vectorDimension": 1536,
+      "embeddingModel": "text-embedding-ada-002",
+      "chunkSize": 400,
+      "chunkOverlap": 40,
+      "retrievalStrategy": "hybrid",
+      "topK": 5,
+      "similarityThreshold": 0.7,
+      "rerankingEnabled": true,
+      "rerankingModel": "text-rerank-001",
+      "realtimeUpdate": true
+    },
+    "accessControl": {
+      "publicAccess": true,
+      "allowedAgents": ["itinerary", "guide"],
+      "rateLimitPerMinute": 200,
+      "requireAuth": false
+    },
+    "performanceConfig": {
+      "cacheEnabled": true,
+      "cacheTTL": 1800,
+      "maxConcurrentRequests": 100,
+      "queryTimeout": 15000,
+      "indexOptimized": true
+    },
+    "monitoringConfig": {
+      "logQueries": true,
+      "logRetrievals": true,
+      "trackLatency": true,
+      "alertOnErrors": true,
+      "metricsRetentionDays": 15
+    },
+    "versionInfo": {
+      "currentVersion": "2.0.0",
+      "previousVersion": "1.0.0",
+      "updateDate": "2026-02-10",
+      "updateNotes": "添加RAG配置和实时更新",
+      "changelog": [
+        {
+          "version": "2.0.0",
+          "date": "2026-02-10",
+          "changes": ["添加RAG配置", "添加实时更新", "优化检索策略"]
+        },
+        {
+          "version": "1.0.0",
+          "date": "2026-02-01",
+          "changes": ["初始版本"]
+        }
+      ]
+    },
+    "createdAt": 1739078400000,
+    "updatedAt": 1739078400000,
+    "_openid": "system"
+  },
+  {
+    "_id": "kb_009",
+    "name": "美食推荐库",
+    "description": "包含当地餐厅、美食推荐和评价",
+    "type": "database",
+    "isEnabled": false,
+    "category": "food",
+    "content": "美食推荐库包含全球美食信息，包括餐厅介绍、菜品推荐、价格、用户评价、营业时间等。",
+    "config": {
+      "dataSource": "mongodb",
+      "collection": "food",
+      "index": "destination,cuisine,rating"
+    },
+    "icon": "🍜",
+    "color": "#EF4444",
+    "priority": 9,
+    "tags": ["美食", "餐厅", "推荐"],
+    "metadata": {
+      "version": "1.0.0",
+      "recordCount": 60000,
+      "lastUpdated": "2026-02-04"
+    },
+    "ragConfig": {
+      "vectorDimension": 1536,
+      "embeddingModel": "text-embedding-ada-002",
+      "chunkSize": 350,
+      "chunkOverlap": 35,
+      "retrievalStrategy": "hybrid",
+      "topK": 7,
+      "similarityThreshold": 0.68,
+      "rerankingEnabled": true,
+      "rerankingModel": "text-rerank-001",
+      "filterByRating": true,
+      "filterByPrice": true
+    },
+    "accessControl": {
+      "publicAccess": true,
+      "allowedAgents": ["guide", "companion"],
+      "rateLimitPerMinute": 80,
+      "requireAuth": false
+    },
+    "performanceConfig": {
+      "cacheEnabled": true,
+      "cacheTTL": 5400,
+      "maxConcurrentRequests": 50,
+      "queryTimeout": 18000,
+      "indexOptimized": true
+    },
+    "monitoringConfig": {
+      "logQueries": true,
+      "logRetrievals": true,
+      "trackLatency": true,
+      "alertOnErrors": true,
+      "metricsRetentionDays": 30
+    },
+    "versionInfo": {
+      "currentVersion": "2.0.0",
+      "previousVersion": "1.0.0",
+      "updateDate": "2026-02-10",
+      "updateNotes": "添加RAG配置和美食过滤",
+      "changelog": [
+        {
+          "version": "2.0.0",
+          "date": "2026-02-10",
+          "changes": ["添加RAG配置", "添加美食过滤", "优化检索策略"]
+        },
+        {
+          "version": "1.0.0",
+          "date": "2026-02-01",
+          "changes": ["初始版本"]
+        }
+      ]
+    },
+    "createdAt": 1739078400000,
+    "updatedAt": 1739078400000,
+    "_openid": "system"
+  },
+  {
+    "_id": "kb_010",
+    "name": "购物指南库",
+    "description": "包含购物场所、特产、折扣信息",
+    "type": "database",
+    "isEnabled": false,
+    "category": "shopping",
+    "content": "购物指南库包含全球购物信息，包括购物场所、特产、折扣、营业时间、交通方式等。",
+    "config": {
+      "dataSource": "mongodb",
+      "collection": "shopping",
+      "index": "destination,category,type"
+    },
+    "icon": "🛍️",
+    "color": "#A855F7",
+    "priority": 10,
+    "tags": ["购物", "特产", "折扣"],
+    "metadata": {
+      "version": "1.0.0",
+      "recordCount": 40000,
+      "lastUpdated": "2026-02-05"
+    },
+    "ragConfig": {
+      "vectorDimension": 1536,
+      "embeddingModel": "text-embedding-ada-002",
+      "chunkSize": 300,
+      "chunkOverlap": 30,
+      "retrievalStrategy": "hybrid",
+      "topK": 6,
+      "similarityThreshold": 0.65,
+      "rerankingEnabled": true,
+      "rerankingModel": "text-rerank-001"
+    },
+    "accessControl": {
+      "publicAccess": true,
+      "allowedAgents": ["companion", "guide"],
+      "rateLimitPerMinute": 60,
+      "requireAuth": false
+    },
+    "performanceConfig": {
+      "cacheEnabled": true,
+      "cacheTTL": 7200,
+      "maxConcurrentRequests": 40,
+      "queryTimeout": 20000,
+      "indexOptimized": true
+    },
+    "monitoringConfig": {
+      "logQueries": true,
+      "logRetrievals": true,
+      "trackLatency": true,
+      "alertOnErrors": true,
+      "metricsRetentionDays": 30
+    },
+    "versionInfo": {
+      "currentVersion": "2.0.0",
+      "previousVersion": "1.0.0",
+      "updateDate": "2026-02-10",
+      "updateNotes": "添加RAG配置和购物过滤",
+      "changelog": [
+        {
+          "version": "2.0.0",
+          "date": "2026-02-10",
+          "changes": ["添加RAG配置", "添加购物过滤", "优化检索策略"]
+        },
+        {
+          "version": "1.0.0",
+          "date": "2026-02-01",
+          "changes": ["初始版本"]
+        }
+      ]
+    },
+    "createdAt": 1739078400000,
+    "updatedAt": 1739078400000,
+    "_openid": "system"
+  },
+  {
+    "_id": "kb_011",
+    "name": "紧急服务库",
+    "description": "包含医院、警察、大使馆等紧急信息",
+    "type": "database",
+    "isEnabled": true,
+    "category": "emergency",
+    "content": "紧急服务库包含全球紧急服务信息，包括医院、警察、大使馆、领事馆、紧急电话等。",
+    "config": {
+      "dataSource": "mongodb",
+      "collection": "emergency",
+      "index": "destination,type"
+    },
+    "icon": "🚨",
+    "color": "#DC2626",
+    "priority": 11,
+    "tags": ["紧急", "医院", "警察"],
+    "metadata": {
+      "version": "1.0.0",
+      "recordCount": 20000,
+      "lastUpdated": "2026-02-08"
+    },
+    "ragConfig": {
+      "vectorDimension": 1536,
+      "embeddingModel": "text-embedding-ada-002",
+      "chunkSize": 250,
+      "chunkOverlap": 25,
+      "retrievalStrategy": "keyword",
+      "topK": 3,
+      "similarityThreshold": 0.5,
+      "rerankingEnabled": false,
+      "rerankingModel": null
+    },
+    "accessControl": {
+      "publicAccess": true,
+      "allowedAgents": ["itinerary", "companion"],
+      "rateLimitPerMinute": 300,
+      "requireAuth": false
+    },
+    "performanceConfig": {
+      "cacheEnabled": true,
+      "cacheTTL": 900,
+      "maxConcurrentRequests": 150,
+      "queryTimeout": 10000,
+      "indexOptimized": true
+    },
+    "monitoringConfig": {
+      "logQueries": true,
+      "logRetrievals": true,
+      "trackLatency": true,
+      "alertOnErrors": true,
+      "metricsRetentionDays": 90
+    },
+    "versionInfo": {
+      "currentVersion": "2.0.0",
+      "previousVersion": "1.0.0",
+      "updateDate": "2026-02-10",
+      "updateNotes": "添加RAG配置和紧急服务",
+      "changelog": [
+        {
+          "version": "2.0.0",
+          "date": "2026-02-10",
+          "changes": ["添加RAG配置", "优化紧急服务", "优化检索策略"]
+        },
+        {
+          "version": "1.0.0",
+          "date": "2026-02-01",
+          "changes": ["初始版本"]
+        }
+      ]
+    },
+    "createdAt": 1739078400000,
+    "updatedAt": 1739078400000,
+    "_openid": "system"
+  },
+  {
+    "_id": "kb_012",
+    "name": "当地文化库",
+    "description": "包含当地文化、习俗、礼仪等",
+    "type": "database",
+    "isEnabled": false,
+    "category": "culture",
+    "content": "当地文化库包含各地的文化、习俗、礼仪、禁忌、节日等信息，帮助用户更好地了解和融入当地文化。",
+    "config": {
+      "dataSource": "mongodb",
+      "collection": "local_culture",
+      "index": "destination,category"
+    },
+    "icon": "🎪",
+    "color": "#F59E0B",
+    "priority": 12,
+    "tags": ["文化", "习俗", "礼仪"],
+    "metadata": {
+      "version": "1.0.0",
+      "recordCount": 25000,
+      "lastUpdated": "2026-02-06"
+    },
+    "ragConfig": {
+      "vectorDimension": 1536,
+      "embeddingModel": "text-embedding-ada-002",
+      "chunkSize": 500,
+      "chunkOverlap": 50,
+      "retrievalStrategy": "semantic",
+      "topK": 5,
+      "similarityThreshold": 0.7,
+      "rerankingEnabled": true,
+      "rerankingModel": "text-rerank-001"
+    },
+    "accessControl": {
+      "publicAccess": true,
+      "allowedAgents": ["guide", "companion"],
+      "rateLimitPerMinute": 70,
+      "requireAuth": false
+    },
+    "performanceConfig": {
+      "cacheEnabled": true,
+      "cacheTTL": 5400,
+      "maxConcurrentRequests": 50,
+      "queryTimeout": 20000,
+      "indexOptimized": true
+    },
+    "monitoringConfig": {
+      "logQueries": true,
+      "logRetrievals": true,
+      "trackLatency": true,
+      "alertOnErrors": true,
+      "metricsRetentionDays": 45
+    },
+    "versionInfo": {
+      "currentVersion": "2.0.0",
+      "previousVersion": "1.0.0",
+      "updateDate": "2026-02-10",
+      "updateNotes": "添加RAG配置和当地文化",
+      "changelog": [
+        {
+          "version": "2.0.0",
+          "date": "2026-02-10",
+          "changes": ["添加RAG配置", "添加当地文化", "优化检索策略"]
+        },
+        {
+          "version": "1.0.0",
+          "date": "2026-02-01",
+          "changes": ["初始版本"]
+        }
+      ]
+    },
+    "createdAt": 1739078400000,
+    "updatedAt": 1739078400000,
+    "_openid": "system"
+  },
+  {
+    "_id": "kb_013",
+    "name": "货币汇率库",
+    "description": "提供实时货币汇率信息",
+    "type": "api",
+    "isEnabled": false,
+    "category": "finance",
+    "content": "货币汇率库通过第三方API获取实时货币汇率信息，支持全球主要货币的汇率查询和换算。",
+    "config": {
+      "apiEndpoint": "https://api.exchange.com/v1/rates",
+      "apiKey": "***",
+      "refreshInterval": 3600
+    },
+    "icon": "💱",
+    "color": "#059669",
+    "priority": 13,
+    "tags": ["汇率", "货币", "换算"],
+    "metadata": {
+      "version": "1.0.0",
+      "provider": "Exchange.com",
+      "lastUpdated": "2026-02-10"
+    },
+    "ragConfig": {
+      "vectorDimension": 768,
+      "embeddingModel": "text-embedding-small",
+      "chunkSize": 150,
+      "chunkOverlap": 15,
+      "retrievalStrategy": "keyword",
+      "topK": 3,
+      "similarityThreshold": 0.5,
+      "rerankingEnabled": false,
+      "rerankingModel": null,
+      "realtimeUpdate": true
+    },
+    "accessControl": {
+      "publicAccess": true,
+      "allowedAgents": ["itinerary", "recommendation"],
+      "rateLimitPerMinute": 400,
+      "requireAuth": false
+    },
+    "performanceConfig": {
+      "cacheEnabled": true,
+      "cacheTTL": 600,
+      "maxConcurrentRequests": 200,
+      "queryTimeout": 5000,
+      "indexOptimized": false
+    },
+    "monitoringConfig": {
+      "logQueries": true,
+      "logRetrievals": false,
+      "trackLatency": true,
+      "alertOnErrors": true,
+      "metricsRetentionDays": 7,
+      "apiHealthCheck": true
+    },
+    "versionInfo": {
+      "currentVersion": "2.0.0",
+      "previousVersion": "1.0.0",
+      "updateDate": "2026-02-10",
+      "updateNotes": "添加RAG配置和汇率API",
+      "changelog": [
+        {
+          "version": "2.0.0",
+          "date": "2026-02-10",
+          "changes": ["添加RAG配置", "添加汇率API", "优化缓存策略"]
+        },
+        {
+          "version": "1.0.0",
+          "date": "2026-02-01",
+          "changes": ["初始版本"]
+        }
+      ]
+    },
+    "createdAt": 1739078400000,
+    "updatedAt": 1739078400000,
+    "_openid": "system"
+  },
+  {
+    "_id": "kb_014",
+    "name": "签证信息库",
+    "description": "包含各国签证要求、流程等",
+    "type": "database",
+    "isEnabled": false,
+    "category": "visa",
+    "content": "签证信息库包含各国签证要求、申请流程、所需材料、办理时间、费用等信息。",
+    "config": {
+      "dataSource": "mongodb",
+      "collection": "visa",
+      "index": "destination,nationality"
+    },
+    "icon": "🛂",
+    "color": "#7C3AED",
+    "priority": 14,
+    "tags": ["签证", "护照", "入境"],
+    "metadata": {
+      "version": "1.0.0",
+      "recordCount": 200,
+      "lastUpdated": "2026-02-09"
+    },
+    "ragConfig": {
+      "vectorDimension": 1536,
+      "embeddingModel": "text-embedding-ada-002",
+      "chunkSize": 400,
+      "chunkOverlap": 40,
+      "retrievalStrategy": "hybrid",
+      "topK": 5,
+      "similarityThreshold": 0.7,
+      "rerankingEnabled": true,
+      "rerankingModel": "text-rerank-001"
+    },
+    "accessControl": {
+      "publicAccess": true,
+      "allowedAgents": ["itinerary", "guide"],
+      "rateLimitPerMinute": 80,
+      "requireAuth": false
+    },
+    "performanceConfig": {
+      "cacheEnabled": true,
+      "cacheTTL": 86400,
+      "maxConcurrentRequests": 40,
+      "queryTimeout": 25000,
+      "indexOptimized": true
+    },
+    "monitoringConfig": {
+      "logQueries": true,
+      "logRetrievals": true,
+      "trackLatency": true,
+      "alertOnErrors": true,
+      "metricsRetentionDays": 90
+    },
+    "versionInfo": {
+      "currentVersion": "2.0.0",
+      "previousVersion": "1.0.0",
+      "updateDate": "2026-02-10",
+      "updateNotes": "添加RAG配置和签证信息",
+      "changelog": [
+        {
+          "version": "2.0.0",
+          "date": "2026-02-10",
+          "changes": ["添加RAG配置", "添加签证信息", "优化检索策略"]
+        },
+        {
+          "version": "1.0.0",
+          "date": "2026-02-01",
+          "changes": ["初始版本"]
+        }
+      ]
+    },
+    "createdAt": 1739078400000,
+    "updatedAt": 1739078400000,
+    "_openid": "system"
+  },
+  {
+    "_id": "kb_015",
+    "name": "保险信息库",
+    "description": "包含旅游保险产品、理赔流程等",
+    "type": "database",
+    "isEnabled": false,
+    "category": "insurance",
+    "content": "保险信息库包含旅游保险产品、保障范围、理赔流程、费用、联系方式等信息。",
+    "config": {
+      "dataSource": "mongodb",
+      "collection": "insurance",
+      "index": "destination,type"
+    },
+    "icon": "🛡️",
+    "color": "#0891B2",
+    "priority": 15,
+    "tags": ["保险", "理赔", "保障"],
+    "metadata": {
+      "version": "1.0.0",
+      "recordCount": 5000,
+      "lastUpdated": "2026-02-08"
+    },
+    "ragConfig": {
+      "vectorDimension": 1536,
+      "embeddingModel": "text-embedding-ada-002",
+      "chunkSize": 350,
+      "chunkOverlap": 35,
+      "retrievalStrategy": "hybrid",
+      "topK": 5,
+      "similarityThreshold": 0.65,
+      "rerankingEnabled": true,
+      "rerankingModel": "text-rerank-001"
+    },
+    "accessControl": {
+      "publicAccess": true,
+      "allowedAgents": ["itinerary", "companion"],
+      "rateLimitPerMinute": 60,
+      "requireAuth": false
+    },
+    "performanceConfig": {
+      "cacheEnabled": true,
+      "cacheTTL": 7200,
+      "maxConcurrentRequests": 40,
+      "queryTimeout": 20000,
+      "indexOptimized": true
+    },
+    "monitoringConfig": {
+      "logQueries": true,
+      "logRetrievals": true,
+      "trackLatency": true,
+      "alertOnErrors": true,
+      "metricsRetentionDays": 60
+    },
+    "versionInfo": {
+      "currentVersion": "2.0.0",
+      "previousVersion": "1.0.0",
+      "updateDate": "2026-02-10",
+      "updateNotes": "添加RAG配置和保险信息",
+      "changelog": [
+        {
+          "version": "2.0.0",
+          "date": "2026-02-10",
+          "changes": ["添加RAG配置", "添加保险信息", "优化检索策略"]
+        },
+        {
+          "version": "1.0.0",
+          "date": "2026-02-01",
+          "changes": ["初始版本"]
+        }
+      ]
+    },
+    "createdAt": 1739078400000,
+    "updatedAt": 1739078400000,
+    "_openid": "system"
+  },
+  {
+    "_id": "kb_016",
+    "name": "推荐数据库",
+    "description": "包含个性化推荐算法和用户偏好数据",
+    "type": "database",
+    "isEnabled": true,
+    "category": "recommendation",
+    "content": "推荐数据库包含个性化推荐算法、用户偏好数据、推荐策略、推荐结果等信息，用于智能推荐。",
+    "config": {
+      "dataSource": "mongodb",
+      "collection": "recommendations",
+      "index": "userId,destination,type"
+    },
+    "icon": "🎯",
+    "color": "#EC4899",
+    "priority": 16,
+    "tags": ["推荐", "个性化", "算法"],
+    "metadata": {
+      "version": "1.0.0",
+      "recordCount": 200000,
+      "lastUpdated": "2026-02-10"
+    },
+    "ragConfig": {
+      "vectorDimension": 1536,
+      "embeddingModel": "text-embedding-ada-002",
+      "chunkSize": 300,
+      "chunkOverlap": 30,
+      "retrievalStrategy": "semantic",
+      "topK": 10,
+      "similarityThreshold": 0.6,
+      "rerankingEnabled": true,
+      "rerankingModel": "text-rerank-001",
+      "personalizationWeight": 0.9
+    },
+    "accessControl": {
+      "publicAccess": false,
+      "allowedAgents": ["recommendation", "itinerary"],
+      "rateLimitPerMinute": 150,
+      "requireAuth": true,
+      "userIsolation": true
+    },
+    "performanceConfig": {
+      "cacheEnabled": true,
+      "cacheTTL": 1800,
+      "maxConcurrentRequests": 80,
+      "queryTimeout": 20000,
+      "indexOptimized": true
+    },
+    "monitoringConfig": {
+      "logQueries": true,
+      "logRetrievals": true,
+      "trackLatency": true,
+      "alertOnErrors": true,
+      "metricsRetentionDays": 60,
+      "trackRecommendationAccuracy": true
+    },
+    "versionInfo": {
+      "currentVersion": "2.0.0",
+      "previousVersion": "1.0.0",
+      "updateDate": "2026-02-10",
+      "updateNotes": "添加RAG配置和推荐算法",
+      "changelog": [
+        {
+          "version": "2.0.0",
+          "date": "2026-02-10",
+          "changes": ["添加RAG配置", "添加推荐算法", "优化个性化权重"]
+        },
+        {
+          "version": "1.0.0",
+          "date": "2026-02-01",
+          "changes": ["初始版本"]
+        }
+      ]
+    },
+    "createdAt": 1739078400000,
+    "updatedAt": 1739078400000,
+    "_openid": "system"
+  },
+  {
+    "_id": "kb_017",
+    "name": "用户偏好数据库",
+    "description": "存储用户的偏好设置和个性化数据",
+    "type": "database",
+    "isEnabled": true,
+    "category": "user",
+    "content": "用户偏好数据库存储用户的偏好设置、个性化数据、兴趣标签、消费习惯等信息，用于个性化推荐。",
+    "config": {
+      "dataSource": "mongodb",
+      "collection": "user_preferences",
+      "index": "userId,category"
+    },
+    "icon": "💖",
+    "color": "#F472B6",
+    "priority": 17,
+    "tags": ["用户", "偏好", "个性化"],
+    "metadata": {
+      "version": "1.0.0",
+      "recordCount": 100000,
+      "lastUpdated": "2026-02-10"
+    },
+    "ragConfig": {
+      "vectorDimension": 1536,
+      "embeddingModel": "text-embedding-ada-002",
+      "chunkSize": 250,
+      "chunkOverlap": 25,
+      "retrievalStrategy": "semantic",
+      "topK": 8,
+      "similarityThreshold": 0.65,
+      "rerankingEnabled": true,
+      "rerankingModel": "text-rerank-001",
+      "personalizationWeight": 0.85
+    },
+    "accessControl": {
+      "publicAccess": false,
+      "allowedAgents": ["recommendation", "itinerary", "companion"],
+      "rateLimitPerMinute": 180,
+      "requireAuth": true,
+      "userIsolation": true
+    },
+    "performanceConfig": {
+      "cacheEnabled": true,
+      "cacheTTL": 1200,
+      "maxConcurrentRequests": 100,
+      "queryTimeout": 15000,
+      "indexOptimized": true
+    },
+    "monitoringConfig": {
+      "logQueries": true,
+      "logRetrievals": true,
+      "trackLatency": true,
+      "alertOnErrors": true,
+      "metricsRetentionDays": 90,
+      "privacyCompliance": true
+    },
+    "versionInfo": {
+      "currentVersion": "2.0.0",
+      "previousVersion": "1.0.0",
+      "updateDate": "2026-02-10",
+      "updateNotes": "添加RAG配置和用户偏好",
+      "changelog": [
+        {
+          "version": "2.0.0",
+          "date": "2026-02-10",
+          "changes": ["添加RAG配置", "添加用户偏好", "增强隐私保护"]
+        },
+        {
+          "version": "1.0.0",
+          "date": "2026-02-01",
+          "changes": ["初始版本"]
+        }
+      ]
+    },
+    "createdAt": 1739078400000,
+    "updatedAt": 1739078400000,
+    "_openid": "system"
+  },
+  {
+    "_id": "kb_018",
+    "name": "历史数据库",
+    "description": "包含各地的历史信息和历史事件",
+    "type": "database",
+    "isEnabled": true,
+    "category": "history",
+    "content": "历史数据库包含各地的历史信息、历史事件、历史人物、历史遗迹等内容，用于历史解说和文化体验。",
+    "config": {
+      "dataSource": "mongodb",
+      "collection": "history",
+      "index": "destination,period"
+    },
+    "icon": "📜",
+    "color": "#78716C",
+    "priority": 18,
+    "tags": ["历史", "事件", "遗迹"],
+    "metadata": {
+      "version": "1.0.0",
+      "recordCount": 35000,
+      "lastUpdated": "2026-02-07"
+    },
+    "ragConfig": {
+      "vectorDimension": 1536,
+      "embeddingModel": "text-embedding-ada-002",
+      "chunkSize": 550,
+      "chunkOverlap": 55,
+      "retrievalStrategy": "semantic",
+      "topK": 6,
+      "similarityThreshold": 0.7,
+      "rerankingEnabled": true,
+      "rerankingModel": "text-rerank-001",
+      "contextualExpansion": true
+    },
+    "accessControl": {
+      "publicAccess": true,
+      "allowedAgents": ["guide", "itinerary"],
+      "rateLimitPerMinute": 70,
+      "requireAuth": false
+    },
+    "performanceConfig": {
+      "cacheEnabled": true,
+      "cacheTTL": 5400,
+      "maxConcurrentRequests": 50,
+      "queryTimeout": 20000,
+      "indexOptimized": true
+    },
+    "monitoringConfig": {
+      "logQueries": true,
+      "logRetrievals": true,
+      "trackLatency": true,
+      "alertOnErrors": true,
+      "metricsRetentionDays": 45
+    },
+    "versionInfo": {
+      "currentVersion": "2.0.0",
+      "previousVersion": "1.0.0",
+      "updateDate": "2026-02-10",
+      "updateNotes": "添加RAG配置和历史信息",
+      "changelog": [
+        {
+          "version": "2.0.0",
+          "date": "2026-02-10",
+          "changes": ["添加RAG配置", "添加历史信息", "优化检索策略"]
+        },
+        {
+          "version": "1.0.0",
+          "date": "2026-02-01",
+          "changes": ["初始版本"]
+        }
+      ]
+    },
+    "createdAt": 1739078400000,
+    "updatedAt": 1739078400000,
+    "_openid": "system"
   }
 ]

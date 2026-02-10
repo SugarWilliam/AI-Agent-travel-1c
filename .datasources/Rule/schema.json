@@ -56,6 +56,26 @@
       "name": "color",
       "title": "颜色",
       "type": "String"
+    },
+    {
+      "name": "isBuiltIn",
+      "title": "是否内置",
+      "type": "Boolean"
+    },
+    {
+      "name": "executionConfig",
+      "title": "执行配置",
+      "type": "Object"
+    },
+    {
+      "name": "monitoringConfig",
+      "title": "监控配置",
+      "type": "Object"
+    },
+    {
+      "name": "versionInfo",
+      "title": "版本信息",
+      "type": "Object"
     }
   ]
 }

@@ -27,6 +27,25 @@
     },
     "icon": "Shield",
     "color": "from-green-500 to-emerald-500",
+    "isBuiltIn": true,
+    "executionConfig": {
+      "executionMode": "strict",
+      "allowExceptions": false,
+      "fallbackAction": "block",
+      "timeoutMs": 5000
+    },
+    "monitoringConfig": {
+      "logViolations": true,
+      "alertOnViolation": true,
+      "trackComplianceRate": true,
+      "metricsRetentionDays": 90
+    },
+    "versionInfo": {
+      "currentVersion": "2.0.0",
+      "previousVersion": "1.0.0",
+      "updateDate": "2026-02-10",
+      "updateNotes": "添加执行配置和监控配置"
+    },
     "createdAt": 1739078400000,
     "updatedAt": 1739078400000,
     "_openid": "user_001"
@@ -58,6 +77,25 @@
     },
     "icon": "Clock",
     "color": "from-blue-500 to-cyan-500",
+    "isBuiltIn": true,
+    "executionConfig": {
+      "executionMode": "balanced",
+      "allowExceptions": true,
+      "fallbackAction": "adjust",
+      "timeoutMs": 3000
+    },
+    "monitoringConfig": {
+      "logViolations": true,
+      "alertOnViolation": false,
+      "trackComplianceRate": true,
+      "metricsRetentionDays": 60
+    },
+    "versionInfo": {
+      "currentVersion": "2.0.0",
+      "previousVersion": "1.0.0",
+      "updateDate": "2026-02-10",
+      "updateNotes": "添加执行配置和监控配置"
+    },
     "createdAt": 1739078400000,
     "updatedAt": 1739078400000,
     "_openid": "user_001"
@@ -90,6 +128,25 @@
     },
     "icon": "DollarSign",
     "color": "from-yellow-500 to-orange-500",
+    "isBuiltIn": true,
+    "executionConfig": {
+      "executionMode": "strict",
+      "allowExceptions": true,
+      "fallbackAction": "warn",
+      "timeoutMs": 4000
+    },
+    "monitoringConfig": {
+      "logViolations": true,
+      "alertOnViolation": true,
+      "trackComplianceRate": true,
+      "metricsRetentionDays": 90
+    },
+    "versionInfo": {
+      "currentVersion": "2.0.0",
+      "previousVersion": "1.0.0",
+      "updateDate": "2026-02-10",
+      "updateNotes": "添加执行配置和监控配置"
+    },
     "createdAt": 1739078400000,
     "updatedAt": 1739078400000,
     "_openid": "user_001"
@@ -121,6 +178,25 @@
     },
     "icon": "Leaf",
     "color": "from-emerald-500 to-green-500",
+    "isBuiltIn": true,
+    "executionConfig": {
+      "executionMode": "soft",
+      "allowExceptions": true,
+      "fallbackAction": "suggest",
+      "timeoutMs": 3000
+    },
+    "monitoringConfig": {
+      "logViolations": true,
+      "alertOnViolation": false,
+      "trackComplianceRate": true,
+      "metricsRetentionDays": 30
+    },
+    "versionInfo": {
+      "currentVersion": "2.0.0",
+      "previousVersion": "1.0.0",
+      "updateDate": "2026-02-10",
+      "updateNotes": "添加执行配置和监控配置"
+    },
     "createdAt": 1739078400000,
     "updatedAt": 1739078400000,
     "_openid": "user_001"
@@ -152,6 +228,25 @@
     },
     "icon": "CheckCircle",
     "color": "from-blue-500 to-indigo-500",
+    "isBuiltIn": true,
+    "executionConfig": {
+      "executionMode": "strict",
+      "allowExceptions": false,
+      "fallbackAction": "block",
+      "timeoutMs": 5000
+    },
+    "monitoringConfig": {
+      "logViolations": true,
+      "alertOnViolation": true,
+      "trackComplianceRate": true,
+      "metricsRetentionDays": 90
+    },
+    "versionInfo": {
+      "currentVersion": "2.0.0",
+      "previousVersion": "1.0.0",
+      "updateDate": "2026-02-10",
+      "updateNotes": "添加执行配置和监控配置"
+    },
     "createdAt": 1739078400000,
     "updatedAt": 1739078400000,
     "_openid": "user_001"
@@ -182,6 +277,371 @@
     },
     "icon": "Sparkles",
     "color": "from-purple-500 to-pink-500",
+    "isBuiltIn": true,
+    "executionConfig": {
+      "executionMode": "soft",
+      "allowExceptions": true,
+      "fallbackAction": "suggest",
+      "timeoutMs": 3000
+    },
+    "monitoringConfig": {
+      "logViolations": false,
+      "alertOnViolation": false,
+      "trackComplianceRate": false,
+      "metricsRetentionDays": 30
+    },
+    "versionInfo": {
+      "currentVersion": "2.0.0",
+      "previousVersion": "1.0.0",
+      "updateDate": "2026-02-10",
+      "updateNotes": "添加执行配置和监控配置"
+    },
+    "createdAt": 1739078400000,
+    "updatedAt": 1739078400000,
+    "_openid": "user_001"
+  },
+  {
+    "_id": "rule_007",
+    "name": "交通便利",
+    "description": "优先推荐交通便利的路线和目的地，减少交通时间",
+    "category": "transport",
+    "isEnabled": true,
+    "priority": 7,
+    "conditions": [
+      "评估交通便捷性",
+      "计算交通时间",
+      "考虑交通成本"
+    ],
+    "actions": [
+      "推荐交通便利的路线",
+      "提供交通方案对比",
+      "优化交通安排"
+    ],
+    "agentTypes": [
+      "itinerary"
+    ],
+    "config": {
+      "maxTransferCount": 2,
+      "preferDirectRoute": true,
+      "showTransportOptions": true
+    },
+    "icon": "Route",
+    "color": "from-cyan-500 to-blue-500",
+    "isBuiltIn": true,
+    "executionConfig": {
+      "executionMode": "balanced",
+      "allowExceptions": true,
+      "fallbackAction": "adjust",
+      "timeoutMs": 4000
+    },
+    "monitoringConfig": {
+      "logViolations": true,
+      "alertOnViolation": false,
+      "trackComplianceRate": true,
+      "metricsRetentionDays": 60
+    },
+    "versionInfo": {
+      "currentVersion": "2.0.0",
+      "previousVersion": "1.0.0",
+      "updateDate": "2026-02-10",
+      "updateNotes": "添加执行配置和监控配置"
+    },
+    "createdAt": 1739078400000,
+    "updatedAt": 1739078400000,
+    "_openid": "user_001"
+  },
+  {
+    "_id": "rule_008",
+    "name": "文化尊重",
+    "description": "确保内容尊重当地文化和习俗，避免文化冲突",
+    "category": "culture",
+    "isEnabled": true,
+    "priority": 8,
+    "conditions": [
+      "识别文化敏感内容",
+      "检查文化禁忌"
+    ],
+    "actions": [
+      "提供文化背景说明",
+      "标注文化注意事项",
+      "避免文化冲突"
+    ],
+    "agentTypes": [
+      "guide"
+    ],
+    "config": {
+      "showCulturalTips": true,
+      "highlightTaboos": true,
+      "respectLocalCustoms": true
+    },
+    "icon": "Heart",
+    "color": "from-rose-500 to-pink-500",
+    "isBuiltIn": true,
+    "executionConfig": {
+      "executionMode": "strict",
+      "allowExceptions": false,
+      "fallbackAction": "block",
+      "timeoutMs": 5000
+    },
+    "monitoringConfig": {
+      "logViolations": true,
+      "alertOnViolation": true,
+      "trackComplianceRate": true,
+      "metricsRetentionDays": 90
+    },
+    "versionInfo": {
+      "currentVersion": "2.0.0",
+      "previousVersion": "1.0.0",
+      "updateDate": "2026-02-10",
+      "updateNotes": "添加执行配置和监控配置"
+    },
+    "createdAt": 1739078400000,
+    "updatedAt": 1739078400000,
+    "_openid": "user_001"
+  },
+  {
+    "_id": "rule_009",
+    "name": "实用性强",
+    "description": "提供实用且易于操作的建议，确保用户能够轻松实施",
+    "category": "usability",
+    "isEnabled": true,
+    "priority": 9,
+    "conditions": [
+      "评估建议实用性",
+      "检查操作难度"
+    ],
+    "actions": [
+      "提供具体操作步骤",
+      "简化复杂流程",
+      "提供实用工具"
+    ],
+    "agentTypes": [
+      "photo"
+    ],
+    "config": {
+      "stepByStepGuide": true,
+      "simplifyInstructions": true,
+      "provideTools": true
+    },
+    "icon": "Wrench",
+    "color": "from-slate-500 to-gray-500",
+    "isBuiltIn": true,
+    "executionConfig": {
+      "executionMode": "balanced",
+      "allowExceptions": true,
+      "fallbackAction": "adjust",
+      "timeoutMs": 3000
+    },
+    "monitoringConfig": {
+      "logViolations": true,
+      "alertOnViolation": false,
+      "trackComplianceRate": true,
+      "metricsRetentionDays": 60
+    },
+    "versionInfo": {
+      "currentVersion": "2.0.0",
+      "previousVersion": "1.0.0",
+      "updateDate": "2026-02-10",
+      "updateNotes": "添加执行配置和监控配置"
+    },
+    "createdAt": 1739078400000,
+    "updatedAt": 1739078400000,
+    "_openid": "user_001"
+  },
+  {
+    "_id": "rule_010",
+    "name": "易于理解",
+    "description": "使用简单易懂的语言，避免专业术语和复杂表达",
+    "category": "usability",
+    "isEnabled": true,
+    "priority": 10,
+    "conditions": [
+      "检测专业术语",
+      "评估语言复杂度"
+    ],
+    "actions": [
+      "简化语言表达",
+      "解释专业术语",
+      "使用比喻和类比"
+    ],
+    "agentTypes": [
+      "photo"
+    ],
+    "config": {
+      "avoidJargon": true,
+      "useSimpleLanguage": true,
+      "provideExamples": true
+    },
+    "icon": "MessageCircle",
+    "color": "from-teal-500 to-cyan-500",
+    "isBuiltIn": true,
+    "executionConfig": {
+      "executionMode": "soft",
+      "allowExceptions": true,
+      "fallbackAction": "suggest",
+      "timeoutMs": 3000
+    },
+    "monitoringConfig": {
+      "logViolations": true,
+      "alertOnViolation": false,
+      "trackComplianceRate": true,
+      "metricsRetentionDays": 60
+    },
+    "versionInfo": {
+      "currentVersion": "2.0.0",
+      "previousVersion": "1.0.0",
+      "updateDate": "2026-02-10",
+      "updateNotes": "添加执行配置和监控配置"
+    },
+    "createdAt": 1739078400000,
+    "updatedAt": 1739078400000,
+    "_openid": "user_001"
+  },
+  {
+    "_id": "rule_011",
+    "name": "个性化",
+    "description": "根据用户偏好和历史行为，提供个性化的推荐和建议",
+    "category": "personalization",
+    "isEnabled": true,
+    "priority": 11,
+    "conditions": [
+      "分析用户偏好",
+      "查看历史行为",
+      "识别用户兴趣"
+    ],
+    "actions": [
+      "个性化推荐",
+      "定制化建议",
+      "动态调整内容"
+    ],
+    "agentTypes": [
+      "recommendation"
+    ],
+    "config": {
+      "useUserHistory": true,
+      "personalizationWeight": 0.7,
+      "adaptiveContent": true
+    },
+    "icon": "User",
+    "color": "from-violet-500 to-purple-500",
+    "isBuiltIn": true,
+    "executionConfig": {
+      "executionMode": "balanced",
+      "allowExceptions": true,
+      "fallbackAction": "adjust",
+      "timeoutMs": 4000
+    },
+    "monitoringConfig": {
+      "logViolations": true,
+      "alertOnViolation": false,
+      "trackComplianceRate": true,
+      "metricsRetentionDays": 90
+    },
+    "versionInfo": {
+      "currentVersion": "2.0.0",
+      "previousVersion": "1.0.0",
+      "updateDate": "2026-02-10",
+      "updateNotes": "添加执行配置和监控配置"
+    },
+    "createdAt": 1739078400000,
+    "updatedAt": 1739078400000,
+    "_openid": "user_001"
+  },
+  {
+    "_id": "rule_012",
+    "name": "实时更新",
+    "description": "使用最新的数据和实时信息，确保推荐的时效性",
+    "category": "realtime",
+    "isEnabled": true,
+    "priority": 12,
+    "conditions": [
+      "检查数据时效性",
+      "验证实时信息"
+    ],
+    "actions": [
+      "获取实时数据",
+      "更新推荐内容",
+      "标注更新时间"
+    ],
+    "agentTypes": [
+      "recommendation"
+    ],
+    "config": {
+      "dataFreshnessThreshold": 3600,
+      "autoUpdate": true,
+      "showLastUpdateTime": true
+    },
+    "icon": "RefreshCw",
+    "color": "from-sky-500 to-blue-500",
+    "isBuiltIn": true,
+    "executionConfig": {
+      "executionMode": "strict",
+      "allowExceptions": false,
+      "fallbackAction": "block",
+      "timeoutMs": 5000
+    },
+    "monitoringConfig": {
+      "logViolations": true,
+      "alertOnViolation": true,
+      "trackComplianceRate": true,
+      "metricsRetentionDays": 30
+    },
+    "versionInfo": {
+      "currentVersion": "2.0.0",
+      "previousVersion": "1.0.0",
+      "updateDate": "2026-02-10",
+      "updateNotes": "添加执行配置和监控配置"
+    },
+    "createdAt": 1739078400000,
+    "updatedAt": 1739078400000,
+    "_openid": "user_001"
+  },
+  {
+    "_id": "rule_013",
+    "name": "精准匹配",
+    "description": "根据用户需求精准匹配推荐内容，提高推荐准确性",
+    "category": "matching",
+    "isEnabled": true,
+    "priority": 13,
+    "conditions": [
+      "分析用户需求",
+      "评估匹配度",
+      "过滤不相关内容"
+    ],
+    "actions": [
+      "精准匹配推荐",
+      "提供匹配度评分",
+      "优化推荐算法"
+    ],
+    "agentTypes": [
+      "recommendation"
+    ],
+    "config": {
+      "minMatchScore": 0.8,
+      "showMatchScore": true,
+      "useAdvancedMatching": true
+    },
+    "icon": "Target",
+    "color": "from-red-500 to-orange-500",
+    "isBuiltIn": true,
+    "executionConfig": {
+      "executionMode": "balanced",
+      "allowExceptions": true,
+      "fallbackAction": "adjust",
+      "timeoutMs": 4000
+    },
+    "monitoringConfig": {
+      "logViolations": true,
+      "alertOnViolation": false,
+      "trackComplianceRate": true,
+      "metricsRetentionDays": 90
+    },
+    "versionInfo": {
+      "currentVersion": "2.0.0",
+      "previousVersion": "1.0.0",
+      "updateDate": "2026-02-10",
+      "updateNotes": "添加执行配置和监控配置"
+    },
     "createdAt": 1739078400000,
     "updatedAt": 1739078400000,
     "_openid": "user_001"
