@@ -78,11 +78,61 @@ export default function Settings(props) {
   const [notifications, setNotifications] = useState(true);
   const [autoSync, setAutoSync] = useState(true);
 
-  // 使用全局设置获取语言和主题状态
-  const {
-    language,
-    darkMode
-  } = useGlobalSettings();
+  // 尝试使用全局设置，如果没有 Provider 则使用本地状态
+  let globalSettings;
+  try {
+    globalSettings = useGlobalSettings();
+  } catch (error) {
+    globalSettings = null;
+  }
+
+  // 本地状态管理（当没有 Provider 时使用）
+  const [localLanguage, setLocalLanguage] = useState(() => {
+    const saved = localStorage.getItem('app-language');
+    return saved || 'zh';
+  });
+  const [localDarkMode, setLocalDarkMode] = useState(() => {
+    const saved = localStorage.getItem('app-darkMode');
+    return saved === 'true';
+  });
+
+  // 同步 localStorage 的变化到本地状态
+  useEffect(() => {
+    if (!globalSettings) {
+      const handleStorageChange = () => {
+        const savedLanguage = localStorage.getItem('app-language');
+        const savedDarkMode = localStorage.getItem('app-darkMode');
+        if (savedLanguage) setLocalLanguage(savedLanguage);
+        if (savedDarkMode) setLocalDarkMode(savedDarkMode === 'true');
+      };
+      window.addEventListener('storage', handleStorageChange);
+      return () => window.removeEventListener('storage', handleStorageChange);
+    }
+  }, [globalSettings]);
+
+  // 监听自定义事件
+  useEffect(() => {
+    if (!globalSettings) {
+      const handleLanguageChange = () => {
+        const savedLanguage = localStorage.getItem('app-language');
+        if (savedLanguage) setLocalLanguage(savedLanguage);
+      };
+      const handleThemeChange = () => {
+        const savedDarkMode = localStorage.getItem('app-darkMode');
+        if (savedDarkMode) setLocalDarkMode(savedDarkMode === 'true');
+      };
+      window.addEventListener('language-change', handleLanguageChange);
+      window.addEventListener('theme-change', handleThemeChange);
+      return () => {
+        window.removeEventListener('language-change', handleLanguageChange);
+        window.removeEventListener('theme-change', handleThemeChange);
+      };
+    }
+  }, [globalSettings]);
+
+  // 使用全局设置或本地状态
+  const language = globalSettings?.language || localLanguage;
+  const darkMode = globalSettings?.darkMode || localDarkMode;
   const t = i18n[language] || i18n.zh;
   const handleBack = () => {
     props.$w.utils.navigateBack();

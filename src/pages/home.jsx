@@ -61,10 +61,46 @@ export default function Home(props) {
     toast
   } = useToast();
 
-  // 使用全局设置获取语言状态
-  const {
-    language
-  } = useGlobalSettings();
+  // 尝试使用全局设置，如果没有 Provider 则使用本地状态
+  let globalSettings;
+  try {
+    globalSettings = useGlobalSettings();
+  } catch (error) {
+    globalSettings = null;
+  }
+
+  // 本地状态管理（当没有 Provider 时使用）
+  const [localLanguage, setLocalLanguage] = useState(() => {
+    const saved = localStorage.getItem('app-language');
+    return saved || 'zh';
+  });
+
+  // 同步 localStorage 的变化到本地状态
+  useEffect(() => {
+    if (!globalSettings) {
+      const handleStorageChange = () => {
+        const savedLanguage = localStorage.getItem('app-language');
+        if (savedLanguage) setLocalLanguage(savedLanguage);
+      };
+      window.addEventListener('storage', handleStorageChange);
+      return () => window.removeEventListener('storage', handleStorageChange);
+    }
+  }, [globalSettings]);
+
+  // 监听自定义事件
+  useEffect(() => {
+    if (!globalSettings) {
+      const handleLanguageChange = () => {
+        const savedLanguage = localStorage.getItem('app-language');
+        if (savedLanguage) setLocalLanguage(savedLanguage);
+      };
+      window.addEventListener('language-change', handleLanguageChange);
+      return () => window.removeEventListener('language-change', handleLanguageChange);
+    }
+  }, [globalSettings]);
+
+  // 使用全局设置或本地状态
+  const language = globalSettings?.language || localLanguage;
   const t = i18n[language] || i18n.zh;
   const [plans, setPlans] = useState([{
     id: '1',
