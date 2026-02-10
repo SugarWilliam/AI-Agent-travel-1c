@@ -67,6 +67,56 @@ const translations = {
     configInfo: 'Configuration Information'
   }
 };
+
+// Agent 模式的标签配置
+const agentTabConfig = [{
+  id: 'basic',
+  label: 'basicInfo',
+  icon: Type
+}, {
+  id: 'models',
+  label: 'models',
+  icon: Brain
+}, {
+  id: 'skills',
+  label: 'skills',
+  icon: Zap
+}, {
+  id: 'rules',
+  label: 'rules',
+  icon: FileText
+}, {
+  id: 'rag',
+  label: 'rag',
+  icon: Database
+}, {
+  id: 'mcp',
+  label: 'mcp',
+  icon: Code
+}];
+
+// 全局配置模式的标签配置
+const globalTabConfig = [{
+  id: 'models',
+  label: 'models',
+  icon: Brain
+}, {
+  id: 'skills',
+  label: 'skills',
+  icon: Zap
+}, {
+  id: 'rules',
+  label: 'rules',
+  icon: FileText
+}, {
+  id: 'rag',
+  label: 'rag',
+  icon: Database
+}, {
+  id: 'mcp',
+  label: 'mcp',
+  icon: Code
+}];
 export default function AIConfig(props) {
   const {
     toast
@@ -448,9 +498,10 @@ export default function AIConfig(props) {
   // 辅助函数：渲染标签按钮
   const renderTabButton = item => {
     const IconComponent = item.icon;
+    const label = typeof item.label === 'string' && t[item.label] ? t[item.label] : item.label;
     return <button key={item.id} onClick={() => setActiveTab(item.id)} className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${activeTab === item.id ? 'bg-gradient-to-r from-[#FF6B6B] to-[#4ECDC4] text-white shadow-md' : darkMode ? 'text-gray-300 hover:bg-gray-700' : 'text-gray-600 hover:bg-gray-100'}`}>
         <IconComponent className="w-5 h-5" />
-        <span className="font-medium">{item.label}</span>
+        <span className="font-medium">{label}</span>
       </button>;
   };
   const handleBack = () => {
@@ -651,51 +702,7 @@ export default function AIConfig(props) {
         <div className={`w-64 shadow-lg ${darkMode ? 'bg-gray-800' : 'bg-white'}`}>
           <div className="p-4">
             <nav className="space-y-2">
-              {isAgentMode ? [{
-              id: 'basic',
-              label: t.basicInfo,
-              icon: Type
-            }, {
-              id: 'models',
-              label: t.models,
-              icon: Brain
-            }, {
-              id: 'skills',
-              label: t.skills,
-              icon: Zap
-            }, {
-              id: 'rules',
-              label: t.rules,
-              icon: FileText
-            }, {
-              id: 'rag',
-              label: t.rag,
-              icon: Database
-            }, {
-              id: 'mcp',
-              label: t.mcp,
-              icon: Code
-            }] : [{
-              id: 'models',
-              label: t.models,
-              icon: Brain
-            }, {
-              id: 'skills',
-              label: t.skills,
-              icon: Zap
-            }, {
-              id: 'rules',
-              label: t.rules,
-              icon: FileText
-            }, {
-              id: 'rag',
-              label: t.rag,
-              icon: Database
-            }, {
-              id: 'mcp',
-              label: t.mcp,
-              icon: Code
-            }]}.map(renderTabButton)
+              {(isAgentMode ? agentTabConfig : globalTabConfig).map(renderTabButton)}
             </nav>
           </div>
         </div>
