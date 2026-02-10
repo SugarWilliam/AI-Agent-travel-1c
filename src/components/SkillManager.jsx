@@ -298,19 +298,30 @@ export function SkillManager({
                     </span>
                   </div>
                   
-                  <p className="text-sm text-gray-600 mb-2">{skill.description}</p>
+                  <p className="text-sm text-gray-600 mb-3">{skill.description}</p>
 
-                  {skill.tags && skill.tags.length > 0 && <div className="flex flex-wrap gap-1 mb-2">
+                  {skill.tags && skill.tags.length > 0 && <div className="flex flex-wrap gap-1 mb-3">
                       {skill.tags.map((tag, index) => <span key={index} className="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded-full">
                           {tag}
                         </span>)}
                     </div>}
 
-                  <div className="flex gap-4 text-xs text-gray-500">
-                    <span>优先级: {skill.priority}</span>
-                    <span>超时: {skill.timeout}s</span>
-                    {skill.examples && skill.examples.length > 0 && <span>示例: {skill.examples.length}个</span>}
+                  <div className="grid grid-cols-3 gap-2 text-xs text-gray-500 mb-3">
+                    <div className="px-2 py-1 bg-gray-50 rounded">
+                      优先级: {skill.priority}
+                    </div>
+                    <div className="px-2 py-1 bg-gray-50 rounded">
+                      超时: {skill.timeout}s
+                    </div>
+                    {skill.examples && skill.examples.length > 0 && <div className="px-2 py-1 bg-gray-50 rounded">
+                        示例: {skill.examples.length}个
+                      </div>}
                   </div>
+
+                  {skill.parameters && Object.keys(skill.parameters).length > 0 && <div className="text-xs text-gray-500">
+                      <span className="font-medium">参数: </span>
+                      {Object.keys(skill.parameters).join(', ')}
+                    </div>}
                 </div>
 
                 <div className="flex gap-2">

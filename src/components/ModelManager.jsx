@@ -1,7 +1,7 @@
 // @ts-ignore;
 import React, { useState, useEffect } from 'react';
 // @ts-ignore;
-import { Plus, Edit, Trash2, Check, X, Settings, Brain, Database, FileText, Code, Zap, Key, Globe, Lock, Unlock } from 'lucide-react';
+import { Plus, Edit, Trash2, Check, X, Settings, Brain, Database, FileText, Code, Zap, Key, Globe, Lock, Unlock, ImageIcon } from 'lucide-react';
 // @ts-ignore;
 import { useToast, Button, Input, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Switch, Textarea } from '@/components/ui';
 
@@ -16,6 +16,8 @@ export function ModelManager({
   const [showAddModal, setShowAddModal] = useState(false);
   const [editingModel, setEditingModel] = useState(null);
   const [showApiKey, setShowApiKey] = useState({});
+  const [filterProvider, setFilterProvider] = useState('all');
+  const [filterCost, setFilterCost] = useState('all');
   const [formData, setFormData] = useState({
     modelName: '',
     modelId: '',
@@ -51,7 +53,72 @@ export function ModelManager({
         }
       });
       if (result.result.success) {
-        setModels(result.result.data);
+        const loadedModels = result.result.data;
+
+        // 添加默认模型（如果不存在）
+        const defaultModels = [{
+          _id: 'model_deepseek',
+          modelId: 'deepseek-chat',
+          modelName: 'DeepSeek Chat',
+          provider: '月之暗面',
+          description: '高性能中文大模型，代码能力强',
+          maxTokens: 128000,
+          temperature: 0.7,
+          costLevel: 'low',
+          capabilities: {
+            documentParsing: true,
+            imageRecognition: false,
+            multimodal: false,
+            webScraping: true
+          },
+          isRecommended: true,
+          status: 'active',
+          createdAt: Date.now(),
+          updatedAt: Date.now()
+        }, {
+          _id: 'model_glm',
+          modelId: 'glm-4',
+          modelName: 'GLM-4',
+          provider: '智谱AI',
+          description: '新一代认知大模型，多模态能力强',
+          maxTokens: 128000,
+          temperature: 0.7,
+          costLevel: 'medium',
+          capabilities: {
+            documentParsing: true,
+            imageRecognition: true,
+            multimodal: true,
+            webScraping: true
+          },
+          isRecommended: false,
+          status: 'active',
+          createdAt: Date.now(),
+          updatedAt: Date.now()
+        }, {
+          _id: 'model_kimi',
+          modelId: 'moonshot-v1',
+          modelName: 'Kimi',
+          provider: '月之暗面',
+          description: '长文本处理能力强，支持超长上下文',
+          maxTokens: 2000000,
+          temperature: 0.7,
+          costLevel: 'medium',
+          capabilities: {
+            documentParsing: true,
+            imageRecognition: false,
+            multimodal: false,
+            webScraping: true
+          },
+          isRecommended: false,
+          status: 'active',
+          createdAt: Date.now(),
+          updatedAt: Date.now()
+        }];
+
+        // 合并模型列表，避免重复
+        const existingModelIds = loadedModels.map(m => m.modelId);
+        const newModels = defaultModels.filter(m => !existingModelIds.includes(m.modelId));
+        setModels([...loadedModels, ...newModels]);
       } else {
         toast({
           title: '加载失败',
@@ -233,6 +300,11 @@ export function ModelManager({
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#FF6B6B]"></div>
       </div>;
   }
+  const filteredModels = models.filter(model => {
+    if (filterProvider !== 'all' && model.provider !== filterProvider) return false;
+    if (filterCost !== 'all' && model.costLevel !== filterCost) return false;
+    return true;
+  });
   return <div className="space-y-4">
       {/* Header */}
       <div className="flex items-center justify-between">
@@ -254,9 +326,33 @@ export function ModelManager({
         </Button>
       </div>
 
+      {/* Filters */}
+      <div className="flex gap-3">
+        <Select value={filterProvider} onValueChange={setFilterProvider}>
+          <SelectTrigger className="w-40">
+            <SelectValue placeholder="全部提供商" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">全部提供商</SelectItem>
+            {providers.map(provider => <SelectItem key={provider} value={provider}>{provider}</SelectItem>)}
+          </SelectContent>
+        </Select>
+        <Select value={filterCost} onValueChange={setFilterCost}>
+          <SelectTrigger className="w-32">
+            <SelectValue placeholder="全部成本" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">全部成本</SelectItem>
+            <SelectItem value="low">低成本</SelectItem>
+            <SelectItem value="medium">中成本</SelectItem>
+            <SelectItem value="high">高成本</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+
       {/* Model List */}
       <div className="space-y-3">
-        {models.map(model => <div key={model._id} className="bg-white rounded-xl p-4 shadow-md hover:shadow-lg transition-all">
+        {filteredModels.map(model => <div key={model._id} className="bg-white rounded-xl p-4 shadow-md hover:shadow-lg transition-all">
             <div className="flex items-start justify-between mb-3">
               <div className="flex-1">
                 <div className="flex items-center gap-2 mb-2">
@@ -272,13 +368,20 @@ export function ModelManager({
                       推荐
                     </span>}
                 </div>
-                <p className="text-sm text-gray-600 mb-2">{model.description}</p>
-                <div className="flex items-center gap-2 text-xs text-gray-500">
-                  <span className={`px-2 py-1 rounded ${getCostLevelColor(model.costLevel)}`}>
-                    {model.costLevel === 'low' ? '低成本' : model.costLevel === 'medium' ? '中成本' : '高成本'}
-                  </span>
-                  <span>最大Tokens: {model.maxTokens}</span>
-                  <span>温度: {model.temperature}</span>
+                <p className="text-sm text-gray-600 mb-3">{model.description}</p>
+                <div className="grid grid-cols-2 gap-2 text-xs text-gray-500 mb-3">
+                  <div className={`px-2 py-1 rounded ${getCostLevelColor(model.costLevel)}`}>
+                    成本: {model.costLevel === 'low' ? '低' : model.costLevel === 'medium' ? '中' : '高'}
+                  </div>
+                  <div className="px-2 py-1 bg-gray-100 rounded">
+                    最大Tokens: {model.maxTokens.toLocaleString()}
+                  </div>
+                  <div className="px-2 py-1 bg-gray-100 rounded">
+                    温度: {model.temperature}
+                  </div>
+                  <div className={`px-2 py-1 rounded ${model.status === 'active' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-700'}`}>
+                    {model.status === 'active' ? '已启用' : '已禁用'}
+                  </div>
                 </div>
               </div>
               <div className="flex gap-1">
@@ -318,19 +421,24 @@ export function ModelManager({
 
             {/* Capabilities */}
             <div className="mt-3 pt-3 border-t border-gray-100">
-              <div className="flex flex-wrap gap-2">
-                {model.capabilities?.documentParsing && <span className="px-2 py-1 bg-blue-100 text-blue-700 rounded text-xs">
-                    文档解析
-                  </span>}
-                {model.capabilities?.imageRecognition && <span className="px-2 py-1 bg-purple-100 text-purple-700 rounded text-xs">
-                    图像识别
-                  </span>}
-                {model.capabilities?.multimodal && <span className="px-2 py-1 bg-pink-100 text-pink-700 rounded text-xs">
-                    多模态
-                  </span>}
-                {model.capabilities?.webScraping && <span className="px-2 py-1 bg-green-100 text-green-700 rounded text-xs">
-                    网页抓取
-                  </span>}
+              <div className="text-xs text-gray-500 mb-2 font-medium">能力特性</div>
+              <div className="grid grid-cols-2 gap-2">
+                {model.capabilities?.documentParsing && <div className="flex items-center gap-2 px-2 py-1 bg-blue-50 rounded">
+                    <FileText className="w-3 h-3 text-blue-600" />
+                    <span className="text-xs text-blue-700">文档解析</span>
+                  </div>}
+                {model.capabilities?.imageRecognition && <div className="flex items-center gap-2 px-2 py-1 bg-purple-50 rounded">
+                    <ImageIcon className="w-3 h-3 text-purple-600" />
+                    <span className="text-xs text-purple-700">图像识别</span>
+                  </div>}
+                {model.capabilities?.multimodal && <div className="flex items-center gap-2 px-2 py-1 bg-pink-50 rounded">
+                    <Zap className="w-3 h-3 text-pink-600" />
+                    <span className="text-xs text-pink-700">多模态</span>
+                  </div>}
+                {model.capabilities?.webScraping && <div className="flex items-center gap-2 px-2 py-1 bg-green-50 rounded">
+                    <Globe className="w-3 h-3 text-green-600" />
+                    <span className="text-xs text-green-700">网页抓取</span>
+                  </div>}
               </div>
             </div>
 
