@@ -68,6 +68,8 @@ export function LanguageThemeToggle() {
     // 如果没有 Provider，使用本地状态
     context = null;
   }
+
+  // 本地状态管理（当没有 Provider 时使用）
   const [localLanguage, setLocalLanguage] = useState(() => {
     const saved = localStorage.getItem('app-language');
     return saved || 'zh';
@@ -76,6 +78,32 @@ export function LanguageThemeToggle() {
     const saved = localStorage.getItem('app-darkMode');
     return saved === 'true';
   });
+
+  // 同步 localStorage 的变化到本地状态
+  useEffect(() => {
+    if (!context) {
+      const handleStorageChange = () => {
+        const savedLanguage = localStorage.getItem('app-language');
+        const savedDarkMode = localStorage.getItem('app-darkMode');
+        if (savedLanguage) setLocalLanguage(savedLanguage);
+        if (savedDarkMode) setLocalDarkMode(savedDarkMode === 'true');
+      };
+      window.addEventListener('storage', handleStorageChange);
+      return () => window.removeEventListener('storage', handleStorageChange);
+    }
+  }, [context]);
+
+  // 初始化主题
+  useEffect(() => {
+    if (!context) {
+      const savedDarkMode = localStorage.getItem('app-darkMode');
+      if (savedDarkMode === 'true') {
+        document.body.classList.add('dark');
+      } else {
+        document.body.classList.remove('dark');
+      }
+    }
+  }, [context]);
   const language = context?.language || localLanguage;
   const darkMode = context?.darkMode || localDarkMode;
   const toggleLanguage = () => {
@@ -85,6 +113,8 @@ export function LanguageThemeToggle() {
     } else {
       setLocalLanguage(newLanguage);
       localStorage.setItem('app-language', newLanguage);
+      // 触发自定义事件，通知其他组件
+      window.dispatchEvent(new Event('language-change'));
     }
   };
   const toggleDarkMode = () => {
@@ -99,6 +129,8 @@ export function LanguageThemeToggle() {
       } else {
         document.body.classList.remove('dark');
       }
+      // 触发自定义事件，通知其他组件
+      window.dispatchEvent(new Event('theme-change'));
     }
   };
   return <div className="flex items-center gap-2">

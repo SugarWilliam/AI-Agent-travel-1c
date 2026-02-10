@@ -51,10 +51,24 @@ export default function AIConfig(props) {
   const [selectedModel, setSelectedModel] = useState('gpt-4');
   const [aiConfig, setAiConfig] = useState(null);
   const [loading, setLoading] = useState(true);
-  const {
-    language,
-    darkMode
-  } = useGlobalSettings();
+
+  // 尝试使用全局设置，如果没有 Provider 则使用本地状态
+  let globalSettings;
+  try {
+    globalSettings = useGlobalSettings();
+  } catch (error) {
+    globalSettings = null;
+  }
+  const [localLanguage, setLocalLanguage] = useState(() => {
+    const saved = localStorage.getItem('app-language');
+    return saved || 'zh';
+  });
+  const [localDarkMode, setLocalDarkMode] = useState(() => {
+    const saved = localStorage.getItem('app-darkMode');
+    return saved === 'true';
+  });
+  const language = globalSettings?.language || localLanguage;
+  const darkMode = globalSettings?.darkMode || localDarkMode;
   const t = translations[language];
 
   // 原有的状态管理

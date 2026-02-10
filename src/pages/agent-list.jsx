@@ -19,6 +19,24 @@ export default function AgentList(props) {
   const [error, setError] = useState(null);
   const [retryCount, setRetryCount] = useState(0);
 
+  // 深色模式支持
+  const [darkMode, setDarkMode] = useState(() => {
+    const saved = localStorage.getItem('app-darkMode');
+    return saved === 'true';
+  });
+  useEffect(() => {
+    const handleStorageChange = () => {
+      const savedDarkMode = localStorage.getItem('app-darkMode');
+      setDarkMode(savedDarkMode === 'true');
+    };
+    window.addEventListener('storage', handleStorageChange);
+    window.addEventListener('theme-change', handleStorageChange);
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+      window.removeEventListener('theme-change', handleStorageChange);
+    };
+  }, []);
+
   // 内置的4个AI Agent
   const defaultAgents = [{
     _id: '1',
@@ -371,13 +389,13 @@ export default function AgentList(props) {
       });
     }
   };
-  return <div className="min-h-screen bg-gradient-to-br from-amber-50 via-orange-50 to-rose-50">
+  return <div className={`min-h-screen ${darkMode ? 'bg-gray-900' : 'bg-gradient-to-br from-amber-50 via-orange-50 to-rose-50'}`}>
       {/* Header */}
-      <div className="bg-white/80 backdrop-blur-sm border-b border-gray-200">
+      <div className={`backdrop-blur-sm border-b ${darkMode ? 'bg-gray-800/80 border-gray-700' : 'bg-white/80 border-gray-200'}`}>
         <div className="max-w-7xl mx-auto px-4 py-6">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <button onClick={() => props.$w.utils.navigateBack()} className="p-2 hover:bg-gray-100 rounded-xl transition-colors">
+              <button onClick={() => props.$w.utils.navigateBack()} className={`p-2 rounded-xl transition-colors ${darkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-100'}`}>
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
                 </svg>
@@ -428,26 +446,26 @@ export default function AgentList(props) {
 
       {/* Search and Filter */}
       <div className="max-w-7xl mx-auto px-4 py-6">
-        <div className="bg-white rounded-2xl shadow-lg p-6 mb-6">
+        <div className={`rounded-2xl shadow-lg p-6 mb-6 ${darkMode ? 'bg-gray-800' : 'bg-white'}`}>
           <div className="flex flex-col sm:flex-row gap-4">
             <div className="flex-1 relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-              <input type="text" placeholder="搜索Agent名称或描述..." value={searchQuery} onChange={e => setSearchQuery(e.target.value)} className="w-full pl-10 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all" style={{
+              <input type="text" placeholder="搜索Agent名称或描述..." value={searchQuery} onChange={e => setSearchQuery(e.target.value)} className={`w-full pl-10 pr-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all ${darkMode ? 'bg-gray-700 border-gray-600 text-white' : 'bg-gray-50 border-gray-200'}`} style={{
               fontFamily: 'Quicksand, sans-serif'
             }} />
             </div>
             <div className="flex gap-2">
-              <button onClick={() => setStatusFilter('all')} className={`px-4 py-2 rounded-xl font-medium transition-all ${statusFilter === 'all' ? 'bg-gradient-to-r from-orange-500 to-pink-500 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`} style={{
+              <button onClick={() => setStatusFilter('all')} className={`px-4 py-2 rounded-xl font-medium transition-all ${statusFilter === 'all' ? 'bg-gradient-to-r from-orange-500 to-pink-500 text-white' : darkMode ? 'bg-gray-700 text-gray-300 hover:bg-gray-600' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`} style={{
               fontFamily: 'Quicksand, sans-serif'
             }}>
                 全部
               </button>
-              <button onClick={() => setStatusFilter('active')} className={`px-4 py-2 rounded-xl font-medium transition-all ${statusFilter === 'active' ? 'bg-gradient-to-r from-orange-500 to-pink-500 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`} style={{
+              <button onClick={() => setStatusFilter('active')} className={`px-4 py-2 rounded-xl font-medium transition-all ${statusFilter === 'active' ? 'bg-gradient-to-r from-orange-500 to-pink-500 text-white' : darkMode ? 'bg-gray-700 text-gray-300 hover:bg-gray-600' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`} style={{
               fontFamily: 'Quicksand, sans-serif'
             }}>
                 已启用
               </button>
-              <button onClick={() => setStatusFilter('inactive')} className={`px-4 py-2 rounded-xl font-medium transition-all ${statusFilter === 'inactive' ? 'bg-gradient-to-r from-orange-500 to-pink-500 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`} style={{
+              <button onClick={() => setStatusFilter('inactive')} className={`px-4 py-2 rounded-xl font-medium transition-all ${statusFilter === 'inactive' ? 'bg-gradient-to-r from-orange-500 to-pink-500 text-white' : darkMode ? 'bg-gray-700 text-gray-300 hover:bg-gray-600' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`} style={{
               fontFamily: 'Quicksand, sans-serif'
             }}>
                 已禁用
@@ -461,7 +479,7 @@ export default function AgentList(props) {
       <div className="max-w-7xl mx-auto px-4 pb-8">
         {isLoading ? <div className="flex items-center justify-center py-12">
             <div className="animate-spin rounded-full h-12 w-12 border-4 border-orange-500 border-t-transparent"></div>
-          </div> : filteredAgents.length === 0 ? <div className="bg-white rounded-2xl shadow-lg p-12 text-center">
+          </div> : filteredAgents.length === 0 ? <div className={`rounded-2xl shadow-lg p-12 text-center ${darkMode ? 'bg-gray-800' : 'bg-white'}`}>
             <Bot className="w-16 h-16 text-gray-300 mx-auto mb-4" />
             <h3 className="text-xl font-bold text-gray-600 mb-2" style={{
           fontFamily: 'Nunito, sans-serif'
@@ -478,12 +496,12 @@ export default function AgentList(props) {
                 创建第一个Agent
               </Button>}
           </div> : <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-4 gap-6">
-            {filteredAgents.map(agent => <div key={agent._id} className="bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all overflow-hidden group">
+            {filteredAgents.map(agent => <div key={agent._id} className={`rounded-2xl shadow-lg hover:shadow-xl transition-all overflow-hidden group ${darkMode ? 'bg-gray-800' : 'bg-white'}`}>
                 {/* Card Header */}
                 <div className={`bg-gradient-to-r ${agent.color || 'from-orange-500 to-pink-500'} p-6`}>
                   <div className="flex items-start justify-between">
                     <div className="flex items-center gap-3">
-                      <div className="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center">
+                      <div className={`w-12 h-12 backdrop-blur-sm rounded-xl flex items-center justify-center ${darkMode ? 'bg-gray-700/20' : 'bg-white/20'}`}>
                         {agent.icon ? typeof agent.icon === 'string' ? React.createElement(getIconComponent(agent.icon), {
                     className: "w-6 h-6 text-white"
                   }) : React.createElement(agent.icon, {
@@ -504,37 +522,37 @@ export default function AgentList(props) {
                       </div>
                     </div>
                     <div className="relative">
-                      <button onClick={() => setShowMenu(showMenu === agent._id ? null : agent._id)} className="p-2 hover:bg-white/20 rounded-lg transition-colors">
+                      <button onClick={() => setShowMenu(showMenu === agent._id ? null : agent._id)} className={`p-2 rounded-lg transition-colors ${darkMode ? 'hover:bg-gray-700/20' : 'hover:bg-white/20'}`}>
                         <MoreVertical className="w-5 h-5 text-white" />
                       </button>
-                      {showMenu === agent._id && <div className="absolute right-0 top-full mt-2 w-48 bg-white rounded-xl shadow-xl border border-gray-100 overflow-hidden z-20">
+                      {showMenu === agent._id && <div className={`absolute right-0 top-full mt-2 w-48 rounded-xl shadow-xl border overflow-hidden z-20 ${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-100'}`}>
                           <button onClick={() => {
                     handleEditAgent(agent._id);
                     setShowMenu(null);
-                  }} className="w-full px-4 py-3 text-left hover:bg-gray-50 flex items-center gap-3 transition-colors">
-                            <Edit className="w-4 h-4 text-gray-600" />
-                            <span className="text-gray-700">编辑</span>
+                  }} className={`w-full px-4 py-3 text-left flex items-center gap-3 transition-colors ${darkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-50'}`}>
+                            <Edit className={`w-4 h-4 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`} />
+                            <span className={darkMode ? 'text-gray-300' : 'text-gray-700'}>编辑</span>
                           </button>
                           <button onClick={() => {
                     handleCopyAgent(agent);
                     setShowMenu(null);
-                  }} className="w-full px-4 py-3 text-left hover:bg-gray-50 flex items-center gap-3 transition-colors">
-                            <Copy className="w-4 h-4 text-gray-600" />
-                            <span className="text-gray-700">复制</span>
+                  }} className={`w-full px-4 py-3 text-left flex items-center gap-3 transition-colors ${darkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-50'}`}>
+                            <Copy className={`w-4 h-4 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`} />
+                            <span className={darkMode ? 'text-gray-300' : 'text-gray-700'}>复制</span>
                           </button>
                           <button onClick={() => {
                     handleToggleStatus(agent);
                     setShowMenu(null);
-                  }} className="w-full px-4 py-3 text-left hover:bg-gray-50 flex items-center gap-3 transition-colors">
-                            {agent.status === 'active' ? <PowerOff className="w-4 h-4 text-gray-600" /> : <Power className="w-4 h-4 text-gray-600" />}
-                            <span className="text-gray-700">
+                  }} className={`w-full px-4 py-3 text-left flex items-center gap-3 transition-colors ${darkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-50'}`}>
+                            {agent.status === 'active' ? <PowerOff className={`w-4 h-4 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`} /> : <Power className={`w-4 h-4 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`} />}
+                            <span className={darkMode ? 'text-gray-300' : 'text-gray-700'}>
                               {agent.status === 'active' ? '禁用' : '启用'}
                             </span>
                           </button>
                           {!agent.isBuiltIn && <button onClick={() => {
                     handleDeleteAgent(agent);
                     setShowMenu(null);
-                  }} className="w-full px-4 py-3 text-left hover:bg-red-50 flex items-center gap-3 transition-colors text-red-600">
+                  }} className={`w-full px-4 py-3 text-left flex items-center gap-3 transition-colors text-red-600 ${darkMode ? 'hover:bg-red-900/20' : 'hover:bg-red-50'}`}>
                               <Trash2 className="w-4 h-4" />
                               <span>删除</span>
                             </button>}
@@ -555,7 +573,7 @@ export default function AgentList(props) {
                         {agent.model}
                       </span>
                     </div>
-                    <div className="flex items-center gap-2 text-sm text-gray-600" style={{
+                    <div className={`flex items-center gap-2 text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`} style={{
                 fontFamily: 'Quicksand, sans-serif'
               }}>
                       <span>使用次数: {agent.usageCount || 0}</span>
@@ -566,7 +584,7 @@ export default function AgentList(props) {
 
                   {/* Skills */}
                   {agent.skills && agent.skills.length > 0 && <div className="mb-4">
-                      <h4 className="text-sm font-medium text-gray-700 mb-2" style={{
+                      <h4 className={`text-sm font-medium mb-2 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`} style={{
                 fontFamily: 'Nunito, sans-serif'
               }}>
                         技能
@@ -577,7 +595,7 @@ export default function AgentList(props) {
                 }}>
                             {skill}
                           </span>)}
-                        {agent.skills.length > 3 && <span className="px-2 py-1 bg-gray-100 text-gray-600 rounded-lg text-xs font-medium" style={{
+                        {agent.skills.length > 3 && <span className={`px-2 py-1 rounded-lg text-xs font-medium ${darkMode ? 'bg-gray-700 text-gray-400' : 'bg-gray-100 text-gray-600'}`} style={{
                   fontFamily: 'Quicksand, sans-serif'
                 }}>
                             +{agent.skills.length - 3}
@@ -587,7 +605,7 @@ export default function AgentList(props) {
 
                   {/* Rules */}
                   {agent.rules && agent.rules.length > 0 && <div className="mb-4">
-                      <h4 className="text-sm font-medium text-gray-700 mb-2" style={{
+                      <h4 className={`text-sm font-medium mb-2 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`} style={{
                 fontFamily: 'Nunito, sans-serif'
               }}>
                         规则
@@ -598,7 +616,7 @@ export default function AgentList(props) {
                 }}>
                             {rule}
                           </span>)}
-                        {agent.rules.length > 2 && <span className="px-2 py-1 bg-gray-100 text-gray-600 rounded-lg text-xs font-medium" style={{
+                        {agent.rules.length > 2 && <span className={`px-2 py-1 rounded-lg text-xs font-medium ${darkMode ? 'bg-gray-700 text-gray-400' : 'bg-gray-100 text-gray-600'}`} style={{
                   fontFamily: 'Quicksand, sans-serif'
                 }}>
                             +{agent.rules.length - 2}
