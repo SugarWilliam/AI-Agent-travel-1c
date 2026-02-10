@@ -695,7 +695,8 @@ export default function AgentEdit(props) {
               </div>
             )}
             {/* 基本信息标签页 */}
-            {activeTab === 'basic' && <div className={`space-y-6 ${darkMode ? 'bg-gray-800 rounded-xl p-6' : 'bg-white rounded-xl p-6 shadow-sm'}`}>
+            {activeTab === 'basic' && (
+              <div className={`space-y-6 ${darkMode ? 'bg-gray-800 rounded-xl p-6' : 'bg-white rounded-xl p-6 shadow-sm'}`}>
                 <div className="flex items-center gap-4 mb-6">
                   <div className={`w-16 h-16 rounded-2xl bg-gradient-to-br ${agentColor} flex items-center justify-center shadow-lg`}>
                     <CurrentIcon className="w-8 h-8 text-white" />
@@ -781,14 +782,26 @@ export default function AgentEdit(props) {
                       颜色
                     </label>
                     <div className="grid grid-cols-6 gap-3">
-                      {colorOptions.map(option => <button key={option.name} onClick={() => setAgentColor(option.value)} className={`h-10 rounded-lg transition-all ${agentColor === option.value ? 'ring-2 ring-[#FF6B6B] ring-offset-2' : ''} ${option.gradient}`} />)}
+                      {colorOptions.map(option => (
+                        <button 
+                          key={option.name} 
+                          onClick={() => setAgentColor(option.value)} 
+                          className={`h-10 rounded-lg transition-all ${
+                            agentColor === option.value 
+                              ? 'ring-2 ring-[#FF6B6B] ring-offset-2' 
+                              : ''
+                          } ${option.gradient}`} 
+                        />
+                      ))}
                     </div>
                   </div>
                 </div>
               </div>
+            )}
 
             {/* 模型管理标签页 */}
-            {activeTab === 'models' && <div className={`space-y-6 ${darkMode ? 'bg-gray-800 rounded-xl p-6' : 'bg-white rounded-xl p-6 shadow-sm'}`}>
+            {activeTab === 'models' && (
+              <div className={`space-y-6 ${darkMode ? 'bg-gray-800 rounded-xl p-6' : 'bg-white rounded-xl p-6 shadow-sm'}`}>
                 <div className="flex items-center gap-3 mb-6">
                   <Brain className={`w-6 h-6 ${darkMode ? 'text-[#4ECDC4]' : 'text-[#FF6B6B]'}`} />
                   <h2 className={`text-xl font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>
@@ -801,9 +814,11 @@ export default function AgentEdit(props) {
                 <ModelManager selectedModel={selectedModel} setSelectedModel={setSelectedModel} availableModels={availableModels} darkMode={darkMode} />
                 {formErrors.model && <p className="mt-2 text-sm text-red-500">{formErrors.model}</p>}
               </div>
+            )}
 
             {/* 技能管理标签页 */}
-            {activeTab === 'skills' && <div className={`space-y-6 ${darkMode ? 'bg-gray-800 rounded-xl p-6' : 'bg-white rounded-xl p-6 shadow-sm'}`}>
+            {activeTab === 'skills' && (
+              <div className={`space-y-6 ${darkMode ? 'bg-gray-800 rounded-xl p-6' : 'bg-white rounded-xl p-6 shadow-sm'}`}>
                 <div className="flex items-center gap-3 mb-6">
                   <Zap className={`w-6 h-6 ${darkMode ? 'text-[#4ECDC4]' : 'text-[#FF6B6B]'}`} />
                   <h2 className={`text-xl font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>
@@ -815,9 +830,11 @@ export default function AgentEdit(props) {
                 </p>
                 <SkillManager availableSkills={availableSkills} darkMode={darkMode} />
               </div>
+            )}
 
             {/* 规则配置标签页 */}
-            {activeTab === 'rules' && <div className={`space-y-6 ${darkMode ? 'bg-gray-800 rounded-xl p-6' : 'bg-white rounded-xl p-6 shadow-sm'}`}>
+            {activeTab === 'rules' && (
+              <div className={`space-y-6 ${darkMode ? 'bg-gray-800 rounded-xl p-6' : 'bg-white rounded-xl p-6 shadow-sm'}`}>
                 <div className="flex items-center gap-3 mb-6">
                   <FileText className={`w-6 h-6 ${darkMode ? 'text-[#4ECDC4]' : 'text-[#FF6B6B]'}`} />
                   <h2 className={`text-xl font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>
@@ -838,7 +855,8 @@ export default function AgentEdit(props) {
 
                 {/* 规则列表 */}
                 <div className="space-y-3">
-                  {rules.map((rule, index) => <div key={index} className={`flex items-center justify-between p-4 rounded-lg ${darkMode ? 'bg-gray-700' : 'bg-gray-50'}`}>
+                  {rules.map((rule, index) => (
+                    <div key={index} className={`flex items-center justify-between p-4 rounded-lg ${darkMode ? 'bg-gray-700' : 'bg-gray-50'}`}>
                       <div className="flex items-center gap-3">
                         <Switch checked={rule.enabled} onCheckedChange={() => handleToggleRule(index)} />
                         <span className={darkMode ? 'text-white' : 'text-gray-900'}>{rule.name}</span>
@@ -846,21 +864,18 @@ export default function AgentEdit(props) {
                       <Button onClick={() => handleDeleteRule(index)} variant="ghost" size="icon" className={darkMode ? 'text-gray-400 hover:text-red-400 hover:bg-gray-600' : 'text-gray-500 hover:text-red-500 hover:bg-gray-100'}>
                         <Trash2 className="w-4 h-4" />
                       </Button>
-                    </div>)}
+                    </div>
+                  ))}
                 </div>
                 {formErrors.rules && (
                   <p className="mt-2 text-sm text-red-500">{formErrors.rules}</p>
                 )}
-              </div>}
-                      <Button onClick={() => handleDeleteRule(index)} variant="ghost" size="icon" className={darkMode ? 'text-gray-400 hover:text-white hover:bg-gray-600' : 'text-gray-600 hover:text-gray-900 hover:bg-gray-200'}>
-                        <Trash2 className="w-4 h-4" />
-                      </Button>
-                    </div>)}
-                </div>
-              </div>}
+              </div>
+            )}
 
             {/* 知识库标签页 */}
-            {activeTab === 'rag' && <div className={`space-y-6 ${darkMode ? 'bg-gray-800 rounded-xl p-6' : 'bg-white rounded-xl p-6 shadow-sm'}`}>
+            {activeTab === 'rag' && (
+              <div className={`space-y-6 ${darkMode ? 'bg-gray-800 rounded-xl p-6' : 'bg-white rounded-xl p-6 shadow-sm'}`}>
                 <div className="flex items-center gap-3 mb-6">
                   <Database className={`w-6 h-6 ${darkMode ? 'text-[#4ECDC4]' : 'text-[#FF6B6B]'}`} />
                   <h2 className={`text-xl font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>
@@ -885,15 +900,19 @@ export default function AgentEdit(props) {
                 </div>
 
                 {/* RAG 源列表 */}
-                {ragEnabled && <div className="space-y-3">
-                    {ragSources.map((source, index) => <div key={index} className={`flex items-center justify-between p-4 rounded-lg ${darkMode ? 'bg-gray-700' : 'bg-gray-50'}`}>
+                {ragEnabled && (
+                  <div className="space-y-3">
+                    {ragSources.map((source, index) => (
+                      <div key={index} className={`flex items-center justify-between p-4 rounded-lg ${darkMode ? 'bg-gray-700' : 'bg-gray-50'}`}>
                         <div className="flex items-center gap-3">
                           <Switch checked={source.enabled} onCheckedChange={() => handleToggleRagSource(index)} />
                           <span className={darkMode ? 'text-white' : 'text-gray-900'}>{source.name}</span>
                         </div>
                         <Check className={`w-5 h-5 ${source.enabled ? 'text-green-500' : 'text-gray-400'}`} />
-                      </div>)}
-                  </div>}
+                      </div>
+                    ))}
+                  </div>
+                )}
 
                 {/* 添加知识库 */}
                 <div className={`flex gap-2 ${darkMode ? 'bg-gray-700 rounded-lg p-4' : 'bg-gray-50 rounded-lg p-4'}`}>
@@ -905,7 +924,8 @@ export default function AgentEdit(props) {
 
                 {/* 知识库列表 */}
                 <div className="space-y-3">
-                  {agentKnowledgeBases.map((kb, index) => <div key={index} className={`flex items-center justify-between p-4 rounded-lg ${darkMode ? 'bg-gray-700' : 'bg-gray-50'}`}>
+                  {agentKnowledgeBases.map((kb, index) => (
+                    <div key={index} className={`flex items-center justify-between p-4 rounded-lg ${darkMode ? 'bg-gray-700' : 'bg-gray-50'}`}>
                       <div className="flex items-center gap-3">
                         <Switch checked={kb.enabled} onCheckedChange={() => handleToggleKnowledgeBase(index)} />
                         <span className={darkMode ? 'text-white' : 'text-gray-900'}>{kb.name}</span>
@@ -913,9 +933,11 @@ export default function AgentEdit(props) {
                       <Button onClick={() => handleDeleteKnowledgeBase(index)} variant="ghost" size="icon" className={darkMode ? 'text-gray-400 hover:text-white hover:bg-gray-600' : 'text-gray-600 hover:text-gray-900 hover:bg-gray-200'}>
                         <Trash2 className="w-4 h-4" />
                       </Button>
-                    </div>)}
+                    </div>
+                  ))}
                 </div>
-              </div>}
+              </div>
+            )}
 
             {/* MCP 标签页 */}
             {activeTab === 'mcp' && <div className={`space-y-6 ${darkMode ? 'bg-gray-800 rounded-xl p-6' : 'bg-white rounded-xl p-6 shadow-sm'}`}>
