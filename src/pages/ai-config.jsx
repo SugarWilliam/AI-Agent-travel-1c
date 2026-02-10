@@ -444,6 +444,15 @@ export default function AIConfig(props) {
       console.error('加载配置数据失败:', error);
     }
   };
+
+  // 辅助函数：渲染标签按钮
+  const renderTabButton = item => {
+    const IconComponent = item.icon;
+    return <button key={item.id} onClick={() => setActiveTab(item.id)} className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${activeTab === item.id ? 'bg-gradient-to-r from-[#FF6B6B] to-[#4ECDC4] text-white shadow-md' : darkMode ? 'text-gray-300 hover:bg-gray-700' : 'text-gray-600 hover:bg-gray-100'}`}>
+        <IconComponent className="w-5 h-5" />
+        <span className="font-medium">{item.label}</span>
+      </button>;
+  };
   const handleBack = () => {
     props.$w.utils.navigateBack();
   };
@@ -686,10 +695,7 @@ export default function AIConfig(props) {
               id: 'mcp',
               label: t.mcp,
               icon: Code
-            }]}.map(item => <button key={item.id} onClick={() => setActiveTab(item.id)} className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${activeTab === item.id ? 'bg-gradient-to-r from-[#FF6B6B] to-[#4ECDC4] text-white shadow-md' : darkMode ? 'text-gray-300 hover:bg-gray-700' : 'text-gray-600 hover:bg-gray-100'}`}>
-                  <item.icon className="w-5 h-5" />
-                  <span className="font-medium">{item.label}</span>
-                </button>)}
+            }]}.map(renderTabButton)
             </nav>
           </div>
         </div>
