@@ -227,6 +227,13 @@ async function getAIConfig(userId) {
     }
   } catch (error) {
     console.error('获取AI配置失败:', error);
+    // 如果集合不存在，返回成功但数据为空
+    if (error.message && error.message.includes('not exist')) {
+      return {
+        success: true,
+        data: null
+      };
+    }
     return {
       success: false,
       error: '获取AI配置失败'
@@ -244,9 +251,19 @@ async function saveAIConfig(data) {
     };
     
     // 检查是否已存在配置
-    const existing = await db.collection('AIConfig')
-      .where({ userId: data.userId })
-      .get();
+    let existing;
+    try {
+      existing = await db.collection('AIConfig')
+        .where({ userId: data.userId })
+        .get();
+    } catch (queryError) {
+      // 如果集合不存在，existing 为空
+      if (queryError.message && queryError.message.includes('not exist')) {
+        existing = { data: [] };
+      } else {
+        throw queryError;
+      }
+    }
     
     if (existing.data && existing.data.length > 0) {
       // 更新现有配置

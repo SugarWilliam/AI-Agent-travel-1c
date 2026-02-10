@@ -719,7 +719,5 @@ export default function AIConfig(props) {
       </div>
 
       <TabBar />
-    </div>);
-  }
-}
+    </div>;
 }
