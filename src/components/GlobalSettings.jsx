@@ -60,12 +60,47 @@ export function useGlobalSettings() {
 
 // 语言和主题切换按钮组件
 export function LanguageThemeToggle() {
-  const {
-    language,
-    darkMode,
-    toggleLanguage,
-    toggleDarkMode
-  } = useGlobalSettings();
+  // 尝试使用全局设置，如果没有 Provider 则使用本地状态
+  let context;
+  try {
+    context = useGlobalSettings();
+  } catch (error) {
+    // 如果没有 Provider，使用本地状态
+    context = null;
+  }
+  const [localLanguage, setLocalLanguage] = useState(() => {
+    const saved = localStorage.getItem('app-language');
+    return saved || 'zh';
+  });
+  const [localDarkMode, setLocalDarkMode] = useState(() => {
+    const saved = localStorage.getItem('app-darkMode');
+    return saved === 'true';
+  });
+  const language = context?.language || localLanguage;
+  const darkMode = context?.darkMode || localDarkMode;
+  const toggleLanguage = () => {
+    const newLanguage = language === 'zh' ? 'en' : 'zh';
+    if (context) {
+      context.toggleLanguage();
+    } else {
+      setLocalLanguage(newLanguage);
+      localStorage.setItem('app-language', newLanguage);
+    }
+  };
+  const toggleDarkMode = () => {
+    const newDarkMode = !darkMode;
+    if (context) {
+      context.toggleDarkMode();
+    } else {
+      setLocalDarkMode(newDarkMode);
+      localStorage.setItem('app-darkMode', newDarkMode.toString());
+      if (newDarkMode) {
+        document.body.classList.add('dark');
+      } else {
+        document.body.classList.remove('dark');
+      }
+    }
+  };
   return <div className="flex items-center gap-2">
       <button onClick={toggleLanguage} className="bg-white/90 backdrop-blur-sm rounded-full p-2 shadow-lg hover:scale-105 transition-transform" title={language === 'zh' ? 'Switch to English' : '切换到中文'}>
         <span className="text-[#2D3436] font-bold text-sm">
