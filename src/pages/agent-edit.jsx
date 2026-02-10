@@ -9,6 +9,7 @@ import TabBar from '@/components/TabBar';
 import { ModelManager } from '@/components/ModelManager';
 import { SkillManager } from '@/components/SkillManager';
 import { useGlobalSettings } from '@/components/GlobalSettings';
+import { AgentPreview } from '@/components/AgentPreview';
 
 // 语言配置
 const translations = {
@@ -51,7 +52,21 @@ const translations = {
     addKnowledge: '添加知识库',
     addMcp: '添加 MCP 服务',
     ragEnabled: '启用 RAG',
-    ragEnabledDesc: '启用检索增强生成，让 AI 能够访问外部知识库'
+    ragEnabledDesc: '启用检索增强生成，让 AI 能够访问外部知识库',
+    validation: {
+      nameRequired: 'Agent 名称不能为空',
+      nameTooLong: 'Agent 名称不能超过 50 个字符',
+      descriptionRequired: 'Agent 描述不能为空',
+      descriptionTooLong: 'Agent 描述不能超过 200 个字符',
+      modelRequired: '请选择一个模型',
+      atLeastOneSkill: '至少需要选择一个技能',
+      atLeastOneRule: '至少需要配置一个规则',
+      formValid: '表单验证通过',
+      formInvalid: '请检查表单中的错误'
+    },
+    preview: '实时预览',
+    showPreview: '显示预览',
+    hidePreview: '隐藏预览'
   },
   en: {
     title: 'AI Agent Editor',
@@ -92,7 +107,21 @@ const translations = {
     addKnowledge: 'Add Knowledge Base',
     addMcp: 'Add MCP Service',
     ragEnabled: 'Enable RAG',
-    ragEnabledDesc: 'Enable retrieval-augmented generation to allow AI to access external knowledge bases'
+    ragEnabledDesc: 'Enable retrieval-augmented generation to allow AI to access external knowledge bases',
+    validation: {
+      nameRequired: 'Agent name is required',
+      nameTooLong: 'Agent name cannot exceed 50 characters',
+      descriptionRequired: 'Agent description is required',
+      descriptionTooLong: 'Agent description cannot exceed 200 characters',
+      modelRequired: 'Please select a model',
+      atLeastOneSkill: 'At least one skill must be selected',
+      atLeastOneRule: 'At least one rule must be configured',
+      formValid: 'Form validation passed',
+      formInvalid: 'Please check the errors in the form'
+    },
+    preview: 'Live Preview',
+    showPreview: 'Show Preview',
+    hidePreview: 'Hide Preview'
   }
 };
 
@@ -190,6 +219,14 @@ export default function AgentEdit(props) {
   const [newKnowledgeBase, setNewKnowledgeBase] = useState('');
   const [newMcpServer, setNewMcpServer] = useState('');
 
+  // 表单验证状态
+  const [formErrors, setFormErrors] = useState({});
+  const [isFormValid, setIsFormValid] = useState(false);
+
+  // 预览状态
+  const [showPreview, setShowPreview] = useState(true);
+  const [previewData, setPreviewData] = useState({});
+
   // 图标选项
   const iconOptions = [{
     name: 'Bot',
@@ -285,6 +322,16 @@ export default function AgentEdit(props) {
     loadAvailableConfigurations();
   }, []);
 
+  // 监听表单字段变化，实时更新预览数据
+  useEffect(() => {
+    updatePreviewData();
+  }, [agentName, agentDescription, agentIcon, agentColor, selectedModel, ragEnabled, ragSources, rules, mcpServers, agentKnowledgeBases, darkMode]);
+
+  // 监听表单字段变化，实时验证表单
+  useEffect(() => {
+    validateForm();
+  }, [agentName, agentDescription, selectedModel, rules]);
+
   // 加载 Agent 配置
   const loadAgentConfig = async id => {
     try {
@@ -370,8 +417,76 @@ export default function AgentEdit(props) {
     }
   };
 
+  // 表单验证函数
+  const validateForm = () => {
+    const errors = {};
+
+    // 验证 Agent 名称
+    if (!agentName || agentName.trim() === '') {
+      errors.name = t.validation.nameRequired;
+    } else if (agentName.length > 50) {
+      errors.name = t.validation.nameTooLong;
+    }
+
+    // 验证 Agent 描述
+    if (!agentDescription || agentDescription.trim() === '') {
+      errors.description = t.validation.descriptionRequired;
+    } else if (agentDescription.length > 200) {
+      errors.description = t.validation.descriptionTooLong;
+    }
+
+    // 验证模型选择
+    if (!selectedModel) {
+      errors.model = t.validation.modelRequired;
+    }
+
+    // 验证技能选择
+    const enabledSkills = rules.filter(rule => rule.enabled).map(rule => rule.name);
+    if (enabledSkills.length === 0) {
+      errors.skills = t.validation.atLeastOneSkill;
+    }
+
+    // 验证规则配置
+    const enabledRules = rules.filter(rule => rule.enabled).map(rule => rule.name);
+    if (enabledRules.length === 0) {
+      errors.rules = t.validation.atLeastOneRule;
+    }
+    setFormErrors(errors);
+    const isValid = Object.keys(errors).length === 0;
+    setIsFormValid(isValid);
+    return isValid;
+  };
+
+  // 更新预览数据
+  const updatePreviewData = () => {
+    setPreviewData({
+      name: agentName,
+      description: agentDescription,
+      icon: agentIcon,
+      color: agentColor,
+      model: selectedModel,
+      ragEnabled: ragEnabled,
+      ragSources: ragSources.filter(source => source.enabled).map(source => source.name),
+      rules: rules.filter(rule => rule.enabled).map(rule => rule.name),
+      skills: skills.filter(skill => skill.enabled).map(skill => skill.name),
+      mcpServers: mcpServers.filter(server => server.enabled).map(server => server.name),
+      knowledgeBases: agentKnowledgeBases.filter(kb => kb.enabled).map(kb => kb.name),
+      status: 'active',
+      darkMode: darkMode
+    });
+  };
+
   // 保存 Agent 配置
   const handleSave = async () => {
+    // 先进行表单验证
+    if (!validateForm()) {
+      toast({
+        title: t.validation.formInvalid,
+        description: Object.values(formErrors).join(', '),
+        variant: 'destructive'
+      });
+      return;
+    }
     try {
       const tcb = await props.$w.cloud.getCloudInstance();
       const db = tcb.database();
@@ -518,7 +633,7 @@ export default function AgentEdit(props) {
           <div className={`animate-spin rounded-full h-12 w-12 border-b-2 ${darkMode ? 'border-white' : 'border-gray-900'} mx-auto mb-4`}></div>
           <p className={darkMode ? 'text-gray-400' : 'text-gray-600'}>{t.loading}</p>
         </div>
-      </div>;
+      </div>
   }
   return <div className={`min-h-screen ${darkMode ? 'bg-gray-900 text-white' : 'bg-gray-50 text-gray-900'}`}>
       {/* 顶部导航栏 */}
@@ -542,7 +657,7 @@ export default function AgentEdit(props) {
               <Button onClick={handleCancel} variant="outline" className={darkMode ? 'border-gray-600 text-gray-300 hover:bg-gray-700' : ''}>
                 {t.cancel}
               </Button>
-              <Button onClick={handleSave} className="bg-gradient-to-r from-[#FF6B6B] to-[#4ECDC4] hover:opacity-90 text-white">
+              <Button onClick={handleSave} disabled={!isFormValid} className={`bg-gradient-to-r from-[#FF6B6B] to-[#4ECDC4] hover:opacity-90 text-white ${!isFormValid ? 'opacity-50 cursor-not-allowed' : ''}`}>
                 <Save className="w-4 h-4 mr-2" />
                 {t.save}
               </Button>
@@ -563,6 +678,22 @@ export default function AgentEdit(props) {
 
           {/* 右侧内容 */}
           <div className="lg:col-span-3">
+            {/* 预览切换按钮 */}
+            <div className="mb-4 flex items-center justify-between">
+              <h3 className={`text-lg font-semibold ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+                {t.preview}
+              </h3>
+              <button onClick={() => setShowPreview(!showPreview)} className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${darkMode ? 'bg-gray-800 text-gray-300 hover:bg-gray-700' : 'bg-white text-gray-700 hover:bg-gray-100'}`}>
+                {showPreview ? t.hidePreview : t.showPreview}
+              </button>
+            </div>
+
+            {/* 预览面板 */}
+            {showPreview && (
+              <div className="mb-6">
+                <AgentPreview {...previewData} />
+              </div>
+            )}
             {/* 基本信息标签页 */}
             {activeTab === 'basic' && <div className={`space-y-6 ${darkMode ? 'bg-gray-800 rounded-xl p-6' : 'bg-white rounded-xl p-6 shadow-sm'}`}>
                 <div className="flex items-center gap-4 mb-6">
@@ -585,7 +716,8 @@ export default function AgentEdit(props) {
                     <label className={`block text-sm font-medium mb-2 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
                       {t.agentName}
                     </label>
-                    <Input value={agentName} onChange={e => setAgentName(e.target.value)} placeholder={t.agentName} className={darkMode ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400' : ''} />
+                    <Input value={agentName} onChange={e => setAgentName(e.target.value)} placeholder={t.agentName} className={`${darkMode ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400' : ''} ${formErrors.name ? 'border-red-500' : ''}`} />
+                    {formErrors.name && <p className="mt-1 text-sm text-red-500">{formErrors.name}</p>}
                   </div>
 
                   {/* Agent 描述 */}
@@ -593,7 +725,8 @@ export default function AgentEdit(props) {
                     <label className={`block text-sm font-medium mb-2 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
                       {t.agentDescription}
                     </label>
-                    <Textarea value={agentDescription} onChange={e => setAgentDescription(e.target.value)} placeholder={t.agentDescription} rows={4} className={darkMode ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400' : ''} />
+                    <Textarea value={agentDescription} onChange={e => setAgentDescription(e.target.value)} placeholder={t.agentDescription} rows={4} className={`${darkMode ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400' : ''} ${formErrors.description ? 'border-red-500' : ''}`} />
+                    {formErrors.description && <p className="mt-1 text-sm text-red-500">{formErrors.description}</p>}
                   </div>
 
                   {/* Agent 类型 */}
@@ -620,11 +753,25 @@ export default function AgentEdit(props) {
                     </label>
                     <div className="grid grid-cols-5 gap-3">
                       {iconOptions.map(option => {
-                    const IconComponent = option.icon;
-                    return <button key={option.name} onClick={() => setAgentIcon(option.name)} className={`p-3 rounded-lg transition-all ${agentIcon === option.name ? 'ring-2 ring-[#FF6B6B] ring-offset-2' : ''} ${darkMode ? 'bg-gray-700 hover:bg-gray-600' : 'bg-gray-100 hover:bg-gray-200'}`}>
-                          <IconComponent className={`w-6 h-6 ${darkMode ? 'text-white' : 'text-gray-900'}`} />
-                        </button>;
-                  })}
+                        const IconComponent = option.icon;
+                        return (
+                          <button 
+                            key={option.name} 
+                            onClick={() => setAgentIcon(option.name)} 
+                            className={`p-3 rounded-lg transition-all ${
+                              agentIcon === option.name 
+                                ? 'ring-2 ring-[#FF6B6B] ring-offset-2' 
+                                : ''
+                            } ${
+                              darkMode 
+                                ? 'bg-gray-700 hover:bg-gray-600' 
+                                : 'bg-gray-100 hover:bg-gray-200'
+                            }`}
+                          >
+                            <IconComponent className={`w-6 h-6 ${darkMode ? 'text-white' : 'text-gray-900'}`} />
+                          </button>
+                        );
+                      })}
                     </div>
                   </div>
 
@@ -638,7 +785,7 @@ export default function AgentEdit(props) {
                     </div>
                   </div>
                 </div>
-              </div>}
+              </div>
 
             {/* 模型管理标签页 */}
             {activeTab === 'models' && <div className={`space-y-6 ${darkMode ? 'bg-gray-800 rounded-xl p-6' : 'bg-white rounded-xl p-6 shadow-sm'}`}>
@@ -652,7 +799,8 @@ export default function AgentEdit(props) {
                   {t.modelsDesc}
                 </p>
                 <ModelManager selectedModel={selectedModel} setSelectedModel={setSelectedModel} availableModels={availableModels} darkMode={darkMode} />
-              </div>}
+                {formErrors.model && <p className="mt-2 text-sm text-red-500">{formErrors.model}</p>}
+              </div>
 
             {/* 技能管理标签页 */}
             {activeTab === 'skills' && <div className={`space-y-6 ${darkMode ? 'bg-gray-800 rounded-xl p-6' : 'bg-white rounded-xl p-6 shadow-sm'}`}>
@@ -666,7 +814,7 @@ export default function AgentEdit(props) {
                   {t.skillsDesc}
                 </p>
                 <SkillManager availableSkills={availableSkills} darkMode={darkMode} />
-              </div>}
+              </div>
 
             {/* 规则配置标签页 */}
             {activeTab === 'rules' && <div className={`space-y-6 ${darkMode ? 'bg-gray-800 rounded-xl p-6' : 'bg-white rounded-xl p-6 shadow-sm'}`}>
@@ -695,6 +843,15 @@ export default function AgentEdit(props) {
                         <Switch checked={rule.enabled} onCheckedChange={() => handleToggleRule(index)} />
                         <span className={darkMode ? 'text-white' : 'text-gray-900'}>{rule.name}</span>
                       </div>
+                      <Button onClick={() => handleDeleteRule(index)} variant="ghost" size="icon" className={darkMode ? 'text-gray-400 hover:text-red-400 hover:bg-gray-600' : 'text-gray-500 hover:text-red-500 hover:bg-gray-100'}>
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
+                    </div>)}
+                </div>
+                {formErrors.rules && (
+                  <p className="mt-2 text-sm text-red-500">{formErrors.rules}</p>
+                )}
+              </div>}
                       <Button onClick={() => handleDeleteRule(index)} variant="ghost" size="icon" className={darkMode ? 'text-gray-400 hover:text-white hover:bg-gray-600' : 'text-gray-600 hover:text-gray-900 hover:bg-gray-200'}>
                         <Trash2 className="w-4 h-4" />
                       </Button>
@@ -792,12 +949,14 @@ export default function AgentEdit(props) {
                       </Button>
                     </div>)}
                 </div>
-              </div>}
+              </div>
+            </div>
           </div>
         </div>
       </div>
 
       {/* 底部 TabBar */}
       <TabBar />
-    </div>;
+    </div>
+  );
 }
