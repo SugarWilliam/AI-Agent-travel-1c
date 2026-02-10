@@ -5,12 +5,67 @@ import { Plus, Search, MapPin, Calendar, DollarSign, Sparkles, Download, Trash2,
 // @ts-ignore;
 import { useToast, Button, Input } from '@/components/ui';
 
+import { useGlobalSettings } from '@/components/GlobalSettings';
 import TabBar from '@/components/TabBar';
 import { LanguageThemeToggle } from '@/components/GlobalSettings';
+
+// 国际化字典
+const i18n = {
+  zh: {
+    title: '我的旅行计划 ✈️',
+    subtitle: '让AI帮你规划完美旅程',
+    searchPlaceholder: '搜索目的地或计划名称...',
+    createPlan: '创建新计划',
+    aiAssistant: 'AI助手',
+    myPlans: '我的计划',
+    noPlans: '还没有旅行计划，快去创建一个吧！',
+    aiRecommendations: 'AI推荐',
+    export: '导出',
+    delete: '删除',
+    deleteSuccess: '删除成功',
+    deleteDesc: '旅游计划已删除',
+    exportSuccess: '导出成功',
+    exportDesc: '已导出为PDF',
+    status: {
+      planning: '规划中',
+      confirmed: '已确认',
+      completed: '已完成',
+      unknown: '未知'
+    }
+  },
+  en: {
+    title: 'My Travel Plans ✈️',
+    subtitle: 'Let AI help you plan the perfect journey',
+    searchPlaceholder: 'Search destination or plan name...',
+    createPlan: 'Create New Plan',
+    aiAssistant: 'AI Assistant',
+    myPlans: 'My Plans',
+    noPlans: 'No travel plans yet, create one now!',
+    aiRecommendations: 'AI Recommendations',
+    export: 'Export',
+    delete: 'Delete',
+    deleteSuccess: 'Deleted Successfully',
+    deleteDesc: 'Travel plan has been deleted',
+    exportSuccess: 'Exported Successfully',
+    exportDesc: 'Exported as PDF',
+    status: {
+      planning: 'Planning',
+      confirmed: 'Confirmed',
+      completed: 'Completed',
+      unknown: 'Unknown'
+    }
+  }
+};
 export default function Home(props) {
   const {
     toast
   } = useToast();
+
+  // 使用全局设置获取语言状态
+  const {
+    language
+  } = useGlobalSettings();
+  const t = i18n[language] || i18n.zh;
   const [plans, setPlans] = useState([{
     id: '1',
     title: '日本东京七日游',
@@ -67,8 +122,8 @@ export default function Home(props) {
     const updatedPlans = plans.filter(p => p.id !== planId);
     setPlans(updatedPlans);
     toast({
-      title: '删除成功',
-      description: '旅游计划已删除',
+      title: t.deleteSuccess,
+      description: t.deleteDesc,
       variant: 'default'
     });
   };
@@ -76,8 +131,8 @@ export default function Home(props) {
     e.stopPropagation();
     const plan = plans.find(p => p.id === planId);
     toast({
-      title: '导出成功',
-      description: `${plan.title} 已导出为PDF`,
+      title: t.exportSuccess,
+      description: `${plan.title} ${t.exportDesc}`,
       variant: 'default'
     });
   };
@@ -94,16 +149,7 @@ export default function Home(props) {
     }
   };
   const getStatusText = status => {
-    switch (status) {
-      case 'planning':
-        return '规划中';
-      case 'confirmed':
-        return '已确认';
-      case 'completed':
-        return '已完成';
-      default:
-        return '未知';
-    }
+    return t.status[status] || t.status.unknown;
   };
   return <div className="min-h-screen bg-[#FFF9F0] pb-24">
       {/* Header */}
@@ -113,12 +159,12 @@ export default function Home(props) {
             <h1 className="text-3xl font-bold text-white mb-2" style={{
             fontFamily: 'Nunito, sans-serif'
           }}>
-              我的旅行计划 ✈️
+              {t.title}
             </h1>
             <p className="text-white/90" style={{
             fontFamily: 'Quicksand, sans-serif'
           }}>
-              让AI帮你规划完美旅程
+              {t.subtitle}
             </p>
           </div>
           <LanguageThemeToggle />
@@ -129,7 +175,7 @@ export default function Home(props) {
       <div className="max-w-lg mx-auto px-4 -mt-6">
         <div className="bg-white rounded-2xl shadow-lg p-4 flex items-center gap-3">
           <Search className="w-5 h-5 text-gray-400" />
-          <Input placeholder="搜索目的地或计划名称..." value={searchQuery} onChange={e => setSearchQuery(e.target.value)} className="border-0 focus-visible:ring-0 text-base" />
+          <Input placeholder={t.searchPlaceholder} value={searchQuery} onChange={e => setSearchQuery(e.target.value)} className="border-0 focus-visible:ring-0 text-base" />
         </div>
       </div>
 
@@ -138,14 +184,14 @@ export default function Home(props) {
         <div className="flex gap-3">
           <Button onClick={handleCreatePlan} className="flex-1 bg-[#FF6B6B] hover:bg-[#FF5252] text-white rounded-2xl h-14 text-base font-semibold shadow-lg shadow-[#FF6B6B]/30">
             <Plus className="w-5 h-5 mr-2" />
-            创建新计划
+            {t.createPlan}
           </Button>
           <Button onClick={() => props.$w.utils.navigateTo({
           pageId: 'ai',
           params: {}
         })} className="flex-1 bg-[#4ECDC4] hover:bg-[#3DBDB5] text-white rounded-2xl h-14 text-base font-semibold shadow-lg shadow-[#4ECDC4]/30">
             <Sparkles className="w-5 h-5 mr-2" />
-            AI助手
+            {t.aiAssistant}
           </Button>
         </div>
       </div>
@@ -155,7 +201,7 @@ export default function Home(props) {
         <h2 className="text-xl font-bold text-[#2D3436] mb-4" style={{
         fontFamily: 'Nunito, sans-serif'
       }}>
-          我的计划 ({filteredPlans.length})
+          {t.myPlans} ({filteredPlans.length})
         </h2>
         
         {filteredPlans.length === 0 ? <div className="text-center py-12">
@@ -163,7 +209,7 @@ export default function Home(props) {
             <p className="text-gray-500" style={{
           fontFamily: 'Quicksand, sans-serif'
         }}>
-              还没有旅行计划，快去创建一个吧！
+              {t.noPlans}
             </p>
           </div> : <div className="space-y-4">
             {filteredPlans.map(plan => <div key={plan.id} onClick={() => handleViewPlan(plan.id)} className="bg-white rounded-2xl shadow-md overflow-hidden cursor-pointer hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
@@ -207,7 +253,7 @@ export default function Home(props) {
                   {plan.aiSuggestions && plan.aiSuggestions.length > 0 && <div className="bg-[#FFE66D]/20 rounded-lg p-3 mb-3">
                       <div className="flex items-center gap-2 mb-2">
                         <Sparkles className="w-4 h-4 text-[#FF6B6B]" />
-                        <span className="text-sm font-semibold text-[#2D3436]">AI推荐</span>
+                        <span className="text-sm font-semibold text-[#2D3436]">{t.aiRecommendations}</span>
                       </div>
                       <div className="flex flex-wrap gap-2">
                         {plan.aiSuggestions.slice(0, 3).map((suggestion, idx) => <span key={idx} className="px-2 py-1 bg-white rounded-md text-xs text-gray-700">
@@ -219,11 +265,11 @@ export default function Home(props) {
                   <div className="flex gap-2 pt-2">
                     <Button size="sm" variant="outline" className="flex-1 border-[#4ECDC4] text-[#4ECDC4] hover:bg-[#4ECDC4] hover:text-white" onClick={e => handleExportPlan(plan.id, e)}>
                       <Download className="w-4 h-4 mr-1" />
-                      导出
+                      {t.export}
                     </Button>
                     <Button size="sm" variant="outline" className="flex-1 border-red-400 text-red-400 hover:bg-red-400 hover:text-white" onClick={e => handleDeletePlan(plan.id, e)}>
                       <Trash2 className="w-4 h-4 mr-1" />
-                      删除
+                      {t.delete}
                     </Button>
                   </div>
                 </div>

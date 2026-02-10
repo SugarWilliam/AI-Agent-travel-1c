@@ -7,6 +7,70 @@ import { useToast, Button, Switch, Select, SelectTrigger, SelectValue, SelectCon
 
 import { useGlobalSettings } from '@/components/GlobalSettings';
 import TabBar from '@/components/TabBar';
+
+// 国际化字典
+const i18n = {
+  zh: {
+    title: '设置',
+    notifications: '通知与同步',
+    pushNotifications: '推送通知',
+    autoSync: '自动同步',
+    privacySecurity: '隐私与安全',
+    privacySettings: '隐私设置',
+    clearCache: '清除缓存',
+    about: '关于',
+    helpFeedback: '帮助与反馈',
+    aboutUs: '关于我们',
+    helpCenter: '帮助中心',
+    version: '版本 1.0.0',
+    appDesc: 'AI旅行助手',
+    dataManagement: '数据管理',
+    exportAllData: '导出所有数据',
+    exportDesc: '导出包含所有旅行计划和攻略的完整数据',
+    appVersion: 'AI旅行助手 v1.0.0',
+    madeWithLove: 'Made with ❤️ for travelers',
+    notificationsOn: '通知已开启',
+    notificationsOff: '通知已关闭',
+    autoSyncOn: '自动同步已开启',
+    autoSyncOff: '自动同步已关闭',
+    cacheCleared: '缓存已清除',
+    cacheDesc: '应用将重新加载数据',
+    dataExporting: '数据导出中',
+    dataExportDesc: '正在准备导出文件...',
+    featureInDev: '功能开发中',
+    execute: '执行'
+  },
+  en: {
+    title: 'Settings',
+    notifications: 'Notifications & Sync',
+    pushNotifications: 'Push Notifications',
+    autoSync: 'Auto Sync',
+    privacySecurity: 'Privacy & Security',
+    privacySettings: 'Privacy Settings',
+    clearCache: 'Clear Cache',
+    about: 'About',
+    helpFeedback: 'Help & Feedback',
+    aboutUs: 'About Us',
+    helpCenter: 'Help Center',
+    version: 'Version 1.0.0',
+    appDesc: 'AI Travel Assistant',
+    dataManagement: 'Data Management',
+    exportAllData: 'Export All Data',
+    exportDesc: 'Export complete data including all travel plans and guides',
+    appVersion: 'AI Travel Assistant v1.0.0',
+    madeWithLove: 'Made with ❤️ for travelers',
+    notificationsOn: 'Notifications enabled',
+    notificationsOff: 'Notifications disabled',
+    autoSyncOn: 'Auto sync enabled',
+    autoSyncOff: 'Auto sync disabled',
+    cacheCleared: 'Cache cleared',
+    cacheDesc: 'App will reload data',
+    dataExporting: 'Exporting data',
+    dataExportDesc: 'Preparing export file...',
+    featureInDev: 'Feature in development',
+    execute: 'Execute'
+  }
+};
 export default function Settings(props) {
   const {
     toast
@@ -14,119 +78,99 @@ export default function Settings(props) {
   const [notifications, setNotifications] = useState(true);
   const [autoSync, setAutoSync] = useState(true);
 
-  // 尝试使用全局设置，如果没有 Provider 则使用本地状态
-  let globalSettings;
-  try {
-    globalSettings = useGlobalSettings();
-  } catch (error) {
-    globalSettings = null;
-  }
-  const [localDarkMode, setLocalDarkMode] = useState(() => {
-    const saved = localStorage.getItem('app-darkMode');
-    return saved === 'true';
-  });
-  useEffect(() => {
-    if (!globalSettings) {
-      const handleStorageChange = () => {
-        const savedDarkMode = localStorage.getItem('app-darkMode');
-        setLocalDarkMode(savedDarkMode === 'true');
-      };
-      window.addEventListener('storage', handleStorageChange);
-      window.addEventListener('theme-change', handleStorageChange);
-      return () => {
-        window.removeEventListener('storage', handleStorageChange);
-        window.removeEventListener('theme-change', handleStorageChange);
-      };
-    }
-  }, [globalSettings]);
-  const darkMode = globalSettings?.darkMode || localDarkMode;
+  // 使用全局设置获取语言和主题状态
+  const {
+    language,
+    darkMode
+  } = useGlobalSettings();
+  const t = i18n[language] || i18n.zh;
   const handleBack = () => {
     props.$w.utils.navigateBack();
   };
   const handleToggleNotifications = () => {
     setNotifications(!notifications);
     toast({
-      title: notifications ? '通知已关闭' : '通知已开启',
+      title: notifications ? t.notificationsOff : t.notificationsOn,
       variant: 'default'
     });
   };
   const handleToggleAutoSync = () => {
     setAutoSync(!autoSync);
     toast({
-      title: autoSync ? '自动同步已关闭' : '自动同步已开启',
+      title: autoSync ? t.autoSyncOff : t.autoSyncOn,
       variant: 'default'
     });
   };
   const handleClearCache = () => {
     toast({
-      title: '缓存已清除',
-      description: '应用将重新加载数据',
+      title: t.cacheCleared,
+      description: t.cacheDesc,
       variant: 'default'
     });
   };
   const handleExportData = () => {
     toast({
-      title: '数据导出中',
-      description: '正在准备导出文件...',
+      title: t.dataExporting,
+      description: t.dataExportDesc,
       variant: 'default'
     });
   };
   const settingsGroups = [{
-    title: '通知与同步',
+    title: t.notifications,
     items: [{
       id: 'notifications',
-      label: '推送通知',
+      label: t.pushNotifications,
       icon: Bell,
       type: 'switch',
       value: notifications,
       onChange: handleToggleNotifications
     }, {
       id: 'autoSync',
-      label: '自动同步',
+      label: t.autoSync,
       icon: Database,
       type: 'switch',
       value: autoSync,
       onChange: handleToggleAutoSync
     }]
   }, {
-    title: '隐私与安全',
+    title: t.privacySecurity,
     items: [{
       id: 'privacy',
-      label: '隐私设置',
+      label: t.privacySettings,
       icon: Lock,
       type: 'link',
       onClick: () => toast({
-        title: '隐私设置',
-        description: '功能开发中',
+        title: t.privacySettings,
+        description: t.featureInDev,
         variant: 'default'
       })
     }, {
       id: 'clearCache',
-      label: '清除缓存',
+      label: t.clearCache,
       icon: Database,
       type: 'button',
       onClick: handleClearCache
     }]
   }, {
-    title: '关于',
+    title: t.about,
     items: [{
       id: 'help',
-      label: '帮助与反馈',
+      label: t.helpFeedback,
       icon: HelpCircle,
       type: 'link',
       onClick: () => toast({
-        title: '帮助中心',
-        description: '功能开发中',
+        title: t.helpCenter,
+        description: t.featureInDev,
         variant: 'default'
       })
     }, {
       id: 'about',
-      label: '关于我们',
+      label: t.aboutUs,
       icon: Info,
       type: 'link',
       onClick: () => toast({
-        title: '版本 1.0.0',
-        description: 'AI旅行助手',
+        title: t.version,
+        description: t.appDesc,
         variant: 'default'
       })
     }]
@@ -141,7 +185,7 @@ export default function Settings(props) {
           <h1 className="text-xl font-bold text-white" style={{
           fontFamily: 'Nunito, sans-serif'
         }}>
-            设置
+            {t.title}
           </h1>
         </div>
       </div>
@@ -182,7 +226,7 @@ export default function Settings(props) {
                   {item.type === 'link' && <ChevronRight className={`w-5 h-5 ${darkMode ? 'text-gray-500' : 'text-gray-400'}`} />}
                   
                   {item.type === 'button' && <Button size="sm" variant="outline" onClick={item.onClick} className="border-[#FF6B6B] text-[#FF6B6B] hover:bg-[#FF6B6B] hover:text-white">
-                      执行
+                      {t.execute}
                     </Button>}
                 </div>)}
             </div>
@@ -190,19 +234,19 @@ export default function Settings(props) {
 
         {/* Data Management */}
         <div>
-          <h3 className="text-sm font-semibold text-gray-500 mb-3 px-2" style={{
+          <h3 className={`text-sm font-semibold mb-3 px-2 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`} style={{
           fontFamily: 'Quicksand, sans-serif'
         }}>
-            数据管理
+            {t.dataManagement}
           </h3>
-          <div className="bg-white rounded-2xl shadow-lg p-4 space-y-3">
+          <div className={`rounded-2xl shadow-lg p-4 space-y-3 ${darkMode ? 'bg-gray-800' : 'bg-white'}`}>
             <Button onClick={handleExportData} className="w-full bg-[#4ECDC4] hover:bg-[#3DBDB5] text-white rounded-xl h-12 font-semibold">
-              导出所有数据
+              {t.exportAllData}
             </Button>
-            <p className="text-xs text-gray-500 text-center" style={{
+            <p className={`text-xs text-center ${darkMode ? 'text-gray-400' : 'text-gray-500'}`} style={{
             fontFamily: 'Quicksand, sans-serif'
           }}>
-              导出包含所有旅行计划和攻略的完整数据
+              {t.exportDesc}
             </p>
           </div>
         </div>
@@ -212,12 +256,12 @@ export default function Settings(props) {
           <p className="text-sm text-gray-400" style={{
           fontFamily: 'Quicksand, sans-serif'
         }}>
-            AI旅行助手 v1.0.0
+          {t.appVersion}
           </p>
           <p className="text-xs text-gray-300 mt-1" style={{
           fontFamily: 'Quicksand, sans-serif'
         }}>
-            Made with ❤️ for travelers
+          {t.madeWithLove}
           </p>
         </div>
       </div>
