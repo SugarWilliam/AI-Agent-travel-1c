@@ -10,6 +10,24 @@ export default function AIAssistant(props) {
   const {
     toast
   } = useToast();
+
+  // 深色模式支持
+  const [darkMode, setDarkMode] = useState(() => {
+    const saved = localStorage.getItem('app-darkMode');
+    return saved === 'true';
+  });
+  useEffect(() => {
+    const handleStorageChange = () => {
+      const savedDarkMode = localStorage.getItem('app-darkMode');
+      setDarkMode(savedDarkMode === 'true');
+    };
+    window.addEventListener('storage', handleStorageChange);
+    window.addEventListener('theme-change', handleStorageChange);
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+      window.removeEventListener('theme-change', handleStorageChange);
+    };
+  }, []);
   const [messages, setMessages] = useState([{
     id: '1',
     role: 'assistant',
@@ -363,7 +381,7 @@ export default function AIAssistant(props) {
     label: '刷新天气',
     action: '刷新最新的天气信息'
   }];
-  return <div className="min-h-screen bg-[#FFF9F0] flex flex-col">
+  return <div className={`min-h-screen flex flex-col ${darkMode ? 'bg-gray-900' : 'bg-[#FFF9F0]'}`}>
       {/* Header */}
       <div className="bg-gradient-to-r from-[#FF6B6B] to-[#4ECDC4] p-4 pt-12">
         <div className="max-w-2xl mx-auto flex items-center justify-between">
@@ -406,9 +424,9 @@ export default function AIAssistant(props) {
       {/* Quick Actions */}
       <div className="max-w-2xl mx-auto px-4 py-3">
         <div className="flex gap-2 overflow-x-auto pb-2">
-          {quickActions.map((action, idx) => <button key={idx} onClick={() => setInput(action.action)} className="flex items-center gap-2 bg-white rounded-full px-4 py-2 shadow-md hover:shadow-lg transition-all whitespace-nowrap">
+          {quickActions.map((action, idx) => <button key={idx} onClick={() => setInput(action.action)} className={`flex items-center gap-2 rounded-full px-4 py-2 shadow-md hover:shadow-lg transition-all whitespace-nowrap ${darkMode ? 'bg-gray-800' : 'bg-white'}`}>
               <action.icon className="w-4 h-4 text-[#FF6B6B]" />
-              <span className="text-sm font-medium text-gray-700" style={{
+              <span className={`text-sm font-medium ${darkMode ? 'text-gray-300' : 'text-gray-700'}`} style={{
             fontFamily: 'Quicksand, sans-serif'
           }}>
                 {action.label}
@@ -421,7 +439,7 @@ export default function AIAssistant(props) {
       <div className="flex-1 overflow-y-auto p-4 max-w-2xl mx-auto w-full">
         <div className="space-y-4">
           {messages.map(message => <div key={message.id} className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-              <div className={`max-w-[80%] rounded-2xl p-4 ${message.role === 'user' ? 'bg-[#FF6B6B] text-white' : 'bg-white text-gray-800 shadow-md'}`}>
+              <div className={`max-w-[80%] rounded-2xl p-4 ${message.role === 'user' ? 'bg-[#FF6B6B] text-white' : darkMode ? 'bg-gray-800 text-gray-200 shadow-md' : 'bg-white text-gray-800 shadow-md'}`}>
                 <div className="flex items-start gap-2 mb-2">
                   {message.role === 'assistant' ? <Bot className="w-5 h-5 text-[#4ECDC4] flex-shrink-0 mt-0.5" /> : <User className="w-5 h-5 text-white flex-shrink-0 mt-0.5" />}
                   <div className="flex-1">
@@ -480,7 +498,7 @@ export default function AIAssistant(props) {
             </div>)}
 
           {isLoading && <div className="flex justify-start">
-              <div className="bg-white rounded-2xl p-4 shadow-md">
+              <div className={`rounded-2xl p-4 shadow-md ${darkMode ? 'bg-gray-800' : 'bg-white'}`}>
                 <div className="flex items-center gap-2">
                   <Bot className="w-5 h-5 text-[#4ECDC4]" />
                   <div className="flex gap-1">
@@ -526,18 +544,18 @@ export default function AIAssistant(props) {
         <div className="flex gap-2 mb-2">
           <label className="cursor-pointer">
             <input type="file" accept="image/*" multiple onChange={handleImageUpload} className="hidden" />
-            <div className="bg-gray-100 hover:bg-gray-200 rounded-lg p-2 transition-colors">
-              <ImageIcon className="w-5 h-5 text-gray-600" />
+            <div className={`rounded-lg p-2 transition-colors ${darkMode ? 'bg-gray-700 hover:bg-gray-600' : 'bg-gray-100 hover:bg-gray-200'}`}>
+              <ImageIcon className={`w-5 h-5 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`} />
             </div>
           </label>
           <label className="cursor-pointer">
             <input type="file" accept=".pdf,.doc,.docx,.txt,.md" multiple onChange={handleFileUpload} className="hidden" />
-            <div className="bg-gray-100 hover:bg-gray-200 rounded-lg p-2 transition-colors">
-              <FileText className="w-5 h-5 text-gray-600" />
+            <div className={`rounded-lg p-2 transition-colors ${darkMode ? 'bg-gray-700 hover:bg-gray-600' : 'bg-gray-100 hover:bg-gray-200'}`}>
+              <FileText className={`w-5 h-5 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`} />
             </div>
           </label>
-          <button onClick={toggleRecording} className={`rounded-lg p-2 transition-colors ${isRecording ? 'bg-red-100 hover:bg-red-200' : 'bg-gray-100 hover:bg-gray-200'}`} title={isRecording ? '停止录音' : '开始录音'}>
-            {isRecording ? <MicOff className="w-5 h-5 text-red-600 animate-pulse" /> : <Mic className="w-5 h-5 text-gray-600" />}
+          <button onClick={toggleRecording} className={`rounded-lg p-2 transition-colors ${isRecording ? 'bg-red-100 hover:bg-red-200' : darkMode ? 'bg-gray-700 hover:bg-gray-600' : 'bg-gray-100 hover:bg-gray-200'}`} title={isRecording ? '停止录音' : '开始录音'}>
+            {isRecording ? <MicOff className="w-5 h-5 text-red-600 animate-pulse" /> : <Mic className={`w-5 h-5 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`} />}
           </button>
         </div>
         <div className="flex gap-2">

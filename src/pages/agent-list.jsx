@@ -628,13 +628,13 @@ export default function AgentList(props) {
                   {agent.ragEnabled && <div className="mb-4">
                       <div className="flex items-center gap-2 mb-2">
                         <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                        <span className="text-sm font-medium text-gray-700" style={{
+                        <span className={`text-sm font-medium ${darkMode ? 'text-gray-300' : 'text-gray-700'}`} style={{
                   fontFamily: 'Quicksand, sans-serif'
                 }}>
                           RAG已启用
                         </span>
                       </div>
-                      {agent.ragSources && agent.ragSources.length > 0 && <div className="text-xs text-gray-600" style={{
+                      {agent.ragSources && agent.ragSources.length > 0 && <div className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-600'}`} style={{
                 fontFamily: 'Quicksand, sans-serif'
               }}>
                           数据源: {agent.ragSources.join(', ')}

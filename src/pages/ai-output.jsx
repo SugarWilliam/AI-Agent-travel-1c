@@ -10,6 +10,24 @@ export default function AIOutput(props) {
   const {
     toast
   } = useToast();
+
+  // 深色模式支持
+  const [darkMode, setDarkMode] = useState(() => {
+    const saved = localStorage.getItem('app-darkMode');
+    return saved === 'true';
+  });
+  useEffect(() => {
+    const handleStorageChange = () => {
+      const savedDarkMode = localStorage.getItem('app-darkMode');
+      setDarkMode(savedDarkMode === 'true');
+    };
+    window.addEventListener('storage', handleStorageChange);
+    window.addEventListener('theme-change', handleStorageChange);
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+      window.removeEventListener('theme-change', handleStorageChange);
+    };
+  }, []);
   const [activeTab, setActiveTab] = useState('document');
   const [outputData, setOutputData] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -587,11 +605,11 @@ export default function AIOutput(props) {
     icon: Link2
   }];
   if (isLoading) {
-    return <div className="min-h-screen bg-[#FFF9F0] flex items-center justify-center">
+    return <div className={`min-h-screen flex items-center justify-center ${darkMode ? 'bg-gray-900' : 'bg-[#FFF9F0]'}`}>
         <div className="animate-spin rounded-full h-12 w-12 border-4 border-[#FF6B6B] border-t-transparent"></div>
       </div>;
   }
-  return <div className="min-h-screen bg-[#FFF9F0] flex flex-col">
+  return <div className={`min-h-screen flex flex-col ${darkMode ? 'bg-gray-900' : 'bg-[#FFF9F0]'}`}>
       {/* Header */}
       <div className="bg-gradient-to-r from-[#FF6B6B] to-[#4ECDC4] p-4 pt-12">
         <div className="max-w-2xl mx-auto flex items-center gap-3">
@@ -611,8 +629,8 @@ export default function AIOutput(props) {
 
       {/* Tabs */}
       <div className="max-w-2xl mx-auto px-4 mt-4">
-        <div className="flex gap-2 bg-white rounded-xl p-1 shadow-md overflow-x-auto">
-          {tabs.map(tab => <button key={tab.id} onClick={() => setActiveTab(tab.id)} className={`flex items-center gap-2 py-2 px-3 rounded-lg transition-all whitespace-nowrap ${activeTab === tab.id ? 'bg-[#FF6B6B] text-white' : 'text-gray-600 hover:bg-gray-100'}`}>
+        <div className={`flex gap-2 rounded-xl p-1 shadow-md overflow-x-auto ${darkMode ? 'bg-gray-800' : 'bg-white'}`}>
+          {tabs.map(tab => <button key={tab.id} onClick={() => setActiveTab(tab.id)} className={`flex items-center gap-2 py-2 px-3 rounded-lg transition-all whitespace-nowrap ${activeTab === tab.id ? 'bg-[#FF6B6B] text-white' : darkMode ? 'text-gray-300 hover:bg-gray-700' : 'text-gray-600 hover:bg-gray-100'}`}>
               <tab.icon className="w-4 h-4" />
               <span className="text-sm font-medium">{tab.label}</span>
             </button>)}
