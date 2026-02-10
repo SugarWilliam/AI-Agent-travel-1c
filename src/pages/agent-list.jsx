@@ -293,7 +293,6 @@ export default function AgentList(props) {
         name: `${agent.name} (副本)`,
         _id: Date.now().toString(),
         isBuiltIn: false,
-        createdAt: new Date().toISOString(),
         usageCount: 0
       };
       const tcb = await props.$w.cloud.getCloudInstance();
@@ -587,8 +586,10 @@ export default function AgentList(props) {
                 fontFamily: 'Quicksand, sans-serif'
               }}>
                       <span>使用次数: {agent.usageCount || 0}</span>
-                      <span>•</span>
-                      <span>创建于: {new Date(agent.createdAt).toLocaleDateString('zh-CN')}</span>
+                      {agent.createdAt && <>
+                        <span>•</span>
+                        <span>创建于: {new Date(agent.createdAt).toLocaleDateString('zh-CN')}</span>
+                      </>}
                     </div>
                   </div>
 

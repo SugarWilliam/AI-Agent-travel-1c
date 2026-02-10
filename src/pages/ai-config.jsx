@@ -373,9 +373,25 @@ export default function AIConfig(props) {
         setAgentColor(agent.color || 'from-blue-500 to-purple-500');
         setSelectedModel(agent.model || 'gpt-4');
         setRagEnabled(agent.ragEnabled || false);
-        setRagSources(agent.ragSources || []);
-        setRules(agent.rules || []);
-        setMcpServers(agent.mcpServers || []);
+        // 转换 ragSources 为带 enabled 属性的对象数组
+        const ragSourcesWithEnabled = (agent.ragSources || []).map(source => ({
+          name: typeof source === 'string' ? source : source.name,
+          enabled: true
+        }));
+        setRagSources(ragSourcesWithEnabled);
+        // 转换 rules 为带 enabled 属性的对象数组
+        const rulesWithEnabled = (agent.rules || []).map(rule => ({
+          name: typeof rule === 'string' ? rule : rule.name,
+          enabled: true
+        }));
+        setRules(rulesWithEnabled);
+        // 转换 mcpServers 为带 enabled 属性的对象数组
+        const mcpServersWithEnabled = (agent.mcpServers || []).map(server => ({
+          name: typeof server === 'string' ? server : server.name,
+          url: server.url || '',
+          enabled: true
+        }));
+        setMcpServers(mcpServersWithEnabled);
       }
     } catch (error) {
       console.error('加载Agent配置失败:', error);
@@ -452,8 +468,13 @@ export default function AIConfig(props) {
           status: 'active',
           usageCount: 0,
           isBuiltIn: false,
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString()
+          outputFormats: ['文本', 'JSON'],
+          capabilities: ['对话', '推理', '创作'],
+          systemPrompt: `你是一个${agentName}，${agentDescription || '帮助用户解决问题'}`,
+          temperature: 0.7,
+          maxTokens: 4096,
+          priority: 10,
+          config: {}
         };
         const tcb = await props.$w.cloud.getCloudInstance();
         const db = tcb.database();
@@ -461,8 +482,7 @@ export default function AIConfig(props) {
           // 编辑模式：更新现有 Agent
           const updateData = {
             ...agentData,
-            usageCount: editingAgent.usageCount || 0,
-            createdAt: editingAgent.createdAt || agentData.createdAt
+            usageCount: editingAgent.usageCount || 0
           };
           try {
             await db.collection('Agent').doc(agentId).update(updateData);
