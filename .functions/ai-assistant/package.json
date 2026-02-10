@@ -1,7 +1,7 @@
 {
-  "name": "generatePlan",
+  "name": "ai-assistant",
   "version": "1.0.0",
-  "description": "AI旅行计划生成云函数",
+  "description": "AI助手云函数，提供天气查询和时间调整建议",
   "main": "index.js",
   "dependencies": {
     "@cloudbase/node-sdk": "latest"
