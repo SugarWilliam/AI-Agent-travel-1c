@@ -1,0 +1,66 @@
+{
+  "name": "KnowledgeBase",
+  "title": "知识库",
+  "schemas": [
+    {
+      "name": "name",
+      "title": "知识库名称",
+      "type": "String"
+    },
+    {
+      "name": "description",
+      "title": "知识库描述",
+      "type": "MultiLineString"
+    },
+    {
+      "name": "type",
+      "title": "知识库类型",
+      "type": "String"
+    },
+    {
+      "name": "isEnabled",
+      "title": "是否启用",
+      "type": "Boolean"
+    },
+    {
+      "name": "category",
+      "title": "知识库分类",
+      "type": "String"
+    },
+    {
+      "name": "content",
+      "title": "知识库内容",
+      "type": "MultiLineString"
+    },
+    {
+      "name": "config",
+      "title": "知识库配置",
+      "type": "Object"
+    },
+    {
+      "name": "icon",
+      "title": "图标",
+      "type": "String"
+    },
+    {
+      "name": "color",
+      "title": "颜色",
+      "type": "String"
+    },
+    {
+      "name": "priority",
+      "title": "优先级",
+      "type": "Number"
+    },
+    {
+      "name": "tags",
+      "title": "知识库标签",
+      "type": "Array"
+    },
+    {
+      "name": "metadata",
+      "title": "元数据",
+      "type": "Object"
+    }
+  ]
+}

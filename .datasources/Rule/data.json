@@ -1,0 +1,189 @@
+[
+  {
+    "_id": "rule_001",
+    "name": "安全优先",
+    "description": "优先推荐安全的旅行方案，避免高风险活动和区域",
+    "category": "safety",
+    "isEnabled": true,
+    "priority": 1,
+    "conditions": [
+      "检查目的地安全等级",
+      "评估活动风险系数"
+    ],
+    "actions": [
+      "过滤高风险区域",
+      "提供安全提示",
+      "推荐安全替代方案"
+    ],
+    "agentTypes": [
+      "itinerary",
+      "guide",
+      "recommendation"
+    ],
+    "config": {
+      "minSafetyLevel": 3,
+      "showSafetyTips": true,
+      "allowOverride": false
+    },
+    "icon": "Shield",
+    "color": "from-green-500 to-emerald-500",
+    "createdAt": 1739078400000,
+    "updatedAt": 1739078400000,
+    "_openid": "user_001"
+  },
+  {
+    "_id": "rule_002",
+    "name": "时间合理",
+    "description": "确保行程时间安排合理，避免过于紧凑或过于宽松",
+    "category": "time",
+    "isEnabled": true,
+    "priority": 2,
+    "conditions": [
+      "计算景点游览时间",
+      "考虑交通时间",
+      "预留休息时间"
+    ],
+    "actions": [
+      "优化时间安排",
+      "添加缓冲时间",
+      "避免行程过满"
+    ],
+    "agentTypes": [
+      "itinerary"
+    ],
+    "config": {
+      "maxActivitiesPerDay": 5,
+      "minRestTime": 30,
+      "bufferTime": 15
+    },
+    "icon": "Clock",
+    "color": "from-blue-500 to-cyan-500",
+    "createdAt": 1739078400000,
+    "updatedAt": 1739078400000,
+    "_openid": "user_001"
+  },
+  {
+    "_id": "rule_003",
+    "name": "预算控制",
+    "description": "在预算范围内推荐方案，避免超支",
+    "category": "budget",
+    "isEnabled": true,
+    "priority": 3,
+    "conditions": [
+      "获取用户预算",
+      "查询价格信息",
+      "计算总费用"
+    ],
+    "actions": [
+      "筛选符合预算的方案",
+      "提供价格对比",
+      "推荐性价比高的选择"
+    ],
+    "agentTypes": [
+      "itinerary",
+      "recommendation"
+    ],
+    "config": {
+      "allowOverBudget": false,
+      "showPriceBreakdown": true,
+      "budgetBuffer": 0.1
+    },
+    "icon": "DollarSign",
+    "color": "from-yellow-500 to-orange-500",
+    "createdAt": 1739078400000,
+    "updatedAt": 1739078400000,
+    "_openid": "user_001"
+  },
+  {
+    "_id": "rule_004",
+    "name": "环保出行",
+    "description": "优先推荐环保的交通方式和活动，减少碳足迹",
+    "category": "environment",
+    "isEnabled": false,
+    "priority": 4,
+    "conditions": [
+      "评估交通方式碳排放",
+      "检查活动环保性"
+    ],
+    "actions": [
+      "推荐公共交通",
+      "推荐环保活动",
+      "提供碳足迹计算"
+    ],
+    "agentTypes": [
+      "itinerary",
+      "recommendation"
+    ],
+    "config": {
+      "preferPublicTransport": true,
+      "maxCarbonFootprint": 100,
+      "showEcoTips": true
+    },
+    "icon": "Leaf",
+    "color": "from-emerald-500 to-green-500",
+    "createdAt": 1739078400000,
+    "updatedAt": 1739078400000,
+    "_openid": "user_001"
+  },
+  {
+    "_id": "rule_005",
+    "name": "内容准确",
+    "description": "确保提供的信息准确可靠，避免错误信息",
+    "category": "content",
+    "isEnabled": true,
+    "priority": 5,
+    "conditions": [
+      "验证信息来源",
+      "交叉验证数据"
+    ],
+    "actions": [
+      "引用可靠来源",
+      "标注信息可信度",
+      "避免猜测性内容"
+    ],
+    "agentTypes": [
+      "guide",
+      "recommendation"
+    ],
+    "config": {
+      "minReliabilityScore": 0.8,
+      "showSources": true,
+      "allowEstimates": false
+    },
+    "icon": "CheckCircle",
+    "color": "from-blue-500 to-indigo-500",
+    "createdAt": 1739078400000,
+    "updatedAt": 1739078400000,
+    "_openid": "user_001"
+  },
+  {
+    "_id": "rule_006",
+    "name": "生动有趣",
+    "description": "提供生动有趣的解说内容，提升用户体验",
+    "category": "content",
+    "isEnabled": true,
+    "priority": 6,
+    "conditions": [
+      "分析用户兴趣",
+      "匹配内容风格"
+    ],
+    "actions": [
+      "使用生动语言",
+      "添加趣味故事",
+      "提供互动建议"
+    ],
+    "agentTypes": [
+      "guide"
+    ],
+    "config": {
+      "useStorytelling": true,
+      "addFunFacts": true,
+      "interactiveElements": true
+    },
+    "icon": "Sparkles",
+    "color": "from-purple-500 to-pink-500",
+    "createdAt": 1739078400000,
+    "updatedAt": 1739078400000,
+    "_openid": "user_001"
+  }
+]

@@ -1,0 +1,158 @@
+[
+  {
+    "_id": "kb_001",
+    "name": "旅游攻略库",
+    "description": "包含全球各地的旅游攻略信息，包括景点介绍、美食推荐、住宿建议等",
+    "type": "database",
+    "isEnabled": true,
+    "category": "travel",
+    "content": "旅游攻略库包含全球各地的旅游攻略信息，涵盖亚洲、欧洲、美洲、非洲、大洋洲等主要旅游目的地。每个目的地都包含详细的景点介绍、美食推荐、住宿建议、交通指南、最佳旅游时间、注意事项等信息。",
+    "config": {
+      "dataSource": "mongodb",
+      "collection": "travel_guides",
+      "index": "destination,category"
+    },
+    "icon": "📚",
+    "color": "#3B82F6",
+    "priority": 1,
+    "tags": ["旅游", "攻略", "全球"],
+    "metadata": {
+      "version": "1.0.0",
+      "recordCount": 50000,
+      "lastUpdated": "2026-02-01"
+    },
+    "createdAt": 1739078400000,
+    "updatedAt": 1739078400000,
+    "_openid": "system"
+  },
+  {
+    "_id": "kb_002",
+    "name": "用户历史记录",
+    "description": "存储用户的历史行程和偏好，用于个性化推荐",
+    "type": "database",
+    "isEnabled": true,
+    "category": "user",
+    "content": "用户历史记录库存储用户的历史行程、偏好设置、评价反馈等信息，用于个性化推荐和智能规划。",
+    "config": {
+      "dataSource": "mongodb",
+      "collection": "user_history",
+      "index": "userId,destination,timestamp"
+    },
+    "icon": "👤",
+    "color": "#10B981",
+    "priority": 2,
+    "tags": ["用户", "历史", "个性化"],
+    "metadata": {
+      "version": "1.0.0",
+      "recordCount": 100000,
+      "lastUpdated": "2026-02-10"
+    },
+    "createdAt": 1739078400000,
+    "updatedAt": 1739078400000,
+    "_openid": "system"
+  },
+  {
+    "_id": "kb_003",
+    "name": "实时天气数据",
+    "description": "提供实时的天气预报信息，包括温度、湿度、风力等",
+    "type": "api",
+    "isEnabled": false,
+    "category": "weather",
+    "content": "实时天气数据通过第三方天气API获取，提供全球各地的实时天气预报信息，包括温度、湿度、风力、降水概率、空气质量等。",
+    "config": {
+      "apiEndpoint": "https://api.weather.com/v1/current",
+      "apiKey": "***",
+      "refreshInterval": 3600
+    },
+    "icon": "🌤️",
+    "color": "#F59E0B",
+    "priority": 3,
+    "tags": ["天气", "实时", "API"],
+    "metadata": {
+      "version": "1.0.0",
+      "provider": "Weather.com",
+      "lastUpdated": "2026-02-10"
+    },
+    "createdAt": 1739078400000,
+    "updatedAt": 1739078400000,
+    "_openid": "system"
+  },
+  {
+    "_id": "kb_004",
+    "name": "景点数据库",
+    "description": "包含全球景点的详细信息，包括开放时间、门票价格、交通方式等",
+    "type": "database",
+    "isEnabled": true,
+    "category": "travel",
+    "content": "景点数据库包含全球景点的详细信息，包括景点介绍、开放时间、门票价格、交通方式、最佳游览时间、注意事项、用户评价等。",
+    "config": {
+      "dataSource": "mongodb",
+      "collection": "attractions",
+      "index": "destination,category,rating"
+    },
+    "icon": "🏛️",
+      "color": "#8B5CF6",
+    "priority": 4,
+    "tags": ["景点", "全球", "详细信息"],
+    "metadata": {
+      "version": "1.0.0",
+      "recordCount": 100000,
+      "lastUpdated": "2026-02-05"
+    },
+    "createdAt": 1739078400000,
+    "updatedAt": 1739078400000,
+    "_openid": "system"
+  },
+  {
+    "_id": "kb_005",
+    "name": "文化数据库",
+    "description": "包含各地的文化背景和历史信息，用于文化解说",
+    "type": "database",
+    "isEnabled": true,
+    "category": "culture",
+    "content": "文化数据库包含各地的文化背景、历史信息、传统习俗、宗教信仰、艺术形式等内容，用于文化解说和深度旅游体验。",
+    "config": {
+      "dataSource": "mongodb",
+      "collection": "culture",
+      "index": "destination,category,period"
+    },
+    "icon": "🎭",
+    "color": "#EC4899",
+    "priority": 5,
+    "tags": ["文化", "历史", "解说"],
+    "metadata": {
+      "version": "1.0.0",
+      "recordCount": 30000,
+      "lastUpdated": "2026-02-03"
+    },
+    "createdAt": 1739078400000,
+    "updatedAt": 1739078400000,
+    "_openid": "system"
+  },
+  {
+    "_id": "kb_006",
+    "name": "摄影数据库",
+    "description": "包含拍照技巧和最佳机位信息，用于拍照指导",
+    "type": "database",
+    "isEnabled": true,
+    "category": "photography",
+    "content": "摄影数据库包含拍照技巧、最佳机位、光线建议、构图技巧、器材推荐等内容，用于拍照指导和摄影教学。",
+    "config": {
+      "dataSource": "mongodb",
+      "collection": "photography",
+      "index": "destination,category,level"
+    },
+    "icon": "📷",
+    "color": "#06B6D4",
+    "priority": 6,
+    "tags": ["摄影", "拍照", "技巧"],
+    "metadata": {
+      "version": "1.0.0",
+      "recordCount": 20000,
+      "lastUpdated": "2026-02-08"
+    },
+    "createdAt": 1739078400000,
+    "updatedAt": 1739078400000,
+    "_openid": "system"
+  }
+]

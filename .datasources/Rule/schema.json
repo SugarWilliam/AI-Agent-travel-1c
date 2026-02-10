@@ -1,0 +1,61 @@
+{
+  "name": "Rule",
+  "title": "规则配置",
+  "schemas": [
+    {
+      "name": "name",
+      "title": "规则名称",
+      "type": "String"
+    },
+    {
+      "name": "description",
+      "title": "规则描述",
+      "type": "MultiLineString"
+    },
+    {
+      "name": "category",
+      "title": "规则分类",
+      "type": "String"
+    },
+    {
+      "name": "isEnabled",
+      "title": "是否启用",
+      "type": "Boolean"
+    },
+    {
+      "name": "priority",
+      "title": "优先级",
+      "type": "Number"
+    },
+    {
+      "name": "conditions",
+      "title": "规则条件",
+      "type": "Array"
+    },
+    {
+      "name": "actions",
+      "title": "规则动作",
+      "type": "Array"
+    },
+    {
+      "name": "agentTypes",
+      "title": "适用的Agent类型",
+      "type": "Array"
+    },
+    {
+      "name": "config",
+      "title": "规则配置",
+      "type": "Object"
+    },
+    {
+      "name": "icon",
+      "title": "图标",
+      "type": "String"
+    },
+    {
+      "name": "color",
+      "title": "颜色",
+      "type": "String"
+    }
+  ]
+}
