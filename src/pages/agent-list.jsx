@@ -5,6 +5,7 @@ import { Search, Plus, Power, PowerOff, Bot, Route, BookOpen, Camera, Sparkles, 
 // @ts-ignore;
 import { Button, useToast } from '@/components/ui';
 
+import { useGlobalSettings } from '@/components/GlobalSettings';
 import TabBar from '@/components/TabBar';
 export default function AgentList(props) {
   const {
@@ -19,23 +20,32 @@ export default function AgentList(props) {
   const [error, setError] = useState(null);
   const [retryCount, setRetryCount] = useState(0);
 
-  // 深色模式支持
-  const [darkMode, setDarkMode] = useState(() => {
+  // 尝试使用全局设置，如果没有 Provider 则使用本地状态
+  let globalSettings;
+  try {
+    globalSettings = useGlobalSettings();
+  } catch (error) {
+    globalSettings = null;
+  }
+  const [localDarkMode, setLocalDarkMode] = useState(() => {
     const saved = localStorage.getItem('app-darkMode');
     return saved === 'true';
   });
   useEffect(() => {
-    const handleStorageChange = () => {
-      const savedDarkMode = localStorage.getItem('app-darkMode');
-      setDarkMode(savedDarkMode === 'true');
-    };
-    window.addEventListener('storage', handleStorageChange);
-    window.addEventListener('theme-change', handleStorageChange);
-    return () => {
-      window.removeEventListener('storage', handleStorageChange);
-      window.removeEventListener('theme-change', handleStorageChange);
-    };
-  }, []);
+    if (!globalSettings) {
+      const handleStorageChange = () => {
+        const savedDarkMode = localStorage.getItem('app-darkMode');
+        setLocalDarkMode(savedDarkMode === 'true');
+      };
+      window.addEventListener('storage', handleStorageChange);
+      window.addEventListener('theme-change', handleStorageChange);
+      return () => {
+        window.removeEventListener('storage', handleStorageChange);
+        window.removeEventListener('theme-change', handleStorageChange);
+      };
+    }
+  }, [globalSettings]);
+  const darkMode = globalSettings?.darkMode || localDarkMode;
 
   // 内置的4个AI Agent
   const defaultAgents = [{

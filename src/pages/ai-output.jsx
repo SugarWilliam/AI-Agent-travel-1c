@@ -5,29 +5,39 @@ import { ArrowLeft, Download, Share2, FileText, Image as ImageIcon, Link2, Check
 // @ts-ignore;
 import { useToast, Button } from '@/components/ui';
 
+import { useGlobalSettings } from '@/components/GlobalSettings';
 import TabBar from '@/components/TabBar';
 export default function AIOutput(props) {
   const {
     toast
   } = useToast();
 
-  // 深色模式支持
-  const [darkMode, setDarkMode] = useState(() => {
+  // 尝试使用全局设置，如果没有 Provider 则使用本地状态
+  let globalSettings;
+  try {
+    globalSettings = useGlobalSettings();
+  } catch (error) {
+    globalSettings = null;
+  }
+  const [localDarkMode, setLocalDarkMode] = useState(() => {
     const saved = localStorage.getItem('app-darkMode');
     return saved === 'true';
   });
   useEffect(() => {
-    const handleStorageChange = () => {
-      const savedDarkMode = localStorage.getItem('app-darkMode');
-      setDarkMode(savedDarkMode === 'true');
-    };
-    window.addEventListener('storage', handleStorageChange);
-    window.addEventListener('theme-change', handleStorageChange);
-    return () => {
-      window.removeEventListener('storage', handleStorageChange);
-      window.removeEventListener('theme-change', handleStorageChange);
-    };
-  }, []);
+    if (!globalSettings) {
+      const handleStorageChange = () => {
+        const savedDarkMode = localStorage.getItem('app-darkMode');
+        setLocalDarkMode(savedDarkMode === 'true');
+      };
+      window.addEventListener('storage', handleStorageChange);
+      window.addEventListener('theme-change', handleStorageChange);
+      return () => {
+        window.removeEventListener('storage', handleStorageChange);
+        window.removeEventListener('theme-change', handleStorageChange);
+      };
+    }
+  }, [globalSettings]);
+  const darkMode = globalSettings?.darkMode || localDarkMode;
   const [activeTab, setActiveTab] = useState('document');
   const [outputData, setOutputData] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
