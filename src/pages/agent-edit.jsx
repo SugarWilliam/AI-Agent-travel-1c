@@ -294,7 +294,7 @@ export default function AgentEdit(props) {
         setAgentDescription(agent.description || '');
         setAgentIcon(agent.icon || 'Bot');
         setAgentColor(agent.color || 'from-blue-500 to-purple-500');
-        setAgentType(agent.type || 'custom');
+        setAgentType(agent.agentType || 'custom');
         setSelectedModel(agent.model || 'gpt-4');
         setSkills(agent.skills || []);
         setRules(agent.rules || []);
@@ -417,7 +417,7 @@ export default function AgentEdit(props) {
         description: agentDescription,
         icon: agentIcon,
         color: agentColor,
-        type: agentType,
+        agentType: agentType,
         model: selectedModel,
         skills: skills,
         rules: rules,
@@ -427,7 +427,15 @@ export default function AgentEdit(props) {
         usageCount: usageCount,
         createdAt: createdAt,
         updatedAt: new Date().toISOString(),
-        status: 'active'
+        status: 'active',
+        outputFormats: [],
+        isBuiltIn: false,
+        capabilities: [],
+        systemPrompt: '',
+        temperature: 0.7,
+        maxTokens: 4096,
+        priority: 0,
+        config: {}
       };
       console.log('准备保存 Agent 数据:', agentData);
 

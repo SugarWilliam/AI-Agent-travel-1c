@@ -106,6 +106,16 @@
       "name": "config",
       "title": "配置参数",
       "type": "Object"
+    },
+    {
+      "name": "createdAt",
+      "title": "创建时间",
+      "type": "String"
+    },
+    {
+      "name": "updatedAt",
+      "title": "更新时间",
+      "type": "String"
     }
   ]
 }
