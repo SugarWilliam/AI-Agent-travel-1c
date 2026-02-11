@@ -1,0 +1,12 @@
+{
+  "name": "initAgentCollection",
+  "version": "1.0.0",
+  "description": "初始化 Agent 集合并插入示例数据",
+  "main": "index.js",
+  "dependencies": {
+    "@cloudbase/node-sdk": "^2.6.0"
+  },
+  "engines": {
+    "node": ">=12.0.0"
+  }
+}
