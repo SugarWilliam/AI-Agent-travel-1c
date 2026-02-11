@@ -1,8 +1,11 @@
 {
   "name": "initLLMModels",
+  "version": "1.0.0",
   "description": "初始化 LLM 模型数据",
-  "memorySize": 128,
+  "main": "index.js",
   "timeout": 60,
-  "runtime": "Nodejs16.13",
-  "handler": "index.main"
+  "memorySize": 128,
+  "environment": {
+    "NODE_ENV": "production"
+  }
 }

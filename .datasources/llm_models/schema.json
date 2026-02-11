@@ -61,6 +61,16 @@
       "name": "temperature",
       "title": "温度参数",
       "type": "Number"
+    },
+    {
+      "name": "createdAt",
+      "title": "创建时间",
+      "type": "String"
+    },
+    {
+      "name": "updatedAt",
+      "title": "更新时间",
+      "type": "String"
     }
   ]
 }
