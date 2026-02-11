@@ -468,7 +468,7 @@ export default function AgentEdit(props) {
       ragEnabled: ragEnabled,
       ragSources: ragSources.filter(source => source.enabled).map(source => source.name),
       rules: rules.filter(rule => rule.enabled).map(rule => rule.name),
-      skills: skills.filter(skill => skill.enabled).map(skill => skill.name),
+      skills: availableSkills.filter(skill => skill.enabled).map(skill => skill.name),
       mcpServers: mcpServers.filter(server => server.enabled).map(server => server.name),
       knowledgeBases: agentKnowledgeBases.filter(kb => kb.enabled).map(kb => kb.name),
       status: 'active',
