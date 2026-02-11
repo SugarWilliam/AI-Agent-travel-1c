@@ -131,6 +131,62 @@ const defaultModels = [{
   id: 'claude-3',
   name: 'Claude 3',
   description: '优秀的推理能力'
+}, {
+  id: 'claude-2',
+  name: 'Claude 2',
+  description: '稳定可靠'
+}, {
+  id: 'gemini-pro',
+  name: 'Gemini Pro',
+  description: '多模态能力强'
+}, {
+  id: 'qwen-max',
+  name: '通义千问 Max',
+  description: '中文优化'
+}, {
+  id: 'ernie-bot',
+  name: '文心一言',
+  description: '中文理解能力强'
+}, {
+  id: 'doubao-pro',
+  name: '豆包 Pro',
+  description: '中文对话能力强，性价比高'
+}, {
+  id: 'doubao-lite',
+  name: '豆包 Lite',
+  description: '轻量级模型，响应速度快'
+}, {
+  id: 'moonshot-v1-128k',
+  name: 'Kimi 128K',
+  description: '长文本处理能力强，支持128K上下文'
+}, {
+  id: 'moonshot-v1-8k',
+  name: 'Kimi 8K',
+  description: '快速响应，适合日常对话'
+}, {
+  id: 'qwen-plus',
+  name: '通义千问 Plus',
+  description: '平衡性能与成本'
+}, {
+  id: 'qwen-turbo',
+  name: '通义千问 Turbo',
+  description: '极速响应，成本最低'
+}, {
+  id: 'glm-4',
+  name: 'GLM-4',
+  description: '中文理解能力强，多模态支持'
+}, {
+  id: 'glm-3-turbo',
+  name: 'GLM-3 Turbo',
+  description: '快速响应，成本较低'
+}, {
+  id: 'deepseek-chat',
+  name: 'DeepSeek Chat',
+  description: '代码能力强，性价比高'
+}, {
+  id: 'deepseek-coder',
+  name: 'DeepSeek Coder',
+  description: '代码生成和优化专家'
 }];
 
 // 可用技能列表
