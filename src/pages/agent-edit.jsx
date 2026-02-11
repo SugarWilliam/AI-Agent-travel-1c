@@ -297,6 +297,20 @@ export default function AgentEdit(props) {
       return;
     }
     try {
+      // 第一步：调用云函数初始化 Agent 集合
+      console.log('正在初始化 Agent 集合...');
+      try {
+        const initResult = await props.$w.cloud.callFunction({
+          name: 'initAgentCollection',
+          data: {}
+        });
+        console.log('Agent 集合初始化结果:', initResult);
+      } catch (initError) {
+        console.warn('初始化 Agent 集合失败，继续尝试保存:', initError.message);
+        // 不中断流程，继续尝试保存
+      }
+
+      // 第二步：准备保存数据
       const tcb = await props.$w.cloud.getCloudInstance();
       const db = tcb.database();
       const agentData = {
@@ -318,166 +332,7 @@ export default function AgentEdit(props) {
       };
       console.log('准备保存 Agent 数据:', agentData);
 
-      // 检查并创建 Agent 集合
-      try {
-        const collections = await db.listCollections();
-        const agentCollectionExists = collections.some(col => col.name === 'Agent');
-        if (!agentCollectionExists) {
-          console.log('Agent 集合不存在，正在创建...');
-          await db.createCollection('Agent');
-          console.log('Agent 集合创建成功');
-
-          // 插入示例数据
-          const sampleAgents = [{
-            name: '规划助手',
-            description: '专业的行程规划助手，根据用户需求生成详细的旅行行程安排',
-            icon: 'Route',
-            color: 'from-orange-500 to-pink-500',
-            type: 'built-in',
-            model: 'gpt-4',
-            skills: [{
-              name: '行程规划',
-              enabled: true
-            }, {
-              name: '路线优化',
-              enabled: true
-            }, {
-              name: '时间安排',
-              enabled: true
-            }],
-            rules: [{
-              name: '安全优先',
-              enabled: true
-            }, {
-              name: '时间合理',
-              enabled: true
-            }],
-            ragEnabled: true,
-            ragSources: [{
-              name: '旅行攻略数据库',
-              enabled: true
-            }, {
-              name: '景点数据库',
-              enabled: true
-            }],
-            mcpServers: [],
-            usageCount: 156,
-            createdAt: '2024-01-15T00:00:00.000Z',
-            updatedAt: new Date().toISOString(),
-            status: 'active'
-          }, {
-            name: '解说助手',
-            description: '提供景点解说和文化背景，让旅行更有深度',
-            icon: 'BookOpen',
-            color: 'from-blue-500 to-cyan-500',
-            type: 'built-in',
-            model: 'gpt-4',
-            skills: [{
-              name: '景点解说',
-              enabled: true
-            }, {
-              name: '文化背景',
-              enabled: true
-            }, {
-              name: '历史介绍',
-              enabled: true
-            }],
-            rules: [{
-              name: '准确无误',
-              enabled: true
-            }, {
-              name: '生动有趣',
-              enabled: true
-            }],
-            ragEnabled: true,
-            ragSources: [{
-              name: '景点数据库',
-              enabled: true
-            }, {
-              name: '文化数据库',
-              enabled: true
-            }],
-            mcpServers: [],
-            usageCount: 89,
-            createdAt: '2024-01-15T00:00:00.000Z',
-            updatedAt: new Date().toISOString(),
-            status: 'active'
-          }, {
-            name: '拍照助手',
-            description: '提供拍照建议和技巧，记录美好瞬间',
-            icon: 'Camera',
-            color: 'from-purple-500 to-pink-500',
-            type: 'built-in',
-            model: 'gpt-4',
-            skills: [{
-              name: '拍照建议',
-              enabled: true
-            }, {
-              name: '构图技巧',
-              enabled: true
-            }, {
-              name: '光线分析',
-              enabled: true
-            }],
-            rules: [{
-              name: '实用优先',
-              enabled: true
-            }, {
-              name: '简单易懂',
-              enabled: true
-            }],
-            ragEnabled: false,
-            ragSources: [],
-            mcpServers: [],
-            usageCount: 67,
-            createdAt: '2024-01-15T00:00:00.000Z',
-            updatedAt: new Date().toISOString(),
-            status: 'active'
-          }, {
-            name: '推荐助手',
-            description: '推荐旅行目的地和活动，发现更多精彩',
-            icon: 'Sparkles',
-            color: 'from-green-500 to-teal-500',
-            type: 'built-in',
-            model: 'gpt-4',
-            skills: [{
-              name: '目的地推荐',
-              enabled: true
-            }, {
-              name: '活动推荐',
-              enabled: true
-            }, {
-              name: '个性化建议',
-              enabled: true
-            }],
-            rules: [{
-              name: '用户偏好',
-              enabled: true
-            }, {
-              name: '季节考虑',
-              enabled: true
-            }],
-            ragEnabled: true,
-            ragSources: [{
-              name: '旅行攻略数据库',
-              enabled: true
-            }, {
-              name: '活动数据库',
-              enabled: true
-            }],
-            mcpServers: [],
-            usageCount: 124,
-            createdAt: '2024-01-15T00:00:00.000Z',
-            updatedAt: new Date().toISOString(),
-            status: 'active'
-          }];
-          await db.collection('Agent').add(sampleAgents);
-          console.log('示例数据插入成功');
-        }
-      } catch (collectionError) {
-        console.error('创建集合失败:', collectionError);
-        // 继续尝试保存，可能是权限问题
-      }
+      // 第三步：保存或更新 Agent
       if (isEditMode && agentId) {
         console.log('更新现有 Agent:', agentId);
         await db.collection('Agent').doc(agentId).update(agentData);
@@ -505,12 +360,20 @@ export default function AgentEdit(props) {
         stack: error.stack
       });
       let errorMessage = error.message || '未知错误';
+
+      // 根据错误类型提供更友好的提示
       if (error.message && error.message.includes('not exist')) {
-        errorMessage = '数据库集合不存在，请先创建 Agent 集合';
+        errorMessage = '数据库集合不存在，正在尝试自动创建...';
       } else if (error.message && error.message.includes('不存在')) {
-        errorMessage = '数据库集合不存在，请先创建 Agent 集合';
+        errorMessage = '数据库集合不存在，正在尝试自动创建...';
       } else if (error.code === 'DATABASE_COLLECTION_NOT_EXIST') {
-        errorMessage = '数据库集合不存在，请先创建 Agent 集合';
+        errorMessage = '数据库集合不存在，正在尝试自动创建...';
+      } else if (error.message && error.message.includes('network')) {
+        errorMessage = '网络连接异常，请检查网络设置后重试';
+      } else if (error.message && error.message.includes('timeout')) {
+        errorMessage = '请求超时，请稍后重试';
+      } else if (error.code === 'PERMISSION_DENIED') {
+        errorMessage = '权限不足，请联系管理员';
       }
       toast({
         title: t.saveFailed,
