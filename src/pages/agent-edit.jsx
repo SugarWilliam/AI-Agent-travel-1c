@@ -118,75 +118,93 @@ const defaultAgentTemplate = {
 const defaultModels = [{
   id: 'gpt-4',
   name: 'GPT-4',
-  description: '最强大的模型'
+  description: '最强大的模型',
+  provider: 'OpenAI'
 }, {
   id: 'gpt-4-turbo',
   name: 'GPT-4 Turbo',
-  description: '更快的响应速度'
+  description: '更快的响应速度',
+  provider: 'OpenAI'
 }, {
   id: 'gpt-3.5-turbo',
   name: 'GPT-3.5 Turbo',
-  description: '经济实惠'
+  description: '经济实惠',
+  provider: 'OpenAI'
 }, {
   id: 'claude-3',
   name: 'Claude 3',
-  description: '优秀的推理能力'
+  description: '优秀的推理能力',
+  provider: 'Anthropic'
 }, {
   id: 'claude-2',
   name: 'Claude 2',
-  description: '稳定可靠'
+  description: '稳定可靠',
+  provider: 'Anthropic'
 }, {
   id: 'gemini-pro',
   name: 'Gemini Pro',
-  description: '多模态能力强'
+  description: '多模态能力强',
+  provider: 'Google'
 }, {
   id: 'qwen-max',
   name: '通义千问 Max',
-  description: '中文优化'
+  description: '中文优化',
+  provider: '阿里云'
 }, {
   id: 'ernie-bot',
   name: '文心一言',
-  description: '中文理解能力强'
+  description: '中文理解能力强',
+  provider: '百度'
 }, {
   id: 'doubao-pro',
   name: '豆包 Pro',
-  description: '中文对话能力强，性价比高'
+  description: '中文对话能力强，性价比高',
+  provider: '字节跳动'
 }, {
   id: 'doubao-lite',
   name: '豆包 Lite',
-  description: '轻量级模型，响应速度快'
+  description: '轻量级模型，响应速度快',
+  provider: '字节跳动'
 }, {
   id: 'moonshot-v1-128k',
   name: 'Kimi 128K',
-  description: '长文本处理能力强，支持128K上下文'
+  description: '长文本处理能力强，支持128K上下文',
+  provider: '月之暗面'
 }, {
   id: 'moonshot-v1-8k',
   name: 'Kimi 8K',
-  description: '快速响应，适合日常对话'
+  description: '快速响应，适合日常对话',
+  provider: '月之暗面'
 }, {
   id: 'qwen-plus',
   name: '通义千问 Plus',
-  description: '平衡性能与成本'
+  description: '平衡性能与成本',
+  provider: '阿里云'
 }, {
   id: 'qwen-turbo',
   name: '通义千问 Turbo',
-  description: '极速响应，成本最低'
+  description: '极速响应，成本最低',
+  provider: '阿里云'
 }, {
   id: 'glm-4',
   name: 'GLM-4',
-  description: '中文理解能力强，多模态支持'
+  description: '中文理解能力强，多模态支持',
+  provider: '智谱AI'
 }, {
   id: 'glm-3-turbo',
   name: 'GLM-3 Turbo',
-  description: '快速响应，成本较低'
+  description: '快速响应，成本较低',
+  provider: '智谱AI'
 }, {
   id: 'deepseek-chat',
   name: 'DeepSeek Chat',
-  description: '代码能力强，性价比高'
+  description: '代码能力强，性价比高',
+  provider: '深度求索'
 }, {
   id: 'deepseek-coder',
   name: 'DeepSeek Coder',
-  description: '代码生成和优化专家'
+  description: '代码生成和优化专家',
+  provider: '深度求索'
 }];
 
 // 可用技能列表
@@ -347,7 +365,8 @@ export default function AgentEdit(props) {
         const models = result.data.map(model => ({
           id: model.modelId,
           name: model.modelName,
-          description: model.description || `${model.provider} 的模型`
+          description: model.description || `${model.provider || '未知提供商'} 的模型`,
+          provider: model.provider || '未知提供商'
         }));
         setAvailableModels(models);
         console.log('成功加载模型列表:', models.length, '个模型');
