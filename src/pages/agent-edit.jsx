@@ -614,6 +614,6 @@ export default function AgentEdit(props) {
       </div>
 
       {/* 底部 TabBar */}
-      <TabBar />
+      <TabBar activeTab="ai" onNavigate={props.$w.utils.navigateTo} />
     </div>;
 }

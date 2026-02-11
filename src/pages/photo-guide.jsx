@@ -5,6 +5,7 @@ import { Search, Heart, Share2, Play, Shirt, Camera, Sparkles, Filter, ChevronRi
 // @ts-ignore;
 import { useToast, Button } from '@/components/ui';
 
+import TabBar from '@/components/TabBar';
 export default function PhotoGuide(props) {
   const {
     $w
@@ -662,43 +663,7 @@ export default function PhotoGuide(props) {
           </div>
         </div>}
 
-      {/* 底部导航栏 */}
-      <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100 px-6 py-2">
-        <div className="flex items-center justify-around">
-          <button onClick={() => $w.utils.navigateTo({
-          pageId: 'home',
-          params: {}
-        })} className="flex flex-col items-center gap-1 text-gray-400 hover:text-[#FF6B6B] transition-colors">
-            <Camera className="w-6 h-6" />
-            <span className="text-xs" style={{
-            fontFamily: 'Quicksand, sans-serif'
-          }}>首页</span>
-          </button>
-          <button onClick={() => $w.utils.navigateTo({
-          pageId: 'my-plans',
-          params: {}
-        })} className="flex flex-col items-center gap-1 text-gray-400 hover:text-[#FF6B6B] transition-colors">
-            <Sparkles className="w-6 h-6" />
-            <span className="text-xs" style={{
-            fontFamily: 'Quicksand, sans-serif'
-          }}>我的计划</span>
-          </button>
-          <button className="flex flex-col items-center gap-1 text-[#FF6B6B]">
-            <Camera className="w-6 h-6" />
-            <span className="text-xs" style={{
-            fontFamily: 'Quicksand, sans-serif'
-          }}>拍照指导</span>
-          </button>
-          <button onClick={() => $w.utils.navigateTo({
-          pageId: 'profile',
-          params: {}
-        })} className="flex flex-col items-center gap-1 text-gray-400 hover:text-[#FF6B6B] transition-colors">
-            <Heart className="w-6 h-6" />
-            <span className="text-xs" style={{
-            fontFamily: 'Quicksand, sans-serif'
-          }}>我的</span>
-          </button>
-        </div>
-      </div>
+      {/* TabBar */}
+      <TabBar activeTab="photo-guide" onNavigate={props.$w.utils.navigateTo} />
     </div>;
 }

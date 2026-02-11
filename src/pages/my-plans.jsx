@@ -395,6 +395,6 @@ export default function MyPlans(props) {
       </div>
 
       {/* TabBar */}
-      <TabBar />
+      <TabBar activeTab="home" onNavigate={props.$w.utils.navigateTo} />
     </div>;
 }

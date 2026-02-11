@@ -436,6 +436,6 @@ export default function Companions(props) {
           </div>
         </div>}
 
-      <TabBar />
+      <TabBar activeTab="profile" onNavigate={props.$w.utils.navigateTo} />
     </div>;
 }

@@ -403,6 +403,6 @@ export default function ReminderSettings(props) {
         </Button>
       </div>
 
-      <TabBar />
+      <TabBar activeTab="profile" onNavigate={props.$w.utils.navigateTo} />
     </div>;
 }

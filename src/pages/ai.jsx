@@ -630,5 +630,8 @@ export default function AIAssistant(props) {
             </div>
           </div>
         </div>}
+
+      {/* TabBar */}
+      <TabBar activeTab="ai" onNavigate={props.$w.utils.navigateTo} />
     </div>;
 }

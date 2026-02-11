@@ -428,6 +428,6 @@ export default function ShareSettings(props) {
         </Button>
       </div>
 
-      <TabBar />
+      <TabBar activeTab="profile" onNavigate={props.$w.utils.navigateTo} />
     </div>;
 }

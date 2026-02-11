@@ -1116,6 +1116,6 @@ export default function AIConfig(props) {
         </div>
       </div>
 
-      <TabBar />
+      <TabBar activeTab="ai" onNavigate={props.$w.utils.navigateTo} />
     </div>;
 }
