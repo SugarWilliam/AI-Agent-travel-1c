@@ -161,13 +161,24 @@ export default function AgentList(props) {
           console.log('Agent集合加载成功，数据量:', result.data?.length || 0);
         } catch (dbError) {
           console.log('Agent集合加载失败:', dbError.message);
-          console.log('尝试从AIConfig集合加载数据...');
-          try {
-            result = await db.collection('AIConfig').get();
-            console.log('AIConfig集合加载成功，数据量:', result.data?.length || 0);
-          } catch (aiConfigError) {
-            console.log('AIConfig集合加载失败:', aiConfigError.message);
-            throw new Error('数据库连接失败');
+          // 检查是否是集合不存在的错误
+          if (dbError.message.includes('not exist') || dbError.message.includes('不存在')) {
+            console.log('Agent集合不存在，跳过数据库加载');
+            dbLoadSuccess = false;
+          } else {
+            console.log('尝试从AIConfig集合加载数据...');
+            try {
+              result = await db.collection('AIConfig').get();
+              console.log('AIConfig集合加载成功，数据量:', result.data?.length || 0);
+            } catch (aiConfigError) {
+              console.log('AIConfig集合加载失败:', aiConfigError.message);
+              if (aiConfigError.message.includes('not exist') || aiConfigError.message.includes('不存在')) {
+                console.log('AIConfig集合不存在，跳过数据库加载');
+                dbLoadSuccess = false;
+              } else {
+                throw new Error('数据库连接失败');
+              }
+            }
           }
         }
         if (result.data && result.data.length > 0) {
