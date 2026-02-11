@@ -37,7 +37,7 @@ export function ModelManager({
     apiKey: '',
     apiEndpoint: ''
   });
-  const providers = ['OpenAI', 'Anthropic', 'Google', '阿里云', '百度', '腾讯', '字节跳动', '月之暗面', '智谱AI', '自定义'];
+  const providers = ['OpenAI', 'Anthropic', 'Google', '阿里云', '百度', '腾讯', '字节跳动', '月之暗面', '智谱AI', '深度求索', '自定义'];
   const costLevels = ['low', 'medium', 'high'];
   useEffect(() => {
     loadModels();
@@ -45,93 +45,130 @@ export function ModelManager({
   const loadModels = async () => {
     try {
       setLoading(true);
-      const result = await $w.cloud.callFunction({
-        name: 'ai-assistant',
-        data: {
-          action: 'getModels',
-          userId: $w.auth.currentUser?.userId || 'anonymous'
-        }
-      });
-      if (result.result.success) {
-        const loadedModels = result.result.data;
 
-        // 添加默认模型（如果不存在）
-        const defaultModels = [{
-          _id: 'model_deepseek',
-          modelId: 'deepseek-chat',
-          modelName: 'DeepSeek Chat',
-          provider: '月之暗面',
-          description: '高性能中文大模型，代码能力强',
-          maxTokens: 128000,
-          temperature: 0.7,
-          costLevel: 'low',
-          capabilities: {
-            documentParsing: true,
-            imageRecognition: false,
-            multimodal: false,
-            webScraping: true
-          },
-          isRecommended: true,
-          status: 'active',
-          createdAt: Date.now(),
-          updatedAt: Date.now()
-        }, {
-          _id: 'model_glm',
-          modelId: 'glm-4',
-          modelName: 'GLM-4',
-          provider: '智谱AI',
-          description: '新一代认知大模型，多模态能力强',
-          maxTokens: 128000,
-          temperature: 0.7,
-          costLevel: 'medium',
-          capabilities: {
-            documentParsing: true,
-            imageRecognition: true,
-            multimodal: true,
-            webScraping: true
-          },
-          isRecommended: false,
-          status: 'active',
-          createdAt: Date.now(),
-          updatedAt: Date.now()
-        }, {
-          _id: 'model_kimi',
-          modelId: 'moonshot-v1',
-          modelName: 'Kimi',
-          provider: '月之暗面',
-          description: '长文本处理能力强，支持超长上下文',
-          maxTokens: 2000000,
-          temperature: 0.7,
-          costLevel: 'medium',
-          capabilities: {
-            documentParsing: true,
-            imageRecognition: false,
-            multimodal: false,
-            webScraping: true
-          },
-          isRecommended: false,
-          status: 'active',
-          createdAt: Date.now(),
-          updatedAt: Date.now()
-        }];
-
-        // 合并模型列表，避免重复
-        const existingModelIds = loadedModels.map(m => m.modelId);
-        const newModels = defaultModels.filter(m => !existingModelIds.includes(m.modelId));
-        setModels([...loadedModels, ...newModels]);
+      // 从 llm_models 数据模型加载真实的大模型配置
+      const tcb = await $w.cloud.getCloudInstance();
+      const db = tcb.database();
+      const result = await db.collection('llm_models').where({
+        status: 'active'
+      }).get();
+      if (result.data && result.data.length > 0) {
+        // 为每个模型添加 apiKey 字段（如果不存在）
+        const modelsWithApiKey = result.data.map(model => ({
+          ...model,
+          apiKey: model.apiKey || ''
+        }));
+        setModels(modelsWithApiKey);
+        console.log('成功加载模型列表:', modelsWithApiKey.length, '个模型');
       } else {
-        toast({
-          title: '加载失败',
-          description: result.result.error || '无法加载模型列表',
-          variant: 'destructive'
-        });
+        console.warn('未找到活跃的模型配置');
+        setModels([]);
       }
     } catch (error) {
       console.error('加载模型失败:', error);
+
+      // 如果数据库加载失败，使用默认的模型列表作为降级方案
+      const defaultModels = [{
+        _id: 'model_009',
+        modelId: 'doubao-pro',
+        modelName: '豆包 Pro',
+        provider: '字节跳动',
+        description: '中文对话能力强，性价比高',
+        maxTokens: 32000,
+        temperature: 0.7,
+        costLevel: 'low',
+        capabilities: {
+          documentParsing: true,
+          imageRecognition: true,
+          multimodal: true,
+          webScraping: true
+        },
+        isRecommended: true,
+        status: 'active',
+        apiEndpoint: 'https://ark.cn-beijing.volces.com/api/v3/chat/completions',
+        apiKey: ''
+      }, {
+        _id: 'model_011',
+        modelId: 'moonshot-v1-128k',
+        modelName: 'Kimi 128K',
+        provider: '月之暗面',
+        description: '长文本处理能力强，支持128K上下文',
+        maxTokens: 128000,
+        temperature: 0.7,
+        costLevel: 'medium',
+        capabilities: {
+          documentParsing: true,
+          imageRecognition: false,
+          multimodal: false,
+          webScraping: true
+        },
+        isRecommended: true,
+        status: 'active',
+        apiEndpoint: 'https://api.moonshot.cn/v1/chat/completions',
+        apiKey: ''
+      }, {
+        _id: 'model_007',
+        modelId: 'qwen-max',
+        modelName: '通义千问 Max',
+        provider: '阿里云',
+        description: '中文优化',
+        maxTokens: 8000,
+        temperature: 0.7,
+        costLevel: 'medium',
+        capabilities: {
+          documentParsing: true,
+          imageRecognition: true,
+          multimodal: true,
+          webScraping: true
+        },
+        isRecommended: false,
+        status: 'active',
+        apiEndpoint: 'https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions',
+        apiKey: ''
+      }, {
+        _id: 'model_015',
+        modelId: 'glm-4',
+        modelName: 'GLM-4',
+        provider: '智谱AI',
+        description: '中文理解能力强，多模态支持',
+        maxTokens: 128000,
+        temperature: 0.7,
+        costLevel: 'medium',
+        capabilities: {
+          documentParsing: true,
+          imageRecognition: true,
+          multimodal: true,
+          webScraping: true
+        },
+        isRecommended: true,
+        status: 'active',
+        apiEndpoint: 'https://open.bigmodel.cn/api/paas/v4/chat/completions',
+        apiKey: ''
+      }, {
+        _id: 'model_017',
+        modelId: 'deepseek-chat',
+        modelName: 'DeepSeek Chat',
+        provider: '深度求索',
+        description: '代码能力强，性价比高',
+        maxTokens: 32000,
+        temperature: 0.7,
+        costLevel: 'low',
+        capabilities: {
+          documentParsing: true,
+          imageRecognition: false,
+          multimodal: false,
+          webScraping: true
+        },
+        isRecommended: true,
+        status: 'active',
+        apiEndpoint: 'https://api.deepseek.com/chat/completions',
+        apiKey: ''
+      }];
+      setModels(defaultModels);
       toast({
-        title: '加载失败',
-        description: '网络错误，请重试',
-        variant: 'destructive'
+        title: '使用默认模型配置',
+        description: '无法从数据库加载，已加载默认模型',
+        variant: 'default'
       });
     } finally {
       setLoading(false);
@@ -148,44 +185,51 @@ export function ModelManager({
       return;
     }
     try {
-      const action = editingModel ? 'updateModel' : 'addModel';
+      // 直接保存到数据库
+      const tcb = await $w.cloud.getCloudInstance();
+      const db = tcb.database();
       const data = {
-        ...formData,
-        userId: $w.auth.currentUser?.userId || 'anonymous',
-        owner: $w.auth.currentUser?.userId || 'anonymous'
+        modelId: formData.modelId,
+        modelName: formData.modelName,
+        provider: formData.provider,
+        description: formData.description,
+        maxTokens: formData.maxTokens,
+        temperature: formData.temperature,
+        costLevel: formData.costLevel,
+        capabilities: formData.capabilities,
+        isRecommended: formData.isRecommended,
+        status: formData.status,
+        apiEndpoint: formData.apiEndpoint,
+        apiKey: formData.apiKey,
+        updatedAt: new Date().toISOString()
       };
       if (editingModel) {
-        data._id = editingModel._id;
-      }
-      const result = await $w.cloud.callFunction({
-        name: 'ai-assistant',
-        data: {
-          action,
-          data
-        }
-      });
-      if (result.result.success) {
+        // 更新现有模型
+        await db.collection('llm_models').doc(editingModel._id).update(data);
         toast({
-          title: editingModel ? '更新成功' : '添加成功',
-          description: `模型 ${formData.modelName} 已${editingModel ? '更新' : '添加'}`,
+          title: '更新成功',
+          description: `模型 ${formData.modelName} 已更新`,
           variant: 'default'
         });
-        setShowAddModal(false);
-        setEditingModel(null);
-        resetForm();
-        loadModels();
       } else {
+        // 添加新模型
+        data.createdAt = new Date().toISOString();
+        await db.collection('llm_models').add(data);
         toast({
-          title: '操作失败',
-          description: result.result.error || '请重试',
-          variant: 'destructive'
+          title: '添加成功',
+          description: `模型 ${formData.modelName} 已添加`,
+          variant: 'default'
         });
       }
+      setShowAddModal(false);
+      setEditingModel(null);
+      resetForm();
+      loadModels();
     } catch (error) {
       console.error('保存模型失败:', error);
       toast({
         title: '操作失败',
-        description: '网络错误，请重试',
+        description: error.message || '网络错误，请重试',
         variant: 'destructive'
       });
     }
@@ -215,32 +259,21 @@ export function ModelManager({
   };
   const handleDelete = async modelId => {
     try {
-      const result = await $w.cloud.callFunction({
-        name: 'ai-assistant',
-        data: {
-          action: 'deleteModel',
-          modelId
-        }
+      // 直接从数据库删除
+      const tcb = await $w.cloud.getCloudInstance();
+      const db = tcb.database();
+      await db.collection('llm_models').doc(modelId).remove();
+      toast({
+        title: '删除成功',
+        description: '模型已删除',
+        variant: 'default'
       });
-      if (result.result.success) {
-        toast({
-          title: '删除成功',
-          description: '模型已删除',
-          variant: 'default'
-        });
-        loadModels();
-      } else {
-        toast({
-          title: '删除失败',
-          description: result.result.error || '请重试',
-          variant: 'destructive'
-        });
-      }
+      loadModels();
     } catch (error) {
       console.error('删除模型失败:', error);
       toast({
         title: '删除失败',
-        description: '网络错误，请重试',
+        description: error.message || '网络错误，请重试',
         variant: 'destructive'
       });
     }
@@ -283,6 +316,7 @@ export function ModelManager({
       '字节跳动': 'bg-pink-100 text-pink-700',
       '月之暗面': 'bg-indigo-100 text-indigo-700',
       '智谱AI': 'bg-teal-100 text-teal-700',
+      '深度求索': 'bg-amber-100 text-amber-700',
       '自定义': 'bg-gray-100 text-gray-700'
     };
     return colors[provider] || 'bg-gray-100 text-gray-700';
