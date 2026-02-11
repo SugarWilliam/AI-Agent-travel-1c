@@ -1,0 +1,9 @@
+{
+  "name": "initLLMModels",
+  "version": "1.0.0",
+  "description": "初始化 LLM 模型数据",
+  "main": "index.js",
+  "dependencies": {
+    "@cloudbase/node-sdk": "^3.3.7"
+  }
+}

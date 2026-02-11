@@ -818,15 +818,24 @@ export default function AIConfig(props) {
                           {availableModels.length > 0 ? availableModels.map(model => <SelectItem key={model._id} value={model.modelId}>
                               {model.modelName} {model.isRecommended && '⭐'}
                             </SelectItem>) : <>
-                              <SelectItem value="gpt-4">GPT-4</SelectItem>
+                              <SelectItem value="gpt-4">GPT-4 ⭐</SelectItem>
                               <SelectItem value="gpt-4-turbo">GPT-4 Turbo</SelectItem>
                               <SelectItem value="gpt-3.5-turbo">GPT-3.5 Turbo</SelectItem>
-                              <SelectItem value="claude-3-sonnet">Claude 3 Sonnet</SelectItem>
-                              <SelectItem value="claude-3-opus">Claude 3 Opus</SelectItem>
+                              <SelectItem value="claude-3">Claude 3</SelectItem>
+                              <SelectItem value="claude-2">Claude 2</SelectItem>
                               <SelectItem value="gemini-pro">Gemini Pro</SelectItem>
-                              <SelectItem value="deepseek-chat">DeepSeek Chat</SelectItem>
-                              <SelectItem value="glm-4">GLM-4</SelectItem>
-                              <SelectItem value="moonshot-v1">Kimi (Moonshot)</SelectItem>
+                              <SelectItem value="qwen-max">通义千问 Max</SelectItem>
+                              <SelectItem value="ernie-bot">文心一言</SelectItem>
+                              <SelectItem value="doubao-pro">豆包 Pro ⭐</SelectItem>
+                              <SelectItem value="doubao-lite">豆包 Lite</SelectItem>
+                              <SelectItem value="moonshot-v1-128k">Kimi 128K ⭐</SelectItem>
+                              <SelectItem value="moonshot-v1-8k">Kimi 8K</SelectItem>
+                              <SelectItem value="qwen-plus">通义千问 Plus</SelectItem>
+                              <SelectItem value="qwen-turbo">通义千问 Turbo</SelectItem>
+                              <SelectItem value="glm-4">GLM-4 ⭐</SelectItem>
+                              <SelectItem value="glm-3-turbo">GLM-3 Turbo</SelectItem>
+                              <SelectItem value="deepseek-chat">DeepSeek Chat ⭐</SelectItem>
+                              <SelectItem value="deepseek-coder">DeepSeek Coder</SelectItem>
                               <SelectItem value="custom">自定义模型</SelectItem>
                             </>}
                         </SelectContent>

@@ -16,6 +16,7 @@
     "maxTokens": 8192,
     "status": "active",
     "apiEndpoint": "https://api.openai.com/v1/chat/completions",
+    "apiKey": "",
     "temperature": 0.7,
     "createdAt": 1739078400000,
     "updatedAt": 1739078400000
@@ -37,6 +38,7 @@
     "maxTokens": 128000,
     "status": "active",
     "apiEndpoint": "https://api.openai.com/v1/chat/completions",
+    "apiKey": "",
     "temperature": 0.7,
     "createdAt": 1739078400000,
     "updatedAt": 1739078400000
@@ -58,6 +60,7 @@
     "maxTokens": 4096,
     "status": "active",
     "apiEndpoint": "https://api.openai.com/v1/chat/completions",
+    "apiKey": "",
     "temperature": 0.7,
     "createdAt": 1739078400000,
     "updatedAt": 1739078400000
@@ -79,6 +82,7 @@
     "maxTokens": 200000,
     "status": "active",
     "apiEndpoint": "https://api.anthropic.com/v1/messages",
+    "apiKey": "",
     "temperature": 0.7,
     "createdAt": 1739078400000,
     "updatedAt": 1739078400000
@@ -100,6 +104,7 @@
     "maxTokens": 100000,
     "status": "active",
     "apiEndpoint": "https://api.anthropic.com/v1/messages",
+    "apiKey": "",
     "temperature": 0.7,
     "createdAt": 1739078400000,
     "updatedAt": 1739078400000
@@ -121,6 +126,7 @@
     "maxTokens": 32000,
     "status": "active",
     "apiEndpoint": "https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent",
+    "apiKey": "",
     "temperature": 0.7,
     "createdAt": 1739078400000,
     "updatedAt": 1739078400000
@@ -142,6 +148,7 @@
     "maxTokens": 8000,
     "status": "active",
     "apiEndpoint": "https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions",
+    "apiKey": "",
     "temperature": 0.7,
     "createdAt": 1739078400000,
     "updatedAt": 1739078400000
@@ -163,6 +170,7 @@
     "maxTokens": 2000,
     "status": "active",
     "apiEndpoint": "https://aip.baidubce.com/rpc/2.0/ai_custom/v1/wenxinworkshop/chat/completions",
+    "apiKey": "",
     "temperature": 0.7,
     "createdAt": 1739078400000,
     "updatedAt": 1739078400000
@@ -184,6 +192,7 @@
     "maxTokens": 32000,
     "status": "active",
     "apiEndpoint": "https://ark.cn-beijing.volces.com/api/v3/chat/completions",
+    "apiKey": "",
     "temperature": 0.7,
     "createdAt": 1739078400000,
     "updatedAt": 1739078400000
@@ -205,6 +214,7 @@
     "maxTokens": 8000,
     "status": "active",
     "apiEndpoint": "https://ark.cn-beijing.volces.com/api/v3/chat/completions",
+    "apiKey": "",
     "temperature": 0.7,
     "createdAt": 1739078400000,
     "updatedAt": 1739078400000
@@ -226,6 +236,7 @@
     "maxTokens": 128000,
     "status": "active",
     "apiEndpoint": "https://api.moonshot.cn/v1/chat/completions",
+    "apiKey": "",
     "temperature": 0.7,
     "createdAt": 1739078400000,
     "updatedAt": 1739078400000
@@ -247,6 +258,7 @@
     "maxTokens": 8000,
     "status": "active",
     "apiEndpoint": "https://api.moonshot.cn/v1/chat/completions",
+    "apiKey": "",
     "temperature": 0.7,
     "createdAt": 1739078400000,
     "updatedAt": 1739078400000
@@ -268,6 +280,7 @@
     "maxTokens": 32000,
     "status": "active",
     "apiEndpoint": "https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions",
+    "apiKey": "",
     "temperature": 0.7,
     "createdAt": 1739078400000,
     "updatedAt": 1739078400000
@@ -289,6 +302,7 @@
     "maxTokens": 8000,
     "status": "active",
     "apiEndpoint": "https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions",
+    "apiKey": "",
     "temperature": 0.7,
     "createdAt": 1739078400000,
     "updatedAt": 1739078400000
@@ -310,6 +324,7 @@
     "maxTokens": 128000,
     "status": "active",
     "apiEndpoint": "https://open.bigmodel.cn/api/paas/v4/chat/completions",
+    "apiKey": "",
     "temperature": 0.7,
     "createdAt": 1739078400000,
     "updatedAt": 1739078400000
@@ -331,6 +346,7 @@
     "maxTokens": 32000,
     "status": "active",
     "apiEndpoint": "https://open.bigmodel.cn/api/paas/v3/chat/completions",
+    "apiKey": "",
     "temperature": 0.7,
     "createdAt": 1739078400000,
     "updatedAt": 1739078400000
@@ -352,6 +368,7 @@
     "maxTokens": 32000,
     "status": "active",
     "apiEndpoint": "https://api.deepseek.com/chat/completions",
+    "apiKey": "",
     "temperature": 0.7,
     "createdAt": 1739078400000,
     "updatedAt": 1739078400000
@@ -373,6 +390,7 @@
     "maxTokens": 16000,
     "status": "active",
     "apiEndpoint": "https://api.deepseek.com/chat/completions",
+    "apiKey": "",
     "temperature": 0.7,
     "createdAt": 1739078400000,
     "updatedAt": 1739078400000

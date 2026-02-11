@@ -11,19 +11,33 @@ const _ = db.command;
 /**
  * 初始化 LLM 模型数据
  * 将 llm_models 数据模型的数据导入到数据库中
+ * 
+ * 支持的模型：
+ * - OpenAI: GPT-4, GPT-4 Turbo, GPT-3.5 Turbo
+ * - Anthropic: Claude 3, Claude 2
+ * - Google: Gemini Pro
+ * - 阿里云: 通义千问 Max/Plus/Turbo
+ * - 百度: 文心一言
+ * - 字节跳动: 豆包 Pro/Lite
+ * - 月之暗面: Kimi 128K/8K
+ * - 智谱AI: GLM-4, GLM-3 Turbo
+ * - 深度求索: DeepSeek Chat/Coder
  */
 exports.main = async (event, context) => {
   console.log('开始初始化 LLM 模型数据');
   
   try {
     // 检查是否已经初始化过
+    console.log('检查现有模型数据...');
     const existingCount = await db.collection('llm_models').count();
+    
     if (existingCount.total > 0) {
-      console.log('LLM 模型数据已存在，跳过初始化');
+      console.log(`LLM 模型数据已存在，共 ${existingCount.total} 个模型，跳过初始化`);
       return {
         success: true,
         message: 'LLM 模型数据已存在',
-        count: existingCount.total
+        count: existingCount.total,
+        skipped: true
       };
     }
     
@@ -428,25 +442,52 @@ exports.main = async (event, context) => {
     ];
     
     // 批量插入模型数据
+    console.log(`准备插入 ${models.length} 个模型...`);
     const result = await db.collection('llm_models').add(models);
     
+    if (!result || !result.ids || result.ids.length === 0) {
+      throw new Error('插入模型数据失败：未返回有效的 ID 列表');
+    }
+    
     console.log('成功初始化 LLM 模型数据:', result.ids.length, '个模型');
+    
+    // 按提供商分组统计
+    const providerStats = {};
+    models.forEach(m => {
+      if (!providerStats[m.provider]) {
+        providerStats[m.provider] = 0;
+      }
+      providerStats[m.provider]++;
+    });
     
     return {
       success: true,
       message: 'LLM 模型数据初始化成功',
       count: result.ids.length,
+      providerStats,
       models: models.map(m => ({
         id: m.modelId,
         name: m.modelName,
-        provider: m.provider
+        provider: m.provider,
+        description: m.description,
+        isRecommended: m.isRecommended
       }))
     };
   } catch (error) {
     console.error('初始化 LLM 模型数据失败:', error);
+    
+    // 详细错误信息
+    const errorInfo = {
+      message: error.message || '初始化失败',
+      code: error.code || 'UNKNOWN_ERROR',
+      stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
+    };
+    
     return {
       success: false,
-      error: error.message || '初始化失败'
+      error: errorInfo.message,
+      code: errorInfo.code,
+      details: errorInfo
     };
   }
 };
