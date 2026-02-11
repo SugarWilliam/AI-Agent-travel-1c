@@ -1,7 +1,7 @@
 // @ts-ignore;
 import React, { useState, useEffect } from 'react';
 // @ts-ignore;
-import { ArrowLeft, Settings, Brain, Database, FileText, Image as ImageIcon, Link2, ChevronRight, Plus, Trash2, Check, Zap, Code, Languages, Sun, Moon, Bot, Type, Save } from 'lucide-react';
+import { ArrowLeft, Settings, Brain, Database, FileText, Image as ImageIcon, Link2, ChevronRight, Plus, Trash2, Check, Zap, Code, Languages, Sun, Moon, Bot, Type, Save, RefreshCw } from 'lucide-react';
 // @ts-ignore;
 import { useToast, Button, Input, Textarea, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Switch } from '@/components/ui';
 
@@ -495,6 +495,34 @@ export default function AIConfig(props) {
     }
   };
 
+  // 初始化 LLM 模型数据
+  const initLLMModels = async () => {
+    try {
+      const result = await props.$w.cloud.callFunction({
+        name: 'initLLMModels',
+        data: {}
+      });
+      if (result.result && result.result.success) {
+        toast({
+          title: '初始化成功',
+          description: `成功初始化 ${result.result.count} 个模型`,
+          variant: 'default'
+        });
+        // 重新加载模型列表
+        loadAvailableConfigurations();
+      } else {
+        throw new Error(result.result?.error || '初始化失败');
+      }
+    } catch (error) {
+      console.error('初始化 LLM 模型失败:', error);
+      toast({
+        title: '初始化失败',
+        description: error.message || '请稍后重试',
+        variant: 'destructive'
+      });
+    }
+  };
+
   // 辅助函数：渲染标签按钮
   const renderTabButton = item => {
     const IconComponent = item.icon;
@@ -837,6 +865,15 @@ export default function AIConfig(props) {
                   </div>
                   
                   <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <h3 className={`font-semibold ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+                        模型列表
+                      </h3>
+                      <Button onClick={initLLMModels} variant="outline" size="sm" className={darkMode ? 'border-gray-600 text-gray-300 hover:bg-gray-700' : ''}>
+                        <RefreshCw className="w-4 h-4 mr-2" />
+                        初始化模型
+                      </Button>
+                    </div>
                     <ModelManager $w={props.$w} />
                   </div>
                 </div>
