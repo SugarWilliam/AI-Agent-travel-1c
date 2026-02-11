@@ -176,26 +176,40 @@ export default function AIAssistant(props) {
       const intent = detectIntent(input);
       console.log('检测到的意图:', intent);
 
+      // 生成会话ID（如果还没有）
+      const conversationId = `conv_${Date.now()}`;
+
+      // 构建消息内容（包含图片和文件信息）
+      let messageContent = input;
+      if (uploadedImages.length > 0) {
+        messageContent += `\n[已上传 ${uploadedImages.length} 张图片]`;
+      }
+      if (uploadedFiles.length > 0) {
+        messageContent += `\n[已上传 ${uploadedFiles.length} 个文件]`;
+      }
+
       // 调用云函数
+      console.log('调用云函数，参数:', {
+        action: 'generate',
+        userId: props.$w.auth.currentUser?.userId || 'anonymous',
+        message: messageContent,
+        conversationId: conversationId
+      });
       const result = await props.$w.cloud.callFunction({
         name: 'ai-assistant',
         data: {
-          action: 'callAgent',
-          agentType: intent,
-          input: {
-            query: input,
-            images: uploadedImages,
-            files: uploadedFiles
-          },
+          action: 'generate',
           userId: props.$w.auth.currentUser?.userId || 'anonymous',
-          currentPlan: currentPlan
+          message: messageContent,
+          conversationId: conversationId
         }
       });
-      if (result.success) {
+      console.log('云函数返回结果:', result);
+      if (result && result.success) {
         const aiResponse = {
           id: (Date.now() + 1).toString(),
           role: 'assistant',
-          content: result.response || result.data?.content || '处理完成',
+          content: result.data?.response || result.response || '处理完成',
           data: result.data,
           timestamp: new Date().toISOString()
         };
@@ -206,13 +220,28 @@ export default function AIAssistant(props) {
           setCurrentPlan(result.data.plan);
         }
       } else {
-        throw new Error(result.error || 'AI响应失败');
+        throw new Error(result?.error || 'AI响应失败');
       }
     } catch (error) {
       console.error('AI调用失败:', error);
+      console.error('错误详情:', {
+        message: error.message,
+        code: error.code,
+        stack: error.stack
+      });
+      let errorMessage = error.message || '请稍后重试';
+      if (error.message && error.message.includes('network')) {
+        errorMessage = '网络连接异常，请检查网络设置后重试';
+      } else if (error.message && error.message.includes('timeout')) {
+        errorMessage = '请求超时，请稍后重试';
+      } else if (error.code === 'FUNCTION_NOT_FOUND') {
+        errorMessage = '云函数不存在，请联系管理员';
+      } else if (error.code === 'PERMISSION_DENIED') {
+        errorMessage = '权限不足，请联系管理员';
+      }
       toast({
         title: 'AI响应失败',
-        description: error.message || '请稍后重试',
+        description: errorMessage,
         variant: 'destructive'
       });
 

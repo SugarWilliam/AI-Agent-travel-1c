@@ -1,20 +1,21 @@
 interface CloudFunctionEvent {
   action: string;
-  input?: {
-    destination?: string;
-    startDate?: string;
-    endDate?: string;
-    days?: number;
-    budget?: number;
-    travelers?: number;
-    preferences?: string;
-  };
+  data?: any;
   userId?: string;
+  modelId?: string;
+  message?: string;
+  conversationId?: string;
+  destination?: string;
+  startDate?: string;
+  endDate?: string;
+  budget?: number;
+  travelers?: number;
+  preferences?: string;
 }
 
 interface CloudFunctionResponse {
   success: boolean;
-  plan?: any;
+  data?: any;
   error?: string;
 }
 
