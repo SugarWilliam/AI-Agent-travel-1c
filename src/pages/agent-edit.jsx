@@ -114,7 +114,8 @@ const defaultAgentTemplate = {
 };
 
 // 可用模型列表
-const availableModels = [{
+// 默认模型列表（降级方案）
+const defaultModels = [{
   id: 'gpt-4',
   name: 'GPT-4',
   description: '最强大的模型'
@@ -184,6 +185,10 @@ export default function AgentEdit(props) {
   // Agent 编辑/新建模式
   const [isEditMode, setIsEditMode] = useState(false);
   const [agentId, setAgentId] = useState(null);
+
+  // 动态模型列表
+  const [availableModels, setAvailableModels] = useState(defaultModels);
+  const [modelsLoading, setModelsLoading] = useState(false);
 
   // Agent 配置
   const [agentName, setAgentName] = useState(defaultAgentTemplate.name);
@@ -269,6 +274,44 @@ export default function AgentEdit(props) {
     setUsageCount(0);
     setCreatedAt(new Date().toLocaleDateString());
   };
+
+  // 加载模型列表
+  const loadModels = async () => {
+    try {
+      setModelsLoading(true);
+
+      // 从 llm_models 数据模型加载真实的大模型配置
+      const tcb = await props.$w.cloud.getCloudInstance();
+      const db = tcb.database();
+      const result = await db.collection('llm_models').where({
+        status: 'active'
+      }).get();
+      if (result.data && result.data.length > 0) {
+        // 转换为 availableModels 格式
+        const models = result.data.map(model => ({
+          id: model.modelId,
+          name: model.modelName,
+          description: model.description || `${model.provider} 的模型`
+        }));
+        setAvailableModels(models);
+        console.log('成功加载模型列表:', models.length, '个模型');
+      } else {
+        console.warn('未找到活跃的模型配置，使用默认模型');
+        setAvailableModels(defaultModels);
+      }
+    } catch (error) {
+      console.error('加载模型失败:', error);
+      // 如果数据库加载失败，使用默认的模型列表作为降级方案
+      setAvailableModels(defaultModels);
+    } finally {
+      setModelsLoading(false);
+    }
+  };
+
+  // 组件加载时加载模型列表
+  useEffect(() => {
+    loadModels();
+  }, []);
 
   // 验证表单
   const validateForm = () => {
