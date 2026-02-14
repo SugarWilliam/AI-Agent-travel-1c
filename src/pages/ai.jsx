@@ -38,6 +38,34 @@ export default function AIAssistant(props) {
     }
   }, [globalSettings]);
   const darkMode = globalSettings?.darkMode || localDarkMode;
+
+  // 加载 AI 配置
+  useEffect(() => {
+    const loadAIConfig = async () => {
+      try {
+        const result = await props.$w.cloud.callFunction({
+          name: 'ai-assistant',
+          data: {
+            action: 'getAIConfig',
+            userId: props.$w.auth.currentUser?.userId || 'anonymous'
+          }
+        });
+        if (result && result.result && result.result.success) {
+          setAiConfig(result.result.data);
+          if (result.result.data.modelId) {
+            setSelectedModel(result.result.data.modelId);
+          } else if (result.result.data.preferredModel) {
+            setSelectedModel(result.result.data.preferredModel);
+          }
+        }
+      } catch (error) {
+        console.error('加载 AI 配置失败:', error);
+        // 使用默认模型
+        setSelectedModel('deepseek-chat');
+      }
+    };
+    loadAIConfig();
+  }, [props.$w.auth.currentUser?.userId]);
   const [messages, setMessages] = useState([{
     id: '1',
     role: 'assistant',
@@ -48,6 +76,8 @@ export default function AIAssistant(props) {
   const [isLoading, setIsLoading] = useState(false);
   const [uploadedImages, setUploadedImages] = useState([]);
   const [uploadedFiles, setUploadedFiles] = useState([]);
+  const [aiConfig, setAiConfig] = useState(null);
+  const [selectedModel, setSelectedModel] = useState('deepseek-chat');
   const [showOutputOptions, setShowOutputOptions] = useState(false);
   const [selectedMessageId, setSelectedMessageId] = useState(null);
   const [isRecording, setIsRecording] = useState(false);
@@ -193,7 +223,8 @@ export default function AIAssistant(props) {
         action: 'generate',
         userId: props.$w.auth.currentUser?.userId || 'anonymous',
         message: messageContent,
-        conversationId: conversationId
+        conversationId: conversationId,
+        modelId: selectedModel
       });
       let result;
       try {
@@ -203,7 +234,8 @@ export default function AIAssistant(props) {
             action: 'generate',
             userId: props.$w.auth.currentUser?.userId || 'anonymous',
             message: messageContent,
-            conversationId: conversationId
+            conversationId: conversationId,
+            modelId: selectedModel
           }
         });
         console.log('云函数返回结果:', result);
@@ -211,22 +243,22 @@ export default function AIAssistant(props) {
         console.error('云函数调用失败:', cloudError);
         throw new Error(cloudError.message || '云函数调用失败');
       }
-      if (result && result.success) {
+      if (result && result.result && result.result.success) {
         const aiResponse = {
           id: (Date.now() + 1).toString(),
           role: 'assistant',
-          content: result.data?.response || result.response || '处理完成',
-          data: result.data,
+          content: result.result.data?.response || result.result.response || '处理完成',
+          data: result.result.data,
           timestamp: new Date().toISOString()
         };
         setMessages(prev => [...prev, aiResponse]);
 
         // 如果生成了计划，保存到状态
-        if (result.data?.plan) {
-          setCurrentPlan(result.data.plan);
+        if (result.result.data?.plan) {
+          setCurrentPlan(result.result.data.plan);
         }
       } else {
-        throw new Error(result?.error || 'AI响应失败');
+        throw new Error(result?.result?.error || result?.error || 'AI响应失败');
       }
     } catch (error) {
       console.error('AI调用失败:', error);

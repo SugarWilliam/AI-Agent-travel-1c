@@ -1,4 +1,6 @@
 const cloud = require('@cloudbase/node-sdk');
+const https = require('https');
+const http = require('http');
 
 const app = cloud.init({
   env: cloud.getEnv()
@@ -6,6 +8,115 @@ const app = cloud.init({
 
 const db = app.database();
 const _ = db.command;
+
+// HTTP 请求函数
+function makeRequest(url, options, data) {
+  return new Promise((resolve, reject) => {
+    const protocol = url.startsWith('https') ? https : http;
+    const urlObj = new URL(url);
+    
+    const req = protocol.request({
+      hostname: urlObj.hostname,
+      port: urlObj.port || (url.startsWith('https') ? 443 : 80),
+      path: urlObj.pathname + urlObj.search,
+      method: options.method || 'POST',
+      headers: options.headers
+    }, (res) => {
+      let body = '';
+      res.on('data', (chunk) => body += chunk);
+      res.on('end', () => {
+        try {
+          resolve(JSON.parse(body));
+        } catch (e) {
+          resolve(body);
+        }
+      });
+    });
+    
+    req.on('error', reject);
+    req.write(JSON.stringify(data));
+    req.end();
+  });
+}
+
+// 调用 DeepSeek API
+async function callDeepSeekAPI(apiKey, messages, model = 'deepseek-chat', temperature = 0.7, maxTokens = 4096) {
+  try {
+    const url = 'https://api.deepseek.com/chat/completions';
+    const headers = {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${apiKey}`
+    };
+    
+    const data = {
+      model: model,
+      messages: messages,
+      temperature: temperature,
+      max_tokens: maxTokens,
+      stream: false
+    };
+    
+    const response = await makeRequest(url, { method: 'POST', headers }, data);
+    
+    if (response.choices && response.choices.length > 0) {
+      return {
+        success: true,
+        content: response.choices[0].message.content,
+        usage: response.usage
+      };
+    } else {
+      return {
+        success: false,
+        error: response.error?.message || 'API 调用失败'
+      };
+    }
+  } catch (error) {
+    console.error('DeepSeek API 调用失败:', error);
+    return {
+      success: false,
+      error: error.message
+    };
+  }
+}
+
+// 调用通用 OpenAI 兼容 API
+async function callOpenAICompatibleAPI(apiEndpoint, apiKey, messages, model, temperature, maxTokens) {
+  try {
+    const headers = {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${apiKey}`
+    };
+    
+    const data = {
+      model: model,
+      messages: messages,
+      temperature: temperature,
+      max_tokens: maxTokens,
+      stream: false
+    };
+    
+    const response = await makeRequest(apiEndpoint, { method: 'POST', headers }, data);
+    
+    if (response.choices && response.choices.length > 0) {
+      return {
+        success: true,
+        content: response.choices[0].message.content,
+        usage: response.usage
+      };
+    } else {
+      return {
+        success: false,
+        error: response.error?.message || 'API 调用失败'
+      };
+    }
+  } catch (error) {
+    console.error('API 调用失败:', error);
+    return {
+      success: false,
+      error: error.message
+    };
+  }
+}
 
 // 模型管理相关函数
 async function getModels(userId) {
@@ -530,20 +641,85 @@ async function generateAIResponse(event) {
     let modelConfig = null;
     if (finalModelId) {
       try {
+        // 通过 modelId 字段查询，而不是 _id
         const modelResult = await db.collection('llm_models')
-          .doc(finalModelId)
+          .where({ modelId: finalModelId })
           .get();
         if (modelResult.data && modelResult.data.length > 0) {
           modelConfig = modelResult.data[0];
+          console.log('找到模型配置:', modelConfig.modelName, modelConfig.provider);
+        } else {
+          console.warn('未找到模型配置，modelId:', finalModelId);
         }
       } catch (modelError) {
         console.warn('获取模型配置失败，使用默认模型:', modelError.message);
       }
     }
     
-    // 模拟AI响应生成
-    const response = generateMockResponse(finalMessage, modelConfig);
-    console.log('生成的响应:', response);
+    // 尝试调用真实的 AI API
+    let response = null;
+    let apiError = null;
+    
+    if (modelConfig && modelConfig.apiKey && modelConfig.apiKey !== '您的API Key' && modelConfig.apiKey !== '') {
+      try {
+        console.log('调用 AI API:', modelConfig.modelName, modelConfig.modelId);
+        
+        // 构建消息数组
+        const messages = [
+          {
+            role: 'system',
+            content: modelConfig.systemPrompt || '你是一个专业的旅行规划助手，擅长为用户提供个性化的旅行建议和规划。'
+          },
+          {
+            role: 'user',
+            content: finalMessage
+          }
+        ];
+        
+        // 根据提供商调用不同的 API
+        let apiResult;
+        if (modelConfig.provider === '深度求索') {
+          apiResult = await callDeepSeekAPI(
+            modelConfig.apiKey,
+            messages,
+            modelConfig.modelId,
+            modelConfig.temperature || 0.7,
+            modelConfig.maxTokens || 4096
+          );
+        } else {
+          // 使用 OpenAI 兼容 API
+          apiResult = await callOpenAICompatibleAPI(
+            modelConfig.apiEndpoint,
+            modelConfig.apiKey,
+            messages,
+            modelConfig.modelId,
+            modelConfig.temperature || 0.7,
+            modelConfig.maxTokens || 4096
+          );
+        }
+        
+        if (apiResult.success) {
+          response = apiResult.content;
+          console.log('AI API 调用成功，响应长度:', response.length);
+        } else {
+          apiError = apiResult.error;
+          console.warn('AI API 调用失败:', apiError);
+        }
+      } catch (error) {
+        apiError = error.message;
+        console.warn('AI API 调用异常:', error);
+      }
+    } else {
+      console.warn('模型配置不完整或 API Key 未设置，使用模拟响应');
+    }
+    
+    // 如果 API 调用失败，使用模拟响应作为降级方案
+    if (!response) {
+      response = generateMockResponse(finalMessage, modelConfig);
+      console.log('使用模拟响应，原因:', apiError || 'API Key 未设置');
+    }
+    
+    console.log('最终响应:', response);
     
     // 尝试保存用户消息（如果失败不影响响应）
     try {
@@ -611,17 +787,29 @@ function generateMockResponse(message, modelConfig) {
 
 // 计划生成相关函数
 async function generatePlan(event) {
-  const { destination, startDate, endDate, budget, travelers, preferences } = event;
+  // 兼容不同的参数结构
+  const input = event.input || event;
+  const { destination, startDate, endDate, budget, travelers, preferences, days } = input;
+  
+  // 如果没有 endDate，根据 days 计算
+  let finalEndDate = endDate;
+  if (!finalEndDate && startDate && days) {
+    const start = new Date(startDate);
+    const end = new Date(start);
+    end.setDate(start.getDate() + days - 1);
+    finalEndDate = end.toISOString().split('T')[0];
+  }
   
   try {
     const plan = {
       destination,
       startDate,
-      endDate,
+      endDate: finalEndDate,
       budget,
       travelers,
       preferences,
-      itinerary: generateItinerary(destination, startDate, endDate, preferences),
+      days,
+      itinerary: generateItinerary(destination, startDate, finalEndDate, preferences),
       accommodation: generateAccommodation(destination, budget, travelers),
       dining: generateDining(destination, preferences),
       attractions: generateAttractions(destination, preferences),
@@ -716,6 +904,201 @@ function generateEmergencyInfo(destination) {
   };
 }
 
+// Agent 调用
+async function callAgent(event) {
+  const { agentType, input, userId } = event;
+  
+  try {
+    let response;
+    switch (agentType) {
+      case 'itinerary':
+        response = `已为您规划${input.destination}${input.days}日行程，包含文化体验、美食和购物安排。`;
+        break;
+      case 'weather':
+        response = `${input.destination}当前天气晴朗，气温20°C，适合出行。`;
+        break;
+      case 'photo':
+        response = `为您推荐${input.destination}的最佳拍照地点和技巧。`;
+        break;
+      case 'outfit':
+        response = `根据${input.destination}的天气，建议您穿着轻便舒适的服装。`;
+        break;
+      default:
+        response = `Agent ${agentType} 已处理您的请求。`;
+    }
+    
+    return {
+      success: true,
+      data: {
+        response,
+        agentType
+      }
+    };
+  } catch (error) {
+    console.error('Agent调用失败:', error);
+    return {
+      success: false,
+      error: 'Agent调用失败'
+    };
+  }
+}
+
+// 天气查询
+async function weatherQuery(event) {
+  const { destination, date } = event;
+  
+  try {
+    const weather = {
+      destination,
+      date: date || new Date().toISOString().split('T')[0],
+      temperature: '20-25°C',
+      condition: '晴朗',
+      humidity: '60%',
+      wind: '东南风 3级',
+      advice: '天气适宜，适合户外活动'
+    };
+    
+    return {
+      success: true,
+      data: weather
+    };
+  } catch (error) {
+    console.error('天气查询失败:', error);
+    return {
+      success: false,
+      error: '天气查询失败'
+    };
+  }
+}
+
+// 穿搭建议
+async function outfitGuide(event) {
+  const { destination, startDate } = event;
+  
+  try {
+    const guide = {
+      destination,
+      season: '春季',
+      recommendations: [
+        { type: '上装', items: ['长袖衬衫', '薄外套', '针织衫'] },
+        { type: '下装', items: ['长裤', '牛仔裤', '休闲裤'] },
+        { type: '鞋履', items: ['运动鞋', '休闲鞋'] }
+      ],
+      tips: [
+        '春季气温适宜，建议轻便穿搭',
+        '选择优雅的款式，符合当地时尚氛围',
+        '准备一件外套，应对早晚温差'
+      ]
+    };
+    
+    return {
+      success: true,
+      data: guide
+    };
+  } catch (error) {
+    console.error('穿搭建议生成失败:', error);
+    return {
+      success: false,
+      error: '穿搭建议生成失败'
+    };
+  }
+}
+
+// 拍照指导
+async function photoGuide(event) {
+  const { destination } = event;
+  
+  try {
+    const guide = {
+      destination,
+      locations: [
+        {
+          name: `${destination}地标建筑`,
+          bestTime: '日出或日落时分',
+          tips: ['使用广角镜头', '注意构图平衡', '避开人流高峰']
+        },
+        {
+          name: '当地特色街区',
+          bestTime: '上午10点或下午3点',
+          tips: ['捕捉生活气息', '使用自然光', '尝试不同角度']
+        }
+      ],
+      techniques: [
+        '利用黄金时段拍摄，光线柔和',
+        '使用三分法构图，突出主体',
+        '尝试不同角度，寻找独特视角'
+      ],
+      equipment: [
+        '广角镜头：拍摄建筑和风景',
+        '长焦镜头：捕捉细节',
+        '三脚架：稳定拍摄'
+      ]
+    };
+    
+    return {
+      success: true,
+      data: guide
+    };
+  } catch (error) {
+    console.error('拍照指导生成失败:', error);
+    return {
+      success: false,
+      error: '拍照指导生成失败'
+    };
+  }
+}
+
+// 文档解析
+async function documentParsing(event) {
+  const { content } = event;
+  
+  try {
+    const result = {
+      summary: '文档解析完成',
+      keyPoints: ['关键点1', '关键点2', '关键点3'],
+      extractedData: {
+        title: '文档标题',
+        content: content || '文档内容'
+      }
+    };
+    
+    return {
+      success: true,
+      data: result
+    };
+  } catch (error) {
+    console.error('文档解析失败:', error);
+    return {
+      success: false,
+      error: '文档解析失败'
+    };
+  }
+}
+
+// 链接生成
+async function linkGeneration(event) {
+  const { planId } = event;
+  
+  try {
+    const link = {
+      url: `https://example.com/share/${planId || 'default'}`,
+      qrCode: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==',
+      expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString()
+    };
+    
+    return {
+      success: true,
+      data: link
+    };
+  } catch (error) {
+    console.error('链接生成失败:', error);
+    return {
+      success: false,
+      error: '链接生成失败'
+    };
+  }
+}
+
 // 主函数
 exports.main = async (event, context) => {
   console.log('云函数收到请求:', JSON.stringify(event));
@@ -771,6 +1154,30 @@ exports.main = async (event, context) => {
       // 计划生成
       case 'generatePlan':
         return await generatePlan(event);
+      
+      // Agent 调用
+      case 'callAgent':
+        return await callAgent(event);
+      
+      // 天气查询
+      case 'weatherQuery':
+        return await weatherQuery(event);
+      
+      // 穿搭建议
+      case 'outfitGuide':
+        return await outfitGuide(event);
+      
+      // 拍照指导
+      case 'photoGuide':
+        return await photoGuide(event);
+      
+      // 文档解析
+      case 'documentParsing':
+        return await documentParsing(event);
+      
+      // 链接生成
+      case 'linkGeneration':
+        return await linkGeneration(event);
       
       default:
         return {

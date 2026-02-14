@@ -305,17 +305,19 @@ export default function AITest(props) {
     setCurrentTest(testCase.id);
     try {
       const result = await testCase.action();
-      const success = result.success !== false;
+      // 云函数返回结构是 { result: { success: true/false, data: {...} } }
+      const cloudResult = result.result || result;
+      const success = cloudResult.success !== false;
 
       // 如果是保存计划，保存 planId
-      if (testCase.id === 7 && result.planId) {
-        setGeneratedPlanId(result.planId);
+      if (testCase.id === 7 && cloudResult.planId) {
+        setGeneratedPlanId(cloudResult.planId);
       }
       setTestResults(prev => [...prev, {
         id: testCase.id,
         name: testCase.name,
         success,
-        result,
+        result: cloudResult,
         timestamp: new Date().toISOString()
       }]);
       if (success) {
@@ -325,7 +327,7 @@ export default function AITest(props) {
           variant: 'default'
         });
       } else {
-        throw new Error(result.error || '测试失败');
+        throw new Error(cloudResult.error || '测试失败');
       }
     } catch (error) {
       console.error('测试失败:', error);
