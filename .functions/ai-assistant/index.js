@@ -426,16 +426,30 @@ async function getMessages(conversationId) {
 
 // AI对话生成函数
 async function generateAIResponse(event) {
-  const { userId, message, conversationId, modelId } = event;
+  console.log('generateAIResponse 收到的参数:', JSON.stringify(event));
+  const { userId, message, conversationId, modelId, data } = event;
+  
+  // 兼容不同的参数结构
+  const finalUserId = userId || data?.userId || 'anonymous';
+  const finalMessage = message || data?.message || '';
+  const finalConversationId = conversationId || data?.conversationId || 'default';
+  const finalModelId = modelId || data?.modelId;
+  
+  console.log('处理后的参数:', {
+    userId: finalUserId,
+    message: finalMessage,
+    conversationId: finalConversationId,
+    modelId: finalModelId
+  });
   
   try {
     // 获取用户配置的模型
     let modelConfig = null;
-    if (modelId) {
+    if (finalModelId) {
       const db = cloud.database();
       try {
         const modelResult = await db.collection('llm_models')
-          .doc(modelId)
+          .doc(finalModelId)
           .get();
         if (modelResult.data && modelResult.data.length > 0) {
           modelConfig = modelResult.data[0];
@@ -446,15 +460,16 @@ async function generateAIResponse(event) {
     }
     
     // 模拟AI响应生成
-    const response = generateMockResponse(message, modelConfig);
+    const response = generateMockResponse(finalMessage, modelConfig);
+    console.log('生成的响应:', response);
     
     // 尝试保存用户消息（如果失败不影响响应）
     try {
       await saveMessage({
-        conversationId,
-        userId,
+        conversationId: finalConversationId,
+        userId: finalUserId,
         role: 'user',
-        content: message
+        content: finalMessage
       });
     } catch (saveError) {
       console.warn('保存用户消息失败:', saveError.message);
@@ -463,8 +478,8 @@ async function generateAIResponse(event) {
     // 尝试保存AI响应（如果失败不影响响应）
     try {
       await saveMessage({
-        conversationId,
-        userId,
+        conversationId: finalConversationId,
+        userId: finalUserId,
         role: 'assistant',
         content: response
       });
@@ -621,6 +636,7 @@ function generateEmergencyInfo(destination) {
 
 // 主函数
 exports.main = async (event, context) => {
+  console.log('云函数收到请求:', JSON.stringify(event));
   const { action, data, userId } = event;
   
   try {
@@ -667,6 +683,7 @@ exports.main = async (event, context) => {
       
       // AI对话生成
       case 'generate':
+        console.log('执行 generate 操作，参数:', event);
         return await generateAIResponse(event);
       
       // 计划生成
