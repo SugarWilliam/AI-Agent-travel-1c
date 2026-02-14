@@ -963,7 +963,7 @@ export default function AIConfig(props) {
                 <div className="grid gap-4">
                   {isEditMode ?
               // 编辑模式：显示可用规则供选择
-              availableRules.length > 0 ? availableRules.map(rule => <div key={rule._id} className={`p-4 rounded-lg hover:shadow-md transition-shadow border ${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'}`}>
+              availableRules.length > 0 ? availableRules.filter(rule => rule && rule.name).map(rule => <div key={rule._id} className={`p-4 rounded-lg hover:shadow-md transition-shadow border ${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'}`}>
                         <div className="flex items-center justify-between">
                           <div className="flex-1">
                             <h4 className={`font-medium text-lg ${darkMode ? 'text-white' : 'text-gray-900'}`}>{rule.name}</h4>
@@ -985,7 +985,7 @@ export default function AIConfig(props) {
                         <p className={darkMode ? 'text-gray-400' : 'text-gray-600'}>暂无可用规则</p>
                       </div> :
               // 全局配置模式：显示默认规则
-              rules.map(rule => <div key={rule.id} className={`p-4 rounded-lg hover:shadow-md transition-shadow border ${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'}`}>
+              rules.filter(rule => rule && rule.name).map(rule => <div key={rule.id} className={`p-4 rounded-lg hover:shadow-md transition-shadow border ${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'}`}>
                         <div className="flex items-center justify-between">
                           <div className="flex-1">
                             <h4 className={`font-medium text-lg ${darkMode ? 'text-white' : 'text-gray-900'}`}>{rule.name}</h4>
@@ -1037,7 +1037,7 @@ export default function AIConfig(props) {
                   {ragEnabled && <div className="space-y-3">
                       {isEditMode ?
                 // 编辑模式：显示可用知识库供选择
-                availableKnowledgeBases.length > 0 ? availableKnowledgeBases.map(kb => <div key={kb._id} className={`flex items-start justify-between p-4 rounded-lg border ${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'}`}>
+                availableKnowledgeBases.length > 0 ? availableKnowledgeBases.filter(kb => kb && kb.name).map(kb => <div key={kb._id} className={`flex items-start justify-between p-4 rounded-lg border ${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'}`}>
                             <div className="flex-1">
                               <div className="flex items-center gap-2 mb-2">
                                 <h4 className={`font-medium ${darkMode ? 'text-white' : 'text-gray-900'}`}>{kb.name}</h4>
@@ -1145,7 +1145,7 @@ export default function AIConfig(props) {
                 <div className="space-y-4">
                   {isEditMode ?
               // 编辑模式：显示可用 MCP 服务器供选择
-              mcpServers.map((server, index) => <div key={index} className={`p-4 rounded-lg border ${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'}`}>
+              mcpServers.filter(server => server && server.name).map((server, index) => <div key={index} className={`p-4 rounded-lg border ${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'}`}>
                         <div className="flex items-center justify-between mb-3">
                           <div className="flex-1">
                             <h4 className={`font-medium ${darkMode ? 'text-white' : 'text-gray-900'}`}>{server.name}</h4>
@@ -1155,7 +1155,7 @@ export default function AIConfig(props) {
                         </div>
                       </div>) :
               // 全局配置模式：显示可编辑的 MCP 服务器
-              mcpServers.map(server => <div key={server.id} className={`p-4 rounded-lg border ${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'}`}>
+              mcpServers.filter(server => server && server.name).map(server => <div key={server.id} className={`p-4 rounded-lg border ${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'}`}>
                         <div className="flex items-center justify-between mb-3">
                           <Input value={server.name} onChange={e => updateMcpServer(server.id, 'name', e.target.value)} placeholder="服务名称" className={`flex-1 mr-3 ${darkMode ? 'bg-gray-700 border-gray-600 text-white' : ''}`} />
                           <Switch checked={server.enabled} onCheckedChange={() => toggleMcpServer(server.id)} />

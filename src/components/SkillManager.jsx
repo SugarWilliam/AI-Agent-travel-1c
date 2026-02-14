@@ -245,6 +245,10 @@ export function SkillManager({
     return colors[category] || 'bg-gray-100 text-gray-700';
   };
   const filteredSkills = skills.filter(skill => {
+    if (!skill || !skill.name || !skill.description) {
+      console.warn('跳过无效的技能数据:', skill);
+      return false;
+    }
     const matchesSearch = skill.name.toLowerCase().includes(searchTerm.toLowerCase()) || skill.description.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesCategory = filterCategory === 'all' || skill.category === filterCategory;
     return matchesSearch && matchesCategory;

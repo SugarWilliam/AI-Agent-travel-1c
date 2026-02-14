@@ -54,7 +54,7 @@ export function ModelManager({
       }).get();
       if (result.data && result.data.length > 0) {
         // 为每个模型添加 apiKey 字段（如果不存在）
-        const modelsWithApiKey = result.data.map(model => ({
+        const modelsWithApiKey = result.data.filter(model => model && model.modelId).map(model => ({
           ...model,
           apiKey: model.apiKey || ''
         }));
@@ -582,6 +582,10 @@ export function ModelManager({
       </div>;
   }
   const filteredModels = models.filter(model => {
+    if (!model || !model.modelId) {
+      console.warn('跳过无效的模型数据:', model);
+      return false;
+    }
     if (filterProvider !== 'all' && model.provider !== filterProvider) return false;
     if (filterCost !== 'all' && model.costLevel !== filterCost) return false;
     return true;
