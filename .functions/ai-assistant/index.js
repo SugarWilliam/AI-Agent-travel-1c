@@ -113,25 +113,50 @@ async function callOpenAICompatibleAPI(apiEndpoint, apiKey, messages, model, tem
       stream: false
     };
     
+    console.log('调用 API:', apiEndpoint, '模型:', model);
     const response = await makeRequest(apiEndpoint, { method: 'POST', headers }, data);
+    console.log('API 响应:', JSON.stringify(response));
     
+    // 检查是否有错误
+    if (response.error) {
+      console.error('API 返回错误:', response.error);
+      return {
+        success: false,
+        error: response.error.message || response.error || 'API 调用失败'
+      };
+    }
+    
+    // 尝试多种响应格式
     if (response.choices && response.choices.length > 0) {
       return {
         success: true,
         content: response.choices[0].message.content,
         usage: response.usage
       };
+    } else if (response.data && response.data.choices && response.data.choices.length > 0) {
+      return {
+        success: true,
+        content: response.data.choices[0].message.content,
+        usage: response.data.usage
+      };
+    } else if (response.message) {
+      return {
+        success: true,
+        content: response.message,
+        usage: null
+      };
     } else {
+      console.error('无法解析 API 响应:', response);
       return {
         success: false,
-        error: response.error?.message || 'API 调用失败'
+        error: '无法解析 API 响应'
       };
     }
   } catch (error) {
     console.error('API 调用失败:', error);
     return {
       success: false,
-      error: error.message
+      error: error.message || 'API 调用失败'
     };
   }
 }
@@ -1143,6 +1168,8 @@ async function testModel(event) {
       max_tokens: 100
     };
     
+    console.log('发送测试请求:', JSON.stringify(requestData));
+    
     // 调用模型 API
     const response = await makeRequest(apiEndpoint, {
       method: 'POST',
@@ -1154,8 +1181,10 @@ async function testModel(event) {
     
     console.log('模型 API 响应:', JSON.stringify(response));
     
+    // 检查是否有错误
     if (response.error) {
-      throw new Error(response.error);
+      console.error('API 返回错误:', response.error);
+      throw new Error(response.error.message || response.error || 'API 调用失败');
     }
     
     // 提取响应内容
@@ -1317,7 +1346,7 @@ exports.main = async (event, context) => {
     }
     
     // 统一返回结构
-    return { result };
+    return result;
   } catch (error) {
     console.error('云函数执行错误:', error);
     console.error('错误堆栈:', error.stack);
@@ -1325,11 +1354,9 @@ exports.main = async (event, context) => {
     console.error('错误代码:', error.code);
     
     return {
-      result: {
-        success: false,
-        error: error.message || '服务器内部错误',
-        code: error.code
-      }
+      success: false,
+      error: error.message || '服务器内部错误',
+      code: error.code
     };
   }
 };
