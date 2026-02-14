@@ -364,15 +364,21 @@ export default function AgentEdit(props) {
         status: 'active'
       }).get();
       if (result.data && result.data.length > 0) {
-        // 转换为 availableModels 格式
-        const models = result.data.map(model => ({
+        // 转换为 availableModels 格式，过滤掉无效数据
+        const models = result.data.filter(model => model.modelId && model.modelName) // 过滤掉无效数据
+        .map(model => ({
           id: model.modelId,
           name: model.modelName,
           description: model.description || `${model.provider || '未知提供商'} 的模型`,
           provider: model.provider || '未知提供商'
         }));
-        setAvailableModels(models);
-        console.log('成功加载模型列表:', models.length, '个模型');
+        if (models.length > 0) {
+          setAvailableModels(models);
+          console.log('成功加载模型列表:', models.length, '个模型');
+        } else {
+          console.warn('过滤后没有有效的模型数据，使用默认模型');
+          setAvailableModels(defaultModels);
+        }
       } else {
         console.warn('未找到活跃的模型配置，使用默认模型');
         setAvailableModels(defaultModels);
@@ -464,7 +470,8 @@ export default function AgentEdit(props) {
       // 第三步：保存或更新 Agent
       if (isEditMode && agentId) {
         console.log('更新现有 Agent:', agentId);
-        await db.collection('Agent').doc(agentId).update(agentData);
+        const updateResult = await db.collection('Agent').doc(agentId).update(agentData);
+        console.log('Agent 更新成功:', updateResult);
       } else {
         console.log('创建新 Agent');
         const result = await db.collection('Agent').add(agentData);
@@ -582,28 +589,29 @@ export default function AgentEdit(props) {
   return <div className={`min-h-screen ${darkMode ? 'bg-gray-900 text-white' : 'bg-gray-50 text-gray-900'}`}>
       {/* 顶部导航栏 */}
       <div className={`sticky top-0 z-50 backdrop-blur-lg ${darkMode ? 'bg-gray-900/80 border-gray-700' : 'bg-white/80 border-gray-200'} border-b`}>
-        <div className="max-w-full sm:max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
-            <div className="flex items-center gap-4">
-              <button onClick={handleCancel} className={`p-2 rounded-lg transition-colors ${darkMode ? 'hover:bg-gray-700 text-gray-400 hover:text-white' : 'hover:bg-gray-100 text-gray-600 hover:text-gray-900'}`}>
-                <ArrowLeft className="w-5 h-5" />
+        <div className="max-w-full sm:max-w-7xl mx-auto px-3 sm:px-4 lg:px-8">
+          <div className="flex items-center justify-between h-14 sm:h-16">
+            <div className="flex items-center gap-2 sm:gap-4">
+              <button onClick={handleCancel} className={`p-1.5 sm:p-2 rounded-lg transition-colors ${darkMode ? 'hover:bg-gray-700 text-gray-400 hover:text-white' : 'hover:bg-gray-100 text-gray-600 hover:text-gray-900'}`}>
+                <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5" />
               </button>
-              <div>
-                <h1 className={`text-xl font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+              <div className="min-w-0">
+                <h1 className={`text-base sm:text-xl font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>
                   {isEditMode ? t.editAgent : t.createAgent}
                 </h1>
-                <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                <p className={`text-xs sm:text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'} hidden sm:block`}>
                   {isEditMode ? '编辑 Agent 配置' : '创建新的 AI Agent'}
                 </p>
               </div>
             </div>
-            <div className="flex items-center gap-3">
-              <Button onClick={handleCancel} variant="outline" className={darkMode ? 'border-gray-600 text-gray-300 hover:bg-gray-700' : ''}>
+            <div className="flex items-center gap-2 sm:gap-3">
+              <Button onClick={handleCancel} variant="outline" className={`px-2 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm ${darkMode ? 'border-gray-600 text-gray-300 hover:bg-gray-700' : ''}`}>
                 {t.cancel}
               </Button>
-              <Button onClick={handleSave} className={`bg-gradient-to-r from-[#FF6B6B] to-[#4ECDC4] hover:opacity-90 text-white`}>
-                <Save className="w-4 h-4 mr-2" />
-                {t.save}
+              <Button onClick={handleSave} className={`bg-gradient-to-r from-[#FF6B6B] to-[#4ECDC4] hover:opacity-90 text-white px-2 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm`}>
+                <Save className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
+                <span className="hidden sm:inline">{t.save}</span>
+                <span className="sm:hidden">保存</span>
               </Button>
             </div>
           </div>
@@ -615,28 +623,28 @@ export default function AgentEdit(props) {
         {/* Agent 卡片 */}
         <div className={`rounded-2xl overflow-hidden shadow-lg ${darkMode ? 'bg-gray-800' : 'bg-white'}`}>
           {/* 顶部信息区 */}
-          <div className={`bg-gradient-to-r ${agentColor} p-6 text-white`}>
+          <div className={`bg-gradient-to-r ${agentColor} p-4 sm:p-6 text-white`}>
             <div className="flex items-start justify-between">
-              <div className="flex items-center gap-4">
-                <div className="w-16 h-16 rounded-2xl bg-white/20 backdrop-blur-sm flex items-center justify-center">
-                  <CurrentIcon className="w-8 h-8" />
+              <div className="flex items-center gap-3 sm:gap-4">
+                <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-2xl bg-white/20 backdrop-blur-sm flex items-center justify-center">
+                  <CurrentIcon className="w-6 h-6 sm:w-8 sm:h-8" />
                 </div>
-                <div>
-                  <h2 className="text-2xl font-bold">{agentName}</h2>
-                  <p className="text-white/80 text-sm mt-1">{agentDescription}</p>
+                <div className="flex-1 min-w-0">
+                  <h2 className="text-xl sm:text-2xl font-bold truncate">{agentName}</h2>
+                  <p className="text-white/80 text-xs sm:text-sm mt-1 line-clamp-2">{agentDescription}</p>
                 </div>
               </div>
-              <button className={`p-2 rounded-lg hover:bg-white/20 transition-colors`}>
+              <button className={`p-2 rounded-lg hover:bg-white/20 transition-colors flex-shrink-0`}>
                 <MoreVertical className="w-5 h-5" />
               </button>
             </div>
           </div>
 
           {/* 配置区 */}
-          <div className={`p-6 space-y-6 ${darkMode ? 'bg-gray-800' : 'bg-white'}`}>
+          <div className={`p-4 sm:p-6 space-y-4 sm:space-y-6 ${darkMode ? 'bg-gray-800' : 'bg-white'}`}>
             {/* 模型选择 */}
             <div>
-              <label className={`block text-sm font-medium mb-3 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+              <label className={`block text-sm font-medium mb-2 sm:mb-3 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
                 {t.model}
               </label>
               <Select value={selectedModel} onValueChange={setSelectedModel}>
@@ -644,27 +652,28 @@ export default function AgentEdit(props) {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent className={darkMode ? 'bg-gray-800 border-gray-700' : ''}>
-                  {availableModels.map(model => <SelectItem key={model.id} value={model.id}>
+                  {availableModels.filter(model => model && model.id && model.name).map(model => <SelectItem key={model.id} value={model.id}>
                       {model.name}
                     </SelectItem>)}
                 </SelectContent>
               </Select>
-              <div className={`mt-2 text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+              <div className={`mt-2 text-xs sm:text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
                 <span>{t.usageCount}: {usageCount}</span>
                 <span className="mx-2">•</span>
-                <span>{t.createdAt}: {createdAt}</span>
+                <span className="hidden sm:inline">{t.createdAt}: {createdAt}</span>
+                <span className="sm:hidden">{createdAt}</span>
               </div>
             </div>
 
             {/* 技能选择 */}
             <div>
-              <label className={`block text-sm font-medium mb-3 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+              <label className={`block text-sm font-medium mb-2 sm:mb-3 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
                 {t.skills}
               </label>
-              <div className="flex flex-wrap gap-2">
+              <div className="flex flex-wrap gap-1.5 sm:gap-2">
                 {availableSkillsList.map(skill => {
                 const isSelected = skills.some(s => s.name === skill);
-                return <button key={skill} onClick={() => toggleSkill(skill)} className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${isSelected ? 'bg-gradient-to-r from-[#FF6B6B] to-[#4ECDC4] text-white' : darkMode ? 'bg-gray-700 text-gray-300 hover:bg-gray-600' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}>
+                return <button key={skill} onClick={() => toggleSkill(skill)} className={`px-2.5 sm:px-4 py-1.5 sm:py-2 rounded-full text-xs sm:text-sm font-medium transition-all ${isSelected ? 'bg-gradient-to-r from-[#FF6B6B] to-[#4ECDC4] text-white' : darkMode ? 'bg-gray-700 text-gray-300 hover:bg-gray-600' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}>
                       {skill}
                     </button>;
               })}
@@ -673,13 +682,13 @@ export default function AgentEdit(props) {
 
             {/* 规则选择 */}
             <div>
-              <label className={`block text-sm font-medium mb-3 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+              <label className={`block text-sm font-medium mb-2 sm:mb-3 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
                 {t.rules}
               </label>
-              <div className="flex flex-wrap gap-2">
+              <div className="flex flex-wrap gap-1.5 sm:gap-2">
                 {availableRulesList.map(rule => {
                 const isSelected = rules.some(r => r.name === rule);
-                return <button key={rule} onClick={() => toggleRule(rule)} className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${isSelected ? 'bg-gradient-to-r from-[#FF6B6B] to-[#4ECDC4] text-white' : darkMode ? 'bg-gray-700 text-gray-300 hover:bg-gray-600' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}>
+                return <button key={rule} onClick={() => toggleRule(rule)} className={`px-2.5 sm:px-4 py-1.5 sm:py-2 rounded-full text-xs sm:text-sm font-medium transition-all ${isSelected ? 'bg-gradient-to-r from-[#FF6B6B] to-[#4ECDC4] text-white' : darkMode ? 'bg-gray-700 text-gray-300 hover:bg-gray-600' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}>
                       {rule}
                     </button>;
               })}
@@ -688,20 +697,20 @@ export default function AgentEdit(props) {
 
             {/* RAG 配置 */}
             <div>
-              <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center justify-between mb-2 sm:mb-3">
                 <label className={`block text-sm font-medium ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
                   {t.rag}
                 </label>
                 <Switch checked={ragEnabled} onCheckedChange={setRagEnabled} />
               </div>
               {ragEnabled && <div>
-                  <p className={`text-sm mb-3 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                  <p className={`text-xs sm:text-sm mb-2 sm:mb-3 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
                     {t.dataSource}:
                   </p>
-                  <div className="flex flex-wrap gap-2">
+                  <div className="flex flex-wrap gap-1.5 sm:gap-2">
                     {availableRagSources.map(source => {
                   const isSelected = ragSources.some(s => s.name === source);
-                  return <button key={source} onClick={() => toggleRagSource(source)} className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${isSelected ? 'bg-gradient-to-r from-[#FF6B6B] to-[#4ECDC4] text-white' : darkMode ? 'bg-gray-700 text-gray-300 hover:bg-gray-600' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}>
+                  return <button key={source} onClick={() => toggleRagSource(source)} className={`px-2.5 sm:px-4 py-1.5 sm:py-2 rounded-full text-xs sm:text-sm font-medium transition-all ${isSelected ? 'bg-gradient-to-r from-[#FF6B6B] to-[#4ECDC4] text-white' : darkMode ? 'bg-gray-700 text-gray-300 hover:bg-gray-600' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}>
                           {source}
                         </button>;
                 })}
@@ -711,13 +720,13 @@ export default function AgentEdit(props) {
 
             {/* MCP 配置 */}
             <div>
-              <label className={`block text-sm font-medium mb-3 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+              <label className={`block text-sm font-medium mb-2 sm:mb-3 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
                 {t.mcp}
               </label>
-              <div className="flex flex-wrap gap-2">
+              <div className="flex flex-wrap gap-1.5 sm:gap-2">
                 {availableMcpServers.map(server => {
                 const isSelected = mcpServers.some(s => s.name === server);
-                return <button key={server} onClick={() => toggleMcpServer(server)} className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${isSelected ? 'bg-gradient-to-r from-[#FF6B6B] to-[#4ECDC4] text-white' : darkMode ? 'bg-gray-700 text-gray-300 hover:bg-gray-600' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}>
+                return <button key={server} onClick={() => toggleMcpServer(server)} className={`px-2.5 sm:px-4 py-1.5 sm:py-2 rounded-full text-xs sm:text-sm font-medium transition-all ${isSelected ? 'bg-gradient-to-r from-[#FF6B6B] to-[#4ECDC4] text-white' : darkMode ? 'bg-gray-700 text-gray-300 hover:bg-gray-600' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}>
                       {server}
                     </button>;
               })}
@@ -726,15 +735,15 @@ export default function AgentEdit(props) {
           </div>
 
           {/* 底部状态区 */}
-          <div className={`bg-gradient-to-r from-emerald-50 to-teal-50 p-4 ${darkMode ? 'bg-gray-700' : ''}`}>
+          <div className={`bg-gradient-to-r from-emerald-50 to-teal-50 p-3 sm:p-4 ${darkMode ? 'bg-gray-700' : ''}`}>
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <Power className={`w-4 h-4 ${darkMode ? 'text-emerald-400' : 'text-emerald-600'}`} />
-                <span className={`text-sm font-medium ${darkMode ? 'text-emerald-400' : 'text-emerald-600'}`}>
+                <Power className={`w-3.5 h-3.5 sm:w-4 sm:h-4 ${darkMode ? 'text-emerald-400' : 'text-emerald-600'}`} />
+                <span className={`text-xs sm:text-sm font-medium ${darkMode ? 'text-emerald-400' : 'text-emerald-600'}`}>
                   {t.enabled}
                 </span>
               </div>
-              <span className={`px-3 py-1 rounded-full text-xs font-medium ${agentType === 'built-in' ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-700'}`}>
+              <span className={`px-2.5 sm:px-3 py-1 rounded-full text-[10px] sm:text-xs font-medium ${agentType === 'built-in' ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-700'}`}>
                 {agentType === 'built-in' ? t.builtIn : t.custom}
               </span>
             </div>
