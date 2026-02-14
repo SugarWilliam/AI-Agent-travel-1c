@@ -181,6 +181,8 @@ export default function AgentList(props) {
       let allAgents = [...defaultAgents]; // 始终包含4个内置Agent
       let dbLoadSuccess = false;
       let dbAgentCount = 0;
+      let isCollectionNotExist = false;
+      let isNetworkError = false;
 
       // 尝试从数据库加载用户Agent
       try {
@@ -197,6 +199,7 @@ export default function AgentList(props) {
           if (dbError.message.includes('not exist') || dbError.message.includes('不存在')) {
             console.log('Agent集合不存在，跳过数据库加载');
             dbLoadSuccess = false;
+            isCollectionNotExist = true;
           } else {
             console.log('尝试从AIConfig集合加载数据...');
             try {
@@ -207,6 +210,7 @@ export default function AgentList(props) {
               if (aiConfigError.message.includes('not exist') || aiConfigError.message.includes('不存在')) {
                 console.log('AIConfig集合不存在，跳过数据库加载');
                 dbLoadSuccess = false;
+                isCollectionNotExist = true;
               } else {
                 throw new Error('数据库连接失败');
               }
@@ -243,6 +247,7 @@ export default function AgentList(props) {
         console.error('云开发连接失败:', cloudError.message);
         // 网络错误时，仍然确保显示4个内置Agent
         console.log('网络错误，仅显示内置Agent');
+        isNetworkError = true;
       }
 
       // 确保最终列表包含所有4个内置Agent
@@ -272,7 +277,8 @@ export default function AgentList(props) {
             description: `正在使用 ${defaultAgents.length} 个内置Agent配置`
           });
         }
-      } else {
+      } else if (isNetworkError) {
+        // 网络错误时显示错误提示
         toast({
           title: '网络提示',
           description: `网络连接异常，正在使用离线Agent配置 (${defaultAgents.length} 个内置Agent)`,
@@ -280,6 +286,15 @@ export default function AgentList(props) {
           action: <Button onClick={loadAgents} size="sm" variant="outline" className="ml-2">
               重试
             </Button>
+        });
+      } else if (isCollectionNotExist) {
+        // 数据库集合不存在时，不显示错误提示，这是正常情况
+        console.log('数据库集合不存在，使用内置Agent配置');
+      } else {
+        // 其他错误情况
+        toast({
+          title: '加载提示',
+          description: `正在使用 ${defaultAgents.length} 个内置Agent配置`
         });
       }
     } catch (error) {
