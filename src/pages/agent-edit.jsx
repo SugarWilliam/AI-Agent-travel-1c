@@ -82,7 +82,7 @@ const defaultAgentTemplate = {
   description: '专业的行程规划助手，根据用户需求生成详细的旅行行程安排',
   icon: 'Route',
   color: 'from-orange-500 to-pink-500',
-  model: 'gpt-4',
+  model: 'GLM',
   skills: [{
     name: '行程规划',
     enabled: true
@@ -116,6 +116,21 @@ const defaultAgentTemplate = {
 // 可用模型列表
 // 默认模型列表（降级方案）
 const defaultModels = [{
+  id: 'glm-4',
+  name: 'GLM-4',
+  description: '中文理解能力强，多模态支持',
+  provider: '智谱AI'
+}, {
+  id: 'glm-3-turbo',
+  name: 'GLM-3 Turbo',
+  description: '快速响应，成本较低',
+  provider: '智谱AI'
+}, {
+  id: 'deepseek-chat',
+  name: 'DeepSeek Chat',
+  description: '代码能力强，性价比高',
+  provider: '深度求索'
+}, {
   id: 'gpt-4',
   name: 'GPT-4',
   description: '最强大的模型',
@@ -185,26 +200,6 @@ const defaultModels = [{
   name: '通义千问 Turbo',
   description: '极速响应，成本最低',
   provider: '阿里云'
-}, {
-  id: 'glm-4',
-  name: 'GLM-4',
-  description: '中文理解能力强，多模态支持',
-  provider: '智谱AI'
-}, {
-  id: 'glm-3-turbo',
-  name: 'GLM-3 Turbo',
-  description: '快速响应，成本较低',
-  provider: '智谱AI'
-}, {
-  id: 'deepseek-chat',
-  name: 'DeepSeek Chat',
-  description: '代码能力强，性价比高',
-  provider: '深度求索'
-}, {
-  id: 'deepseek-coder',
-  name: 'DeepSeek Coder',
-  description: '代码生成和优化专家',
-  provider: '深度求索'
 }];
 
 // 可用技能列表
@@ -333,7 +328,7 @@ export default function AgentEdit(props) {
         setAgentColor(agent.color || 'from-blue-500 to-purple-500');
         setAgentType(agent.agentType || 'custom');
         setIsBuiltIn(agent.isBuiltIn || false);
-        setSelectedModel(agent.model || 'gpt-4');
+        setSelectedModel(agent.model || 'GLM');
         setSkills(agent.skills || []);
         setRules(agent.rules || []);
         setRagEnabled(agent.ragEnabled || false);

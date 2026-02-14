@@ -122,7 +122,7 @@ export default function AIConfig(props) {
     toast
   } = useToast();
   const [activeTab, setActiveTab] = useState('models');
-  const [selectedModel, setSelectedModel] = useState('gpt-4');
+  const [selectedModel, setSelectedModel] = useState('GLM');
   const [aiConfig, setAiConfig] = useState(null);
   const [loading, setLoading] = useState(true);
 
@@ -383,6 +383,13 @@ export default function AIConfig(props) {
         if (result.result.data.modelId) {
           setSelectedModel(result.result.data.modelId);
         }
+        // 设置首选模型为 GLM
+        if (result.result.data.preferredModel) {
+          setSelectedModel(result.result.data.preferredModel);
+        } else {
+          // 如果没有设置首选模型，默认使用 GLM
+          setSelectedModel('GLM');
+        }
         if (result.result.data.ragEnabled !== undefined) {
           setRagEnabled(result.result.data.ragEnabled);
         }
@@ -605,9 +612,10 @@ export default function AIConfig(props) {
         const configData = {
           userId: props.$w.auth.currentUser?.userId || 'anonymous',
           modelId: selectedModel,
-          modelName: aiConfig?.modelName || 'GPT-4',
-          provider: aiConfig?.provider || 'OpenAI',
+          modelName: aiConfig?.modelName || 'GLM',
+          provider: aiConfig?.provider || '智谱AI',
           isDefault: true,
+          preferredModel: selectedModel || 'GLM',
           temperature: 0.7,
           maxTokens: 4096,
           systemPrompt: '你是一个智能旅行助手',
@@ -818,7 +826,11 @@ export default function AIConfig(props) {
                           {availableModels.length > 0 ? availableModels.map(model => <SelectItem key={model._id} value={model.modelId}>
                               {model.modelName} {model.isRecommended && '⭐'}
                             </SelectItem>) : <>
-                              <SelectItem value="gpt-4">GPT-4 ⭐</SelectItem>
+                              <SelectItem value="glm-4">GLM-4 ⭐</SelectItem>
+                              <SelectItem value="glm-3-turbo">GLM-3 Turbo</SelectItem>
+                              <SelectItem value="deepseek-chat">DeepSeek Chat ⭐</SelectItem>
+                              <SelectItem value="deepseek-coder">DeepSeek Coder</SelectItem>
+                              <SelectItem value="gpt-4">GPT-4</SelectItem>
                               <SelectItem value="gpt-4-turbo">GPT-4 Turbo</SelectItem>
                               <SelectItem value="gpt-3.5-turbo">GPT-3.5 Turbo</SelectItem>
                               <SelectItem value="claude-3">Claude 3</SelectItem>
@@ -832,10 +844,6 @@ export default function AIConfig(props) {
                               <SelectItem value="moonshot-v1-8k">Kimi 8K</SelectItem>
                               <SelectItem value="qwen-plus">通义千问 Plus</SelectItem>
                               <SelectItem value="qwen-turbo">通义千问 Turbo</SelectItem>
-                              <SelectItem value="glm-4">GLM-4 ⭐</SelectItem>
-                              <SelectItem value="glm-3-turbo">GLM-3 Turbo</SelectItem>
-                              <SelectItem value="deepseek-chat">DeepSeek Chat ⭐</SelectItem>
-                              <SelectItem value="deepseek-coder">DeepSeek Coder</SelectItem>
                               <SelectItem value="custom">自定义模型</SelectItem>
                             </>}
                         </SelectContent>

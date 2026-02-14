@@ -594,7 +594,7 @@ async function generateAIResponse(event) {
       success: true,
       data: {
         response,
-        modelUsed: modelConfig?.modelName || 'GPT-4'
+        modelUsed: modelConfig?.modelName || 'GLM'
       }
     };
   } catch (error) {

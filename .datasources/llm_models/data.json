@@ -1,9 +1,20 @@
 [
   {
+    "modelId": "glm-4",
+    "modelName": "GLM-4",
+    "apiKey": "您的API Key",
+    "apiEndpoint": "https://open.bigmodel.cn/api/paas/v4/chat/completions",
+    "isActive": true,
+    "isDefault": true,
+    "provider": "智谱AI"
+  },
+  {
     "modelId": "deepseek-v1",
     "modelName": "DeepSeek",
     "apiKey": "您的API Key",
     "apiEndpoint": "https://api.deepseek.com/v1",
-    "isActive": true
+    "isActive": true,
+    "isDefault": false,
+    "provider": "深度求索"
   }
 ]

@@ -28,6 +28,11 @@
       "type": "Boolean"
     },
     {
+      "name": "preferredModel",
+      "title": "首选模型",
+      "type": "String"
+    },
+    {
       "name": "temperature",
       "title": "温度参数",
       "type": "Number"

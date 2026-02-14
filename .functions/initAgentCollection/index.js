@@ -26,7 +26,7 @@ exports.main = async (event, context) => {
           icon: 'Route',
           color: 'from-orange-500 to-pink-500',
           agentType: 'built-in',
-          model: 'gpt-4',
+          model: 'GLM',
           skills: [
             { name: '行程规划', enabled: true },
             { name: '路线优化', enabled: true },
@@ -61,7 +61,7 @@ exports.main = async (event, context) => {
           icon: 'BookOpen',
           color: 'from-blue-500 to-cyan-500',
           agentType: 'built-in',
-          model: 'gpt-4',
+          model: 'GLM',
           skills: [
             { name: '景点解说', enabled: true },
             { name: '文化背景', enabled: true },
@@ -96,7 +96,7 @@ exports.main = async (event, context) => {
           icon: 'Camera',
           color: 'from-purple-500 to-pink-500',
           agentType: 'built-in',
-          model: 'gpt-4',
+          model: 'GLM',
           skills: [
             { name: '拍照建议', enabled: true },
             { name: '构图技巧', enabled: true },
@@ -128,7 +128,7 @@ exports.main = async (event, context) => {
           icon: 'Sparkles',
           color: 'from-green-500 to-teal-500',
           agentType: 'built-in',
-          model: 'gpt-4',
+          model: 'GLM',
           skills: [
             { name: '目的地推荐', enabled: true },
             { name: '活动推荐', enabled: true },
