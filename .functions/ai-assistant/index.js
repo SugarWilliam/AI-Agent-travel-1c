@@ -775,7 +775,7 @@ async function generateAIResponse(event) {
       success: true,
       data: {
         response,
-        modelUsed: modelConfig?.modelName || 'GLM'
+        modelUsed: modelConfig?.modelName || 'GLM4.6'
       }
     };
   } catch (error) {
@@ -1125,6 +1125,68 @@ async function linkGeneration(event) {
   }
 }
 
+// 模型测试
+async function testModel(event) {
+  const { modelId, apiKey, apiEndpoint, testMessage } = event;
+  
+  console.log('测试模型:', modelId, 'API Endpoint:', apiEndpoint);
+  
+  try {
+    // 构建请求数据
+    const requestData = {
+      model: modelId,
+      messages: [{
+        role: 'user',
+        content: testMessage || '你好，请回复"测试成功"'
+      }],
+      temperature: 0.7,
+      max_tokens: 100
+    };
+    
+    // 调用模型 API
+    const response = await makeRequest(apiEndpoint, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${apiKey}`
+      }
+    }, requestData);
+    
+    console.log('模型 API 响应:', JSON.stringify(response));
+    
+    if (response.error) {
+      throw new Error(response.error);
+    }
+    
+    // 提取响应内容
+    let aiResponse = '';
+    if (response.choices && response.choices.length > 0) {
+      aiResponse = response.choices[0].message.content;
+    } else if (response.data && response.data.choices && response.data.choices.length > 0) {
+      aiResponse = response.data.choices[0].message.content;
+    } else if (response.message) {
+      aiResponse = response.message;
+    } else {
+      aiResponse = '测试成功';
+    }
+    
+    return {
+      success: true,
+      data: {
+        response: aiResponse,
+        modelId,
+        timestamp: new Date().toISOString()
+      }
+    };
+  } catch (error) {
+    console.error('模型测试失败:', error);
+    return {
+      success: false,
+      error: error.message || '模型测试失败'
+    };
+  }
+}
+
 // 主函数
 exports.main = async (event, context) => {
   console.log('云函数收到请求:', JSON.stringify(event));
@@ -1232,6 +1294,11 @@ exports.main = async (event, context) => {
         result = await photoGuide(event);
         break;
       
+      // 模型测试
+      case 'testModel':
+        result = await testModel(event);
+        break;
+      
       // 文档解析
       case 'documentParsing':
         result = await documentParsing(event);
@@ -1263,19 +1330,6 @@ exports.main = async (event, context) => {
         error: error.message || '服务器内部错误',
         code: error.code
       }
-    };
-  }
-};
-  } catch (error) {
-    console.error('云函数执行错误:', error);
-    console.error('错误堆栈:', error.stack);
-    console.error('错误消息:', error.message);
-    console.error('错误代码:', error.code);
-    
-    return {
-      success: false,
-      error: error.message || '服务器内部错误',
-      code: error.code
     };
   }
 };

@@ -1,154 +1,86 @@
-[
-  {
-    "_id": "config_001",
-    "userId": "user_001",
-    "modelId": "deepseek-chat",
-    "modelName": "DeepSeek Chat",
-    "provider": "深度求索",
-    "isDefault": true,
-    "preferredModel": "deepseek-chat",
-    "temperature": 0.7,
-    "maxTokens": 4096,
-    "systemPrompt": "你是一个专业的旅行规划助手，擅长为用户提供个性化的旅行建议和规划。",
-    "capabilities": {
-      "imageRecognition": false,
-      "documentParsing": true,
-      "webScraping": true,
-      "multimodal": false
+{
+  "configs": [
+    {
+      "_id": "config_001",
+      "userId": "user_001",
+      "modelId": "glm-pyc",
+      "modelName": "GLM4.6",
+      "provider": "智谱AI",
+      "isDefault": true,
+      "preferredModel": "glm-pyc",
+      "temperature": 0.7,
+      "maxTokens": 4096,
+      "systemPrompt": "你是一个专业的旅游规划助手，擅长根据用户需求制定个性化的旅游计划。请根据用户的目的地、时间、预算等信息，提供详细的旅游建议，包括景点推荐、路线规划、住宿建议、美食推荐等。",
+      "capabilities": {
+        "imageRecognition": true,
+        "documentParsing": true,
+        "webScraping": true,
+        "multimodal": true
+      },
+      "ragEnabled": true,
+      "ragSources": [
+        "travel_guide",
+        "hotel_reviews",
+        "restaurant_reviews"
+      ],
+      "agentRules": {
+        "maxResponseLength": 2000,
+        "enableMemory": true,
+        "memoryLimit": 10
+      },
+      "agentSkills": [
+        "route_planning",
+        "recommendation",
+        "translation",
+        "weather_query"
+      ],
+      "agentKnowledgeBases": [
+        "kb_001",
+        "kb_002"
+      ],
+      "createdAt": 1736899200000,
+      "updatedAt": 1739577600000
     },
-    "ragEnabled": true,
-    "ragSources": [
-      "旅游攻略库",
-      "用户历史记录",
-      "景点数据库",
-      "文化数据库",
-      "摄影数据库",
-      "酒店信息库",
-      "交通信息库",
-      "美食推荐库",
-      "购物指南库",
-      "紧急服务库",
-      "当地文化库",
-      "签证信息库",
-      "保险信息库",
-      "推荐数据库",
-      "用户偏好数据库",
-      "历史数据库"
-    ],
-    "agentRules": [
-      "始终以友好、专业的态度回答用户问题",
-      "提供准确、实用的旅行建议",
-      "尊重用户的选择和偏好",
-      "保护用户隐私，不泄露个人信息"
-    ],
-    "agentSkills": [
-      "旅行规划",
-      "景点推荐",
-      "路线规划",
-      "美食推荐",
-      "住宿推荐",
-      "交通指南",
-      "文化介绍",
-      "拍照指导",
-      "穿搭建议",
-      "紧急服务"
-    ],
-    "agentKnowledgeBases": [
-      "旅游攻略库",
-      "用户历史记录",
-      "景点数据库",
-      "文化数据库",
-      "摄影数据库",
-      "酒店信息库",
-      "交通信息库",
-      "美食推荐库",
-      "购物指南库",
-      "紧急服务库",
-      "当地文化库",
-      "签证信息库",
-      "保险信息库",
-      "推荐数据库",
-      "用户偏好数据库",
-      "历史数据库"
-    ],
-    "createdAt": 1739078400000,
-    "updatedAt": 1739078400000,
-    "_openid": "user_001"
-  },
-  {
-    "_id": "config_002",
-    "userId": "user_002",
-    "modelId": "deepseek-chat",
-    "modelName": "DeepSeek Chat",
-    "provider": "深度求索",
-    "isDefault": true,
-    "preferredModel": "deepseek-chat",
-    "temperature": 0.7,
-    "maxTokens": 4096,
-    "systemPrompt": "你是一个专业的旅行规划助手，擅长为用户提供个性化的旅行建议和规划。",
-    "capabilities": {
-      "imageRecognition": false,
-      "documentParsing": true,
-      "webScraping": false,
-      "multimodal": false
-    },
-    "ragEnabled": true,
-    "ragSources": [
-      "旅游攻略库",
-      "用户历史记录",
-      "景点数据库",
-      "文化数据库",
-      "摄影数据库",
-      "酒店信息库",
-      "交通信息库",
-      "美食推荐库",
-      "购物指南库",
-      "紧急服务库",
-      "当地文化库",
-      "签证信息库",
-      "保险信息库",
-      "推荐数据库",
-      "用户偏好数据库",
-      "历史数据库"
-    ],
-    "agentRules": [
-      "始终以友好、专业的态度回答用户问题",
-      "提供准确、实用的旅行建议",
-      "尊重用户的选择和偏好",
-      "保护用户隐私，不泄露个人信息"
-    ],
-    "agentSkills": [
-      "旅行规划",
-      "景点推荐",
-      "路线规划",
-      "美食推荐",
-      "住宿推荐",
-      "交通指南",
-      "文化介绍",
-      "拍照指导",
-      "穿搭建议",
-      "紧急服务"
-    ],
-    "agentKnowledgeBases": [
-      "旅游攻略库",
-      "用户历史记录",
-      "景点数据库",
-      "文化数据库",
-      "摄影数据库",
-      "酒店信息库",
-      "交通信息库",
-      "美食推荐库",
-      "购物指南库",
-      "紧急服务库",
-      "当地文化库",
-      "签证信息库",
-      "保险信息库",
-      "推荐数据库",
-      "用户偏好数据库",
-      "历史数据库"
-    ],
-    "createdAt": 1739078400000,
-    "updatedAt": 1739078400000,
-    "_openid": "user_002"
-  }
-]
+    {
+      "_id": "config_002",
+      "userId": "user_002",
+      "modelId": "glm-pyc",
+      "modelName": "GLM4.6",
+      "provider": "智谱AI",
+      "isDefault": false,
+      "preferredModel": "glm-pyc",
+      "temperature": 0.7,
+      "maxTokens": 4096,
+      "systemPrompt": "你是一个专业的旅游规划助手，擅长根据用户需求制定个性化的旅游计划。请根据用户的目的地、时间、预算等信息，提供详细的旅游建议，包括景点推荐、路线规划、住宿建议、美食推荐等。",
+      "capabilities": {
+        "imageRecognition": true,
+        "documentParsing": true,
+        "webScraping": true,
+        "multimodal": true
+      },
+      "ragEnabled": true,
+      "ragSources": [
+        "travel_guide",
+        "hotel_reviews",
+        "restaurant_reviews"
+      ],
+      "agentRules": {
+        "maxResponseLength": 2000,
+        "enableMemory": true,
+        "memoryLimit": 10
+      },
+      "agentSkills": [
+        "route_planning",
+        "recommendation",
+        "translation",
+        "weather_query"
+      ],
+      "agentKnowledgeBases": [
+        "kb_001",
+        "kb_002"
+      ],
+      "createdAt": 1736899200000,
+      "updatedAt": 1739577600000
+    }
+  ]
+}

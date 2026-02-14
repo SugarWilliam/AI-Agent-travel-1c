@@ -1,467 +1,352 @@
 // @ts-ignore;
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 // @ts-ignore;
-import { ArrowLeft, Play, CheckCircle, XCircle, Loader2, RefreshCw, Sparkles, MapPin, Calendar, Camera, Shirt, Cloud, BookOpen, Route } from 'lucide-react';
+import { Send, Bot, User, Loader2, CheckCircle, XCircle, RefreshCw, Settings } from 'lucide-react';
 // @ts-ignore;
-import { useToast, Button } from '@/components/ui';
+import { useToast, Button, Textarea, Input } from '@/components/ui';
 
-import { useGlobalSettings } from '@/components/GlobalSettings';
-import TabBar from '@/components/TabBar';
-export default function AITest(props) {
+export default function AITestPage(props) {
   const {
     toast
   } = useToast();
-
-  // 尝试使用全局设置，如果没有 Provider 则使用本地状态
-  let globalSettings;
-  try {
-    globalSettings = useGlobalSettings();
-  } catch (error) {
-    globalSettings = null;
-  }
-  const [localDarkMode, setLocalDarkMode] = useState(() => {
-    const saved = localStorage.getItem('app-darkMode');
-    return saved === 'true';
-  });
-  useEffect(() => {
-    if (!globalSettings) {
-      const handleStorageChange = () => {
-        const savedDarkMode = localStorage.getItem('app-darkMode');
-        setLocalDarkMode(savedDarkMode === 'true');
-      };
-      window.addEventListener('storage', handleStorageChange);
-      window.addEventListener('theme-change', handleStorageChange);
-      return () => {
-        window.removeEventListener('storage', handleStorageChange);
-        window.removeEventListener('theme-change', handleStorageChange);
-      };
-    }
-  }, [globalSettings]);
-  const darkMode = globalSettings?.darkMode || localDarkMode;
+  const [selectedModel, setSelectedModel] = useState('glm-pyc');
+  const [testMessage, setTestMessage] = useState('你好，请介绍一下你自己');
+  const [isLoading, setIsLoading] = useState(false);
   const [testResults, setTestResults] = useState([]);
-  const [isRunning, setIsRunning] = useState(false);
-  const [currentTest, setCurrentTest] = useState(null);
-  const [generatedPlanId, setGeneratedPlanId] = useState(null);
-  const testCases = [{
-    id: 1,
-    name: '生成完整计划',
-    description: '测试AI助手生成完整旅行计划的能力',
-    icon: Sparkles,
-    action: async () => {
-      const result = await props.$w.cloud.callFunction({
-        name: 'ai-assistant',
-        data: {
-          action: 'generatePlan',
-          input: {
-            destination: '巴黎',
-            days: 5,
-            budget: 20000,
-            travelers: 2,
-            startDate: '2026-04-01',
-            preferences: '文化体验、美食、购物'
-          },
-          userId: props.$w.auth.currentUser?.userId || 'anonymous'
-        }
-      });
-      return result;
-    }
-  }, {
-    id: 2,
-    name: '行程规划 Agent',
-    description: '测试行程规划AI Agent',
-    icon: Route,
-    action: async () => {
-      const result = await props.$w.cloud.callFunction({
-        name: 'ai-assistant',
-        data: {
-          action: 'callAgent',
-          agentType: 'itinerary',
-          input: {
-            destination: '巴黎',
-            days: 5,
-            preferences: '文化体验、美食、购物'
-          },
-          userId: props.$w.auth.currentUser?.userId || 'anonymous'
-        }
-      });
-      return result;
-    }
-  }, {
-    id: 3,
-    name: '天气查询 Agent',
-    description: '测试天气查询AI Agent',
-    icon: Cloud,
-    action: async () => {
-      const result = await props.$w.cloud.callFunction({
-        name: 'ai-assistant',
-        data: {
-          action: 'callAgent',
-          agentType: 'weather',
-          input: {
-            destination: '巴黎',
-            startDate: '2026-04-01',
-            days: 5
-          },
-          userId: props.$w.auth.currentUser?.userId || 'anonymous'
-        }
-      });
-      return result;
-    }
-  }, {
-    id: 4,
-    name: '攻略生成 Agent',
-    description: '测试攻略生成AI Agent',
-    icon: BookOpen,
-    action: async () => {
-      const result = await props.$w.cloud.callFunction({
-        name: 'ai-assistant',
-        data: {
-          action: 'generateGuide',
-          input: {
-            destination: '巴黎',
-            days: 5
-          },
-          userId: props.$w.auth.currentUser?.userId || 'anonymous'
-        }
-      });
-      return result;
-    }
-  }, {
-    id: 5,
-    name: '拍照指导 Agent',
-    description: '测试拍照指导AI Agent',
-    icon: Camera,
-    action: async () => {
-      const result = await props.$w.cloud.callFunction({
-        name: 'ai-assistant',
-        data: {
-          action: 'photoGuide',
-          input: {
-            destination: '巴黎'
-          },
-          userId: props.$w.auth.currentUser?.userId || 'anonymous'
-        }
-      });
-      return result;
-    }
-  }, {
-    id: 6,
-    name: '穿搭建议 Agent',
-    description: '测试穿搭建议AI Agent',
-    icon: Shirt,
-    action: async () => {
-      const result = await props.$w.cloud.callFunction({
-        name: 'ai-assistant',
-        data: {
-          action: 'outfitGuide',
-          input: {
-            destination: '巴黎',
-            startDate: '2026-04-01'
-          },
-          userId: props.$w.auth.currentUser?.userId || 'anonymous'
-        }
-      });
-      return result;
-    }
-  }, {
-    id: 7,
-    name: '保存计划功能',
-    description: '测试保存计划到数据库',
-    icon: MapPin,
-    action: async () => {
-      const result = await props.$w.cloud.callFunction({
-        name: 'saveTravelPlan',
-        data: {
-          action: 'create',
-          plan: {
-            title: '巴黎五日游',
-            destination: '巴黎',
-            startDate: '2026-04-01',
-            endDate: '2026-04-05',
-            days: 5,
-            budget: 20000,
-            travelers: 2,
-            description: '探索巴黎的浪漫与艺术，体验法式生活的优雅。',
-            coverImage: 'https://images.unsplash.com/photo-1502602898657-3e91760cbb34?w=800',
-            status: 'draft',
-            itinerary: [{
-              day: 1,
-              date: '2026-04-01',
-              summary: '抵达巴黎',
-              activities: [{
-                id: 'day1-act1',
-                name: '抵达戴高乐机场',
-                type: 'transport',
-                time: '14:00',
-                duration: 2,
-                location: '戴高乐机场',
-                description: '乘坐机场快线前往市区',
-                status: 'pending',
-                tips: '建议提前购买地铁票'
-              }]
-            }],
-            weather: [{
-              date: '2026-04-01',
-              condition: '晴',
-              icon: '☀️',
-              temperature: '15°C',
-              high: '20°C',
-              low: '10°C',
-              tips: '适合户外活动'
-            }],
-            guide: {
-              title: '巴黎五日游攻略',
-              overview: '巴黎是法国的首都，也是世界著名的艺术之都。这里有埃菲尔铁塔、卢浮宫、凯旋门等标志性建筑，还有塞纳河、香榭丽舍大街等浪漫景点。',
-              highlights: ['必游景点：埃菲尔铁塔、卢浮宫、凯旋门', '美食体验：法式甜点、红酒、奶酪', '文化沉浸：参观博物馆、观看演出', '购物推荐：香榭丽舍大街、老佛爷百货'],
-              tips: ['最佳旅游时间：4-6月和9-11月', '交通建议：购买地铁通票', '住宿推荐：市中心或塞纳河畔', '预算规划：人均每天100-150欧元'],
-              emergency: {
-                police: '17',
-                hospital: '15',
-                embassy: '查询当地中国大使馆联系方式'
-              }
-            },
-            photoTips: {
-              title: '巴黎拍照指南',
-              bestSpots: [{
-                location: '埃菲尔铁塔',
-                time: '日出或日落时分',
-                tips: '使用广角镜头，捕捉铁塔全景',
-                settings: '光圈 f/8, ISO 100, 快门 1/125s'
-              }],
-              techniques: ['利用黄金时段拍摄，光线柔和', '使用三分法构图，突出主体', '尝试不同角度，寻找独特视角'],
-              equipment: ['广角镜头：拍摄建筑和风景', '长焦镜头：捕捉细节', '三脚架：稳定拍摄']
-            },
-            outfitTips: {
-              title: '巴黎春季穿搭指南',
-              season: '春季',
-              recommendations: [{
-                type: '上装',
-                items: ['长袖衬衫', '薄外套', '针织衫']
-              }, {
-                type: '下装',
-                items: ['长裤', '牛仔裤', '休闲裤']
-              }],
-              tips: ['春季气温适宜，建议轻便穿搭', '选择优雅的款式，符合巴黎时尚氛围']
-            }
-          },
-          userId: props.$w.auth.currentUser?.userId || 'anonymous'
-        }
-      });
-      return result;
-    }
-  }, {
-    id: 8,
-    name: '获取计划功能',
-    description: '测试从数据库获取计划',
-    icon: Calendar,
-    action: async () => {
-      const result = await props.$w.cloud.callFunction({
-        name: 'saveTravelPlan',
-        data: {
-          action: 'get',
-          planId: generatedPlanId || 'trip_001',
-          userId: props.$w.auth.currentUser?.userId || 'anonymous'
-        }
-      });
-      return result;
-    }
-  }, {
-    id: 9,
-    name: '更新计划功能',
-    description: '测试更新计划到数据库',
-    icon: RefreshCw,
-    action: async () => {
-      const result = await props.$w.cloud.callFunction({
-        name: 'saveTravelPlan',
-        data: {
-          action: 'update',
-          planId: generatedPlanId || 'trip_001',
-          plan: {
-            description: '更新后的描述：探索巴黎的浪漫与艺术，体验法式生活的优雅。这是一次难忘的旅程，充满了艺术、美食和文化的体验。',
-            status: 'in_progress'
-          },
-          userId: props.$w.auth.currentUser?.userId || 'anonymous'
-        }
-      });
-      return result;
-    }
-  }, {
-    id: 10,
-    name: '列出计划功能',
-    description: '测试列出所有计划',
-    icon: MapPin,
-    action: async () => {
-      const result = await props.$w.cloud.callFunction({
-        name: 'saveTravelPlan',
-        data: {
-          action: 'list',
-          userId: props.$w.auth.currentUser?.userId || 'anonymous'
-        }
-      });
-      return result;
-    }
-  }];
-  const runSingleTest = async testCase => {
-    setCurrentTest(testCase.id);
-    try {
-      const result = await testCase.action();
-      // 云函数返回结构是 { result: { success: true/false, data: {...} } }
-      const cloudResult = result.result || result;
-      const success = cloudResult.success !== false;
+  const [modelConfig, setModelConfig] = useState(null);
 
-      // 如果是保存计划，保存 planId
-      if (testCase.id === 7 && cloudResult.planId) {
-        setGeneratedPlanId(cloudResult.planId);
+  // 加载模型配置
+  const loadModelConfig = async () => {
+    try {
+      const result = await props.$w.cloud.callFunction({
+        name: 'ai-assistant',
+        data: {
+          action: 'getModels',
+          userId: props.$w.auth.currentUser?.userId || 'anonymous'
+        }
+      });
+      if (result && result.result && result.result.success) {
+        const models = result.result.data || [];
+        const glmModel = models.find(m => m.modelId === 'glm-pyc');
+        if (glmModel) {
+          setModelConfig(glmModel);
+          console.log('GLM 模型配置:', glmModel);
+        }
       }
-      setTestResults(prev => [...prev, {
-        id: testCase.id,
-        name: testCase.name,
-        success,
-        result: cloudResult,
-        timestamp: new Date().toISOString()
-      }]);
-      if (success) {
+    } catch (error) {
+      console.error('加载模型配置失败:', error);
+    }
+  };
+
+  // 测试模型连接
+  const testModelConnection = async () => {
+    if (!testMessage.trim()) {
+      toast({
+        title: '请输入测试消息',
+        description: '测试消息不能为空',
+        variant: 'destructive'
+      });
+      return;
+    }
+    setIsLoading(true);
+    const startTime = Date.now();
+    try {
+      console.log('开始测试模型:', selectedModel);
+      console.log('测试消息:', testMessage);
+
+      // 调用云函数测试模型
+      const result = await props.$w.cloud.callFunction({
+        name: 'ai-assistant',
+        data: {
+          action: 'testModel',
+          modelId: selectedModel,
+          apiKey: modelConfig?.apiKey,
+          apiEndpoint: modelConfig?.apiEndpoint,
+          testMessage: testMessage
+        }
+      });
+      console.log('测试结果:', result);
+      const endTime = Date.now();
+      const responseTime = endTime - startTime;
+      if (result && result.result && result.result.success) {
+        const testResult = {
+          id: Date.now(),
+          model: selectedModel,
+          modelName: modelConfig?.modelName || 'GLM4.6',
+          provider: modelConfig?.provider || '智谱AI',
+          message: testMessage,
+          response: result.result.data?.response || '测试成功',
+          responseTime: responseTime,
+          timestamp: new Date().toISOString(),
+          success: true
+        };
+        setTestResults(prev => [testResult, ...prev]);
         toast({
-          title: '测试通过',
-          description: `${testCase.name} 测试成功`,
+          title: '测试成功',
+          description: `模型响应时间: ${responseTime}ms`,
           variant: 'default'
         });
       } else {
-        throw new Error(cloudResult.error || '测试失败');
+        throw new Error(result?.result?.error || result?.error || '测试失败');
       }
     } catch (error) {
-      console.error('测试失败:', error);
-      setTestResults(prev => [...prev, {
-        id: testCase.id,
-        name: testCase.name,
+      console.error('模型测试失败:', error);
+      const testResult = {
+        id: Date.now(),
+        model: selectedModel,
+        modelName: modelConfig?.modelName || 'GLM4.6',
+        provider: modelConfig?.provider || '智谱AI',
+        message: testMessage,
+        response: null,
+        responseTime: Date.now() - startTime,
+        timestamp: new Date().toISOString(),
         success: false,
-        error: error.message,
-        timestamp: new Date().toISOString()
-      }]);
+        error: error.message || '未知错误'
+      };
+      setTestResults(prev => [testResult, ...prev]);
       toast({
         title: '测试失败',
-        description: `${testCase.name}: ${error.message}`,
+        description: error.message || '未知错误',
         variant: 'destructive'
       });
     } finally {
-      setCurrentTest(null);
+      setIsLoading(false);
     }
   };
-  const runAllTests = async () => {
-    setIsRunning(true);
-    setTestResults([]);
-    for (const testCase of testCases) {
-      await runSingleTest(testCase);
-      // 等待 500ms 再执行下一个测试
-      await new Promise(resolve => setTimeout(resolve, 500));
+
+  // 测试 AI 对话
+  const testAIConversation = async () => {
+    if (!testMessage.trim()) {
+      toast({
+        title: '请输入测试消息',
+        description: '测试消息不能为空',
+        variant: 'destructive'
+      });
+      return;
     }
-    setIsRunning(false);
-    toast({
-      title: '所有测试完成',
-      description: `共执行 ${testCases.length} 个测试`,
-      variant: 'default'
-    });
+    setIsLoading(true);
+    const startTime = Date.now();
+    try {
+      console.log('开始测试 AI 对话:', selectedModel);
+
+      // 调用云函数生成 AI 响应
+      const result = await props.$w.cloud.callFunction({
+        name: 'ai-assistant',
+        data: {
+          action: 'generate',
+          userId: props.$w.auth.currentUser?.userId || 'anonymous',
+          message: testMessage,
+          conversationId: `test_${Date.now()}`,
+          modelId: selectedModel
+        }
+      });
+      console.log('AI 对话结果:', result);
+      const endTime = Date.now();
+      const responseTime = endTime - startTime;
+      if (result && result.result && result.result.success) {
+        const testResult = {
+          id: Date.now(),
+          model: selectedModel,
+          modelName: modelConfig?.modelName || 'GLM4.6',
+          provider: modelConfig?.provider || '智谱AI',
+          message: testMessage,
+          response: result.result.data?.response || '响应成功',
+          responseTime: responseTime,
+          timestamp: new Date().toISOString(),
+          success: true,
+          type: 'conversation'
+        };
+        setTestResults(prev => [testResult, ...prev]);
+        toast({
+          title: '对话测试成功',
+          description: `模型响应时间: ${responseTime}ms`,
+          variant: 'default'
+        });
+      } else {
+        throw new Error(result?.result?.error || result?.error || '对话测试失败');
+      }
+    } catch (error) {
+      console.error('AI 对话测试失败:', error);
+      const testResult = {
+        id: Date.now(),
+        model: selectedModel,
+        modelName: modelConfig?.modelName || 'GLM4.6',
+        provider: modelConfig?.provider || '智谱AI',
+        message: testMessage,
+        response: null,
+        responseTime: Date.now() - startTime,
+        timestamp: new Date().toISOString(),
+        success: false,
+        error: error.message || '未知错误',
+        type: 'conversation'
+      };
+      setTestResults(prev => [testResult, ...prev]);
+      toast({
+        title: '对话测试失败',
+        description: error.message || '未知错误',
+        variant: 'destructive'
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
-  const resetTests = () => {
+
+  // 清空测试结果
+  const clearResults = () => {
     setTestResults([]);
-    setGeneratedPlanId(null);
   };
-  const handleBack = () => {
-    props.$w.utils.navigateBack();
-  };
-  const passedCount = testResults.filter(r => r.success).length;
-  const failedCount = testResults.filter(r => !r.success).length;
-  return <div className={`min-h-screen flex flex-col ${darkMode ? 'bg-gray-900' : 'bg-[#FFF9F0]'}`}>
-      {/* Header */}
-      <div className="bg-gradient-to-r from-[#FF6B6B] to-[#4ECDC4] p-4 pt-12">
-        <div className="max-w-full sm:max-w-2xl mx-auto flex items-center gap-3">
-          <button onClick={handleBack} className="bg-white/90 backdrop-blur-sm rounded-full p-2 shadow-lg">
-            <ArrowLeft className="w-6 h-6 text-[#2D3436]" />
-          </button>
-          <div className="flex items-center gap-2">
-            <Sparkles className="w-6 h-6 text-white" />
-            <h1 className="text-xl font-bold text-white" style={{
-            fontFamily: 'Nunito, sans-serif'
-          }}>
-              AI功能测试
-            </h1>
+
+  // 页面加载时加载模型配置
+  React.useEffect(() => {
+    loadModelConfig();
+  }, []);
+  return <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 p-4 md:p-8">
+      <div className="max-w-4xl mx-auto">
+        {/* 页面标题 */}
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
+            AI 助手测试验证
+          </h1>
+          <p className="text-gray-600 dark:text-gray-400">
+            测试验证 GLM 模型是否真实可用，确保 API 调用正常且能返回有效响应
+          </p>
+        </div>
+        
+        {/* 模型配置信息 */}
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 mb-6">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-xl font-semibold text-gray-900 dark:text-white flex items-center gap-2">
+              <Settings className="w-5 h-5" />
+              模型配置
+            </h2>
+            <Button onClick={loadModelConfig} variant="outline" size="sm">
+              <RefreshCw className="w-4 h-4 mr-2" />
+              刷新配置
+            </Button>
+          </div>
+          
+          {modelConfig ? <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="text-gray-600 dark:text-gray-400">模型名称:</span>
+                <span className="font-medium text-gray-900 dark:text-white">{modelConfig.modelName}</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-gray-600 dark:text-gray-400">模型 ID:</span>
+                <span className="font-mono text-sm text-gray-900 dark:text-white">{modelConfig.modelId}</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-gray-600 dark:text-gray-400">提供商:</span>
+                <span className="font-medium text-gray-900 dark:text-white">{modelConfig.provider}</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-gray-600 dark:text-gray-400">API 端点:</span>
+                <span className="font-mono text-xs text-gray-900 dark:text-white break-all">{modelConfig.apiEndpoint}</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-gray-600 dark:text-gray-400">API Key:</span>
+                <span className="font-mono text-sm text-gray-900 dark:text-white">
+                  {modelConfig.apiKey ? `${modelConfig.apiKey.substring(0, 10)}...` : '未设置'}
+                </span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-gray-600 dark:text-gray-400">状态:</span>
+                <span className={`px-2 py-1 rounded-full text-xs font-medium ${modelConfig.status === 'active' ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' : 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300'}`}>
+                  {modelConfig.status === 'active' ? '活跃' : '未激活'}
+                </span>
+              </div>
+            </div> : <div className="text-center py-8 text-gray-500 dark:text-gray-400">
+              加载模型配置中...
+            </div>}
+        </div>
+        
+        {/* 测试输入区域 */}
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 mb-6">
+          <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">
+            测试输入
+          </h2>
+          
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                测试消息
+              </label>
+              <Textarea value={testMessage} onChange={e => setTestMessage(e.target.value)} placeholder="输入测试消息..." className="min-h-[100px]" />
+            </div>
+            
+            <div className="flex gap-3">
+              <Button onClick={testModelConnection} disabled={isLoading || !modelConfig} className="flex-1">
+                {isLoading ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Bot className="w-4 h-4 mr-2" />}
+                测试模型连接
+              </Button>
+              
+              <Button onClick={testAIConversation} disabled={isLoading || !modelConfig} variant="outline" className="flex-1">
+                {isLoading ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Send className="w-4 h-4 mr-2" />}
+                测试 AI 对话
+              </Button>
+            </div>
           </div>
         </div>
-      </div>
-
-      <div className="flex-1 overflow-y-auto p-4 max-w-full sm:max-w-2xl mx-auto w-full">
-        {/* 测试统计 */}
-        {testResults.length > 0 && <div className={`rounded-xl p-4 shadow-md mb-4 ${darkMode ? 'bg-gray-800' : 'bg-white'}`}>
-            <div className="flex items-center justify-between mb-3">
-              <h2 className="font-bold text-[#2D3436]" style={{
-            fontFamily: 'Nunito, sans-serif'
-          }}>
-                测试结果
-              </h2>
-              <div className="flex gap-4">
-                <div className="flex items-center gap-1">
-                  <CheckCircle className="w-4 h-4 text-green-500" />
-                  <span className="text-sm font-medium text-green-600">{passedCount} 通过</span>
-                </div>
-                <div className="flex items-center gap-1">
-                  <XCircle className="w-4 h-4 text-red-500" />
-                  <span className="text-sm font-medium text-red-600">{failedCount} 失败</span>
-                </div>
-              </div>
-            </div>
-            <div className={`w-full rounded-full h-2 ${darkMode ? 'bg-gray-700' : 'bg-gray-200'}`}>
-              <div className="bg-gradient-to-r from-[#4ECDC4] to-[#FF6B6B] h-2 rounded-full transition-all" style={{
-            width: `${testResults.length > 0 ? passedCount / testResults.length * 100 : 0}%`
-          }}></div>
-            </div>
-          </div>}
-
-        {/* 测试用例列表 */}
-        <div className="space-y-3">
-          {testCases.map(testCase => {
-          const testResult = testResults.find(r => r.id === testCase.id);
-          const isRunning = currentTest === testCase.id;
-          return <div key={testCase.id} className={`rounded-xl p-4 shadow-md transition-all ${isRunning ? 'ring-2 ring-[#4ECDC4]' : ''} ${darkMode ? 'bg-gray-800' : 'bg-white'}`}>
-                <div className="flex items-start gap-3">
-                  <div className={`p-2 rounded-lg ${testResult?.success ? 'bg-green-100' : testResult?.success === false ? 'bg-red-100' : darkMode ? 'bg-gray-700' : 'bg-gray-100'}`}>
-                    {isRunning ? <Loader2 className="w-5 h-5 text-[#4ECDC4] animate-spin" /> : testResult?.success ? <CheckCircle className="w-5 h-5 text-green-500" /> : testResult?.success === false ? <XCircle className="w-5 h-5 text-red-500" /> : <testCase.icon className="w-5 h-5 text-gray-500" />}
+        
+        {/* 测试结果 */}
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
+              测试结果
+            </h2>
+            {testResults.length > 0 && <Button onClick={clearResults} variant="ghost" size="sm">
+                清空结果
+              </Button>}
+          </div>
+          
+          {testResults.length === 0 ? <div className="text-center py-12 text-gray-500 dark:text-gray-400">
+              <Bot className="w-16 h-16 mx-auto mb-4 opacity-50" />
+              <p>暂无测试结果</p>
+              <p className="text-sm mt-2">点击上方按钮开始测试</p>
+            </div> : <div className="space-y-4">
+              {testResults.map(result => <div key={result.id} className={`border rounded-lg p-4 ${result.success ? 'border-green-200 bg-green-50 dark:border-green-800 dark:bg-green-900/20' : 'border-red-200 bg-red-50 dark:border-red-800 dark:bg-red-900/20'}`}>
+                  <div className="flex items-start justify-between mb-3">
+                    <div className="flex items-center gap-2">
+                      {result.success ? <CheckCircle className="w-5 h-5 text-green-600 dark:text-green-400" /> : <XCircle className="w-5 h-5 text-red-600 dark:text-red-400" />}
+                      <span className="font-medium text-gray-900 dark:text-white">
+                        {result.success ? '测试成功' : '测试失败'}
+                      </span>
+                      {result.type === 'conversation' && <span className="px-2 py-0.5 bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200 text-xs rounded-full">
+                          对话测试
+                        </span>}
+                    </div>
+                    <span className="text-sm text-gray-500 dark:text-gray-400">
+                      {result.responseTime}ms
+                    </span>
                   </div>
-                  <div className="flex-1">
-                    <h3 className="font-semibold text-[#2D3436] mb-1" style={{
-                  fontFamily: 'Nunito, sans-serif'
-                }}>
-                      {testCase.name}
-                    </h3>
-                    <p className={`text-sm mb-2 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`} style={{
-                  fontFamily: 'Quicksand, sans-serif'
-                }}>
-                      {testCase.description}
-                    </p>
-                    {testResult && <div className={`text-xs p-2 rounded ${testResult.success ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'}`}>
-                        {testResult.success ? '✓ 测试通过' : `✗ 测试失败: ${testResult.error}`}
+                  
+                  <div className="space-y-2 text-sm">
+                    <div className="flex items-start gap-2">
+                      <User className="w-4 h-4 text-gray-500 dark:text-gray-400 mt-0.5 flex-shrink-0" />
+                      <div className="flex-1">
+                        <span className="text-gray-600 dark:text-gray-400">用户:</span>
+                        <p className="text-gray-900 dark:text-white mt-1">{result.message}</p>
+                      </div>
+                    </div>
+                    
+                    {result.response && <div className="flex items-start gap-2">
+                        <Bot className="w-4 h-4 text-blue-500 dark:text-blue-400 mt-0.5 flex-shrink-0" />
+                        <div className="flex-1">
+                          <span className="text-gray-600 dark:text-gray-400">AI ({result.modelName}):</span>
+                          <p className="text-gray-900 dark:text-white mt-1 whitespace-pre-wrap">{result.response}</p>
+                        </div>
                       </div>}
+                    
+                    {result.error && <div className="text-red-600 dark:text-red-400">
+                        错误: {result.error}
+                      </div>}
+                    
+                    <div className="text-xs text-gray-500 dark:text-gray-400 pt-2 border-t dark:border-gray-700">
+                      {new Date(result.timestamp).toLocaleString('zh-CN')}
+                    </div>
                   </div>
-                  <Button onClick={() => runSingleTest(testCase)} disabled={isRunning || testResult?.success} variant="outline" className="shrink-0">
-                    {isRunning ? <Loader2 className="w-4 h-4 animate-spin" /> : <Play className="w-4 h-4" />}
-                  </Button>
-                </div>
-              </div>;
-        })}
-        </div>
-
-        {/* 操作按钮 */}
-        <div className="mt-6 space-y-3">
-          <Button onClick={runAllTests} disabled={isRunning} className="w-full bg-gradient-to-r from-[#FF6B6B] to-[#4ECDC4] hover:from-[#FF5252] hover:to-[#3DBDB5] text-white">
-            {isRunning ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />运行中...</> : <><Play className="w-4 h-4 mr-2" />运行所有测试</>}
-          </Button>
-          <Button onClick={resetTests} variant="outline" className="w-full">
-            <RefreshCw className="w-4 h-4 mr-2" />
-            重置测试
-          </Button>
+                </div>)}
+            </div>}
         </div>
       </div>
-
-      {/* TabBar */}
-      <TabBar activeTab="ai" onNavigate={props.$w.utils.navigateTo} />
     </div>;
 }

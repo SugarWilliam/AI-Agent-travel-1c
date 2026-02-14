@@ -122,7 +122,7 @@ export default function AIConfig(props) {
     toast
   } = useToast();
   const [activeTab, setActiveTab] = useState('models');
-  const [selectedModel, setSelectedModel] = useState('GLM');
+  const [selectedModel, setSelectedModel] = useState('glm-pyc');
   const [aiConfig, setAiConfig] = useState(null);
   const [loading, setLoading] = useState(true);
 
@@ -383,12 +383,12 @@ export default function AIConfig(props) {
         if (result.result.data.modelId) {
           setSelectedModel(result.result.data.modelId);
         }
-        // 设置首选模型为 GLM
+        // 设置首选模型为 GLM4.6
         if (result.result.data.preferredModel) {
           setSelectedModel(result.result.data.preferredModel);
         } else {
-          // 如果没有设置首选模型，默认使用 GLM
-          setSelectedModel('GLM');
+          // 如果没有设置首选模型，默认使用 GLM4.6
+          setSelectedModel('glm-pyc');
         }
         if (result.result.data.ragEnabled !== undefined) {
           setRagEnabled(result.result.data.ragEnabled);
@@ -428,7 +428,7 @@ export default function AIConfig(props) {
         setAgentType(agent.agentType || 'custom');
         setAgentIcon(agent.icon || 'Bot');
         setAgentColor(agent.color || 'from-blue-500 to-purple-500');
-        setSelectedModel(agent.model || 'gpt-4');
+        setSelectedModel(agent.model || 'glm-pyc');
         setRagEnabled(agent.ragEnabled || false);
         // 转换 ragSources 为带 enabled 属性的对象数组
         const ragSourcesWithEnabled = (agent.ragSources || []).map(source => ({
@@ -619,10 +619,10 @@ export default function AIConfig(props) {
         const configData = {
           userId: props.$w.auth.currentUser?.userId || 'anonymous',
           modelId: selectedModel,
-          modelName: aiConfig?.modelName || 'GLM',
+          modelName: aiConfig?.modelName || 'GLM4.6',
           provider: aiConfig?.provider || '智谱AI',
           isDefault: true,
-          preferredModel: selectedModel || 'GLM',
+          preferredModel: selectedModel || 'glm-pyc',
           temperature: 0.7,
           maxTokens: 4096,
           systemPrompt: '你是一个智能旅行助手',
@@ -833,6 +833,7 @@ export default function AIConfig(props) {
                           {availableModels.length > 0 ? availableModels.map(model => <SelectItem key={model._id} value={model.modelId}>
                               {model.modelName} {model.isRecommended && '⭐'}
                             </SelectItem>) : <>
+                              <SelectItem value="glm-pyc">GLM4.6 ⭐</SelectItem>
                               <SelectItem value="glm-4">GLM-4 ⭐</SelectItem>
                               <SelectItem value="glm-3-turbo">GLM-3 Turbo</SelectItem>
                               <SelectItem value="deepseek-chat">DeepSeek Chat ⭐</SelectItem>

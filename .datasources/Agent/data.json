@@ -4,7 +4,7 @@
     "name": "规划助手",
     "description": "专业的行程规划助手，根据用户需求生成详细的旅行行程安排",
     "agentType": "itinerary",
-    "model": "GPT-4",
+    "model": "glm-pyc",
     "skills": [
       "行程规划",
       "路线优化",
@@ -47,14 +47,14 @@
       "includeAccommodation": true
     },
     "createdAt": 1705315200000,
-    "updatedAt": 1705315200000
+    "updatedAt": 1739577600000
   },
   {
     "_id": "agent_002",
     "name": "解说助手",
     "description": "提供专业的景点解说和文化背景介绍，让旅行更有深度",
     "agentType": "guide",
-    "model": "GPT-4",
+    "model": "glm-pyc",
     "skills": [
       "景点解说",
       "文化介绍",
@@ -97,14 +97,14 @@
       "language": "zh-CN"
     },
     "createdAt": 1705744200000,
-    "updatedAt": 1705744200000
+    "updatedAt": 1739577600000
   },
   {
     "_id": "agent_003",
     "name": "拍照助手",
     "description": "提供专业的拍照建议和技巧，帮助用户拍出更好的旅行照片",
     "agentType": "photo",
-    "model": "GPT-3.5",
+    "model": "glm-pyc",
     "skills": [
       "拍照技巧",
       "构图建议",
@@ -145,14 +145,14 @@
       "skillLevel": "beginner"
     },
     "createdAt": 1707556800000,
-    "updatedAt": 1707556800000
+    "updatedAt": 1739577600000
   },
   {
     "_id": "agent_004",
     "name": "推荐助手",
     "description": "根据用户偏好和实时数据，推荐最适合的旅行目的地和活动",
     "agentType": "recommendation",
-    "model": "GPT-4",
+    "model": "glm-pyc",
     "skills": [
       "目的地推荐",
       "活动推荐",
@@ -195,6 +195,6 @@
       "diversityFactor": 0.3
     },
     "createdAt": 1706774400000,
-    "updatedAt": 1706774400000
+    "updatedAt": 1739577600000
   }
 ]

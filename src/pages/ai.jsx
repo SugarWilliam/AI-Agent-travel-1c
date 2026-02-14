@@ -61,7 +61,7 @@ export default function AIAssistant(props) {
       } catch (error) {
         console.error('加载 AI 配置失败:', error);
         // 使用默认模型
-        setSelectedModel('deepseek-chat');
+        setSelectedModel('glm-pyc');
       }
     };
     loadAIConfig();
@@ -77,7 +77,7 @@ export default function AIAssistant(props) {
   const [uploadedImages, setUploadedImages] = useState([]);
   const [uploadedFiles, setUploadedFiles] = useState([]);
   const [aiConfig, setAiConfig] = useState(null);
-  const [selectedModel, setSelectedModel] = useState('deepseek-chat');
+  const [selectedModel, setSelectedModel] = useState('glm-pyc');
   const [showOutputOptions, setShowOutputOptions] = useState(false);
   const [selectedMessageId, setSelectedMessageId] = useState(null);
   const [isRecording, setIsRecording] = useState(false);

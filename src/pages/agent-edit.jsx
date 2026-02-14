@@ -82,7 +82,7 @@ const defaultAgentTemplate = {
   description: '专业的行程规划助手，根据用户需求生成详细的旅行行程安排',
   icon: 'Route',
   color: 'from-orange-500 to-pink-500',
-  model: 'GLM',
+  model: 'glm-pyc',
   skills: [{
     name: '行程规划',
     enabled: true
@@ -200,6 +200,11 @@ const defaultModels = [{
   name: '通义千问 Turbo',
   description: '极速响应，成本最低',
   provider: '阿里云'
+}, {
+  id: 'glm-pyc',
+  name: 'GLM4.6',
+  description: '智谱AI的最新旗舰模型，性能大幅提升',
+  provider: '智谱AI'
 }];
 
 // 可用技能列表
@@ -328,7 +333,7 @@ export default function AgentEdit(props) {
         setAgentColor(agent.color || 'from-blue-500 to-purple-500');
         setAgentType(agent.agentType || 'custom');
         setIsBuiltIn(agent.isBuiltIn || false);
-        setSelectedModel(agent.model || 'GLM');
+        setSelectedModel(agent.model || 'glm-pyc');
         setSkills(agent.skills || []);
         setRules(agent.rules || []);
         setRagEnabled(agent.ragEnabled || false);

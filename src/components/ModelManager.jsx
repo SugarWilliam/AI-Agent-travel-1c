@@ -1,7 +1,7 @@
 // @ts-ignore;
 import React, { useState, useEffect } from 'react';
 // @ts-ignore;
-import { Plus, Edit, Trash2, Check, X, Settings, Brain, Database, FileText, Code, Zap, Key, Globe, Lock, Unlock, ImageIcon } from 'lucide-react';
+import { Plus, Edit, Trash2, Check, X, Settings, Brain, Database, FileText, Code, Zap, Key, Globe, Lock, Unlock, ImageIcon, Play, Loader2 } from 'lucide-react';
 // @ts-ignore;
 import { useToast, Button, Input, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Switch, Textarea } from '@/components/ui';
 
@@ -18,6 +18,8 @@ export function ModelManager({
   const [showApiKey, setShowApiKey] = useState({});
   const [filterProvider, setFilterProvider] = useState('all');
   const [filterCost, setFilterCost] = useState('all');
+  const [testingModel, setTestingModel] = useState(null);
+  const [testResults, setTestResults] = useState({});
   const [formData, setFormData] = useState({
     modelName: '',
     modelId: '',
@@ -410,6 +412,25 @@ export function ModelManager({
         status: 'active',
         apiEndpoint: 'https://api.deepseek.com/chat/completions',
         apiKey: ''
+      }, {
+        _id: 'model_019',
+        modelId: 'glm-pyc',
+        modelName: 'GLM4.6',
+        provider: '智谱AI',
+        description: '智谱AI的最新旗舰模型，性能大幅提升',
+        maxTokens: 128000,
+        temperature: 0.7,
+        costLevel: 'medium',
+        capabilities: {
+          documentParsing: true,
+          imageRecognition: true,
+          multimodal: true,
+          webScraping: true
+        },
+        isRecommended: true,
+        status: 'active',
+        apiEndpoint: 'https://open.bigmodel.cn/api/paas/v4/chat/completions',
+        apiKey: '052dd25c55a54c3f8a4e087230b7e43c.V3pCoVwBQsxhKqVe'
       }];
       setModels(defaultModels);
       toast({
@@ -523,6 +544,78 @@ export function ModelManager({
         description: error.message || '网络错误，请重试',
         variant: 'destructive'
       });
+    }
+  };
+  const handleTestModel = async model => {
+    if (!model.apiKey) {
+      toast({
+        title: '测试失败',
+        description: '请先配置 API Key',
+        variant: 'destructive'
+      });
+      return;
+    }
+    setTestingModel(model._id);
+    setTestResults(prev => ({
+      ...prev,
+      [model._id]: null
+    }));
+    try {
+      const result = await $w.cloud.callFunction({
+        name: 'ai-assistant',
+        data: {
+          action: 'testModel',
+          data: {
+            modelId: model.modelId,
+            apiKey: model.apiKey,
+            apiEndpoint: model.apiEndpoint,
+            testMessage: '你好，请回复"测试成功"'
+          }
+        }
+      });
+      if (result && result.result && result.result.success) {
+        setTestResults(prev => ({
+          ...prev,
+          [model._id]: {
+            success: true,
+            response: result.result.data.response
+          }
+        }));
+        toast({
+          title: '测试成功',
+          description: `${model.modelName} 连接正常`,
+          variant: 'default'
+        });
+      } else {
+        setTestResults(prev => ({
+          ...prev,
+          [model._id]: {
+            success: false,
+            error: result?.result?.error || '测试失败'
+          }
+        }));
+        toast({
+          title: '测试失败',
+          description: result?.result?.error || '无法连接到模型',
+          variant: 'destructive'
+        });
+      }
+    } catch (error) {
+      console.error('测试模型失败:', error);
+      setTestResults(prev => ({
+        ...prev,
+        [model._id]: {
+          success: false,
+          error: error.message
+        }
+      }));
+      toast({
+        title: '测试失败',
+        description: error.message || '网络错误，请重试',
+        variant: 'destructive'
+      });
+    } finally {
+      setTestingModel(null);
     }
   };
   const resetForm = () => {
@@ -670,6 +763,9 @@ export function ModelManager({
                 </div>
               </div>
               <div className="flex gap-1">
+                <Button variant="ghost" size="sm" onClick={() => handleTestModel(model)} className="text-blue-600 hover:text-blue-700" disabled={testingModel === model._id}>
+                  {testingModel === model._id ? <Loader2 className="w-4 h-4 animate-spin" /> : <Play className="w-4 h-4" />}
+                </Button>
                 <Button variant="ghost" size="sm" onClick={() => handleEdit(model)} className="text-[#FF6B6B] hover:text-[#FF5252]">
                   <Edit className="w-4 h-4" />
                 </Button>
@@ -702,6 +798,18 @@ export function ModelManager({
                     {model.apiEndpoint}
                   </span>
                 </div>
+              </div>}
+
+            {/* Test Result */}
+            {testResults[model._id] && <div className={`mt-3 pt-3 border-t ${testResults[model._id].success ? 'border-green-200' : 'border-red-200'}`}>
+                <div className={`text-xs font-medium mb-2 ${testResults[model._id].success ? 'text-green-600' : 'text-red-600'}`}>
+                  {testResults[model._id].success ? '✓ 测试成功' : '✗ 测试失败'}
+                </div>
+                {testResults[model._id].success ? <div className="text-xs text-gray-600 bg-gray-50 p-2 rounded">
+                    响应: {testResults[model._id].response}
+                  </div> : <div className="text-xs text-red-600 bg-red-50 p-2 rounded">
+                    错误: {testResults[model._id].error}
+                  </div>}
               </div>}
 
             {/* Capabilities */}
