@@ -579,13 +579,20 @@ export default function Detail(props) {
       const db = tcb.database();
 
       // 查找相关的提醒记录
-      const result = await db.collection('Reminder').where({
+      const queryResult = await db.collection('Reminder').where({
         nodeId: nodeId
-      }).update({
-        time: newTime,
-        updatedAt: new Date().toISOString()
-      });
-      console.log('提醒时间已同步:', result);
+      }).get();
+
+      // 更新所有匹配的提醒记录
+      if (queryResult.data && queryResult.data.length > 0) {
+        for (const reminder of queryResult.data) {
+          await db.collection('Reminder').doc(reminder._id).update({
+            time: newTime,
+            updatedAt: new Date().toISOString()
+          });
+        }
+        console.log(`提醒时间已同步，更新了 ${queryResult.data.length} 条记录`);
+      }
     } catch (error) {
       console.error('同步提醒时间失败:', error);
     }
@@ -596,10 +603,19 @@ export default function Detail(props) {
     try {
       const tcb = await $w.cloud.getCloudInstance();
       const db = tcb.database();
-      await db.collection('Reminder').where({
+
+      // 查找相关的提醒记录
+      const queryResult = await db.collection('Reminder').where({
         nodeId: nodeId
-      }).remove();
-      console.log('提醒已删除');
+      }).get();
+
+      // 删除所有匹配的提醒记录
+      if (queryResult.data && queryResult.data.length > 0) {
+        for (const reminder of queryResult.data) {
+          await db.collection('Reminder').doc(reminder._id).remove();
+        }
+        console.log(`提醒已删除，删除了 ${queryResult.data.length} 条记录`);
+      }
     } catch (error) {
       console.error('删除提醒失败:', error);
     }
