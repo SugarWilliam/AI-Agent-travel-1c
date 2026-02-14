@@ -6,8 +6,8 @@
   "dependencies": {
     "@cloudbase/node-sdk": "^3.3.7"
   },
-  "timeout": 60,
-  "memorySize": 128,
+  "timeout": 120,
+  "memorySize": 256,
   "environment": {
     "NODE_ENV": "production"
   }

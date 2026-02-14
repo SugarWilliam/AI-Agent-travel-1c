@@ -20,22 +20,40 @@ function makeRequest(url, options, data) {
       port: urlObj.port || (url.startsWith('https') ? 443 : 80),
       path: urlObj.pathname + urlObj.search,
       method: options.method || 'POST',
-      headers: options.headers
+      headers: options.headers,
+      timeout: 30000 // 30秒超时
     }, (res) => {
       let body = '';
       res.on('data', (chunk) => body += chunk);
       res.on('end', () => {
         try {
-          resolve(JSON.parse(body));
+          const parsed = JSON.parse(body);
+          resolve(parsed);
         } catch (e) {
-          resolve(body);
+          console.warn('JSON解析失败，返回原始响应:', e.message);
+          resolve({ error: 'Invalid response', rawBody: body });
         }
       });
     });
     
-    req.on('error', reject);
-    req.write(JSON.stringify(data));
-    req.end();
+    req.on('error', (error) => {
+      console.error('HTTP请求失败:', error.message);
+      resolve({ error: error.message });
+    });
+    
+    req.on('timeout', () => {
+      console.error('HTTP请求超时');
+      req.destroy();
+      resolve({ error: 'Request timeout' });
+    });
+    
+    try {
+      req.write(JSON.stringify(data));
+      req.end();
+    } catch (writeError) {
+      console.error('写入请求数据失败:', writeError.message);
+      resolve({ error: writeError.message });
+    }
   });
 }
 
@@ -636,6 +654,14 @@ async function generateAIResponse(event) {
     modelId: finalModelId
   });
   
+  if (!finalMessage) {
+    console.error('消息内容为空');
+    return {
+      success: false,
+      error: '消息内容不能为空'
+    };
+  }
+  
   try {
     // 获取用户配置的模型
     let modelConfig = null;
@@ -1102,94 +1128,154 @@ async function linkGeneration(event) {
 // 主函数
 exports.main = async (event, context) => {
   console.log('云函数收到请求:', JSON.stringify(event));
+  console.log('请求上下文:', JSON.stringify(context));
+  
   const { action, data, userId } = event;
   
+  if (!action) {
+    console.error('缺少 action 参数');
+    return {
+      result: {
+        success: false,
+        error: '缺少 action 参数'
+      }
+    };
+  }
+  
   try {
+    console.log('执行操作:', action);
+    let result;
     switch (action) {
       // 模型管理
       case 'getModels':
-        return await getModels(userId);
+        result = await getModels(userId);
+        break;
       case 'addModel':
-        return await addModel(data);
+        result = await addModel(data);
+        break;
       case 'updateModel':
-        return await updateModel(data);
+        result = await updateModel(data);
+        break;
       case 'deleteModel':
-        return await deleteModel(data);
+        result = await deleteModel(data);
+        break;
       
       // 技能管理
       case 'getSkills':
-        return await getSkills(userId);
+        result = await getSkills(userId);
+        break;
       case 'addSkill':
-        return await addSkill(data);
+        result = await addSkill(data);
+        break;
       case 'updateSkill':
-        return await updateSkill(data);
+        result = await updateSkill(data);
+        break;
       case 'deleteSkill':
-        return await deleteSkill(data);
+        result = await deleteSkill(data);
+        break;
       
       // AI配置管理
       case 'getAIConfig':
-        return await getAIConfig(userId);
+        result = await getAIConfig(userId);
+        break;
       case 'saveAIConfig':
-        return await saveAIConfig(data);
+        result = await saveAIConfig(data);
+        break;
       
       // 对话管理
       case 'saveConversation':
-        return await saveConversation(data);
+        result = await saveConversation(data);
+        break;
       case 'getConversations':
-        return await getConversations(userId);
+        result = await getConversations(userId);
+        break;
       case 'getConversation':
-        return await getConversation(data.conversationId);
+        result = await getConversation(data.conversationId);
+        break;
       
       // 消息管理
       case 'saveMessage':
-        return await saveMessage(data);
+        result = await saveMessage(data);
+        break;
       case 'getMessages':
-        return await getMessages(data.conversationId);
+        result = await getMessages(data.conversationId);
+        break;
       
       // AI对话生成
       case 'generate':
         console.log('执行 generate 操作，参数:', event);
-        return await generateAIResponse(event);
+        result = await generateAIResponse(event);
+        break;
       
       // 计划生成
       case 'generatePlan':
-        return await generatePlan(event);
+        result = await generatePlan(event);
+        break;
       
       // Agent 调用
       case 'callAgent':
-        return await callAgent(event);
+        result = await callAgent(event);
+        break;
       
       // 天气查询
       case 'weatherQuery':
-        return await weatherQuery(event);
+        result = await weatherQuery(event);
+        break;
       
       // 穿搭建议
       case 'outfitGuide':
-        return await outfitGuide(event);
+        result = await outfitGuide(event);
+        break;
       
       // 拍照指导
       case 'photoGuide':
-        return await photoGuide(event);
+        result = await photoGuide(event);
+        break;
       
       // 文档解析
       case 'documentParsing':
-        return await documentParsing(event);
+        result = await documentParsing(event);
+        break;
       
       // 链接生成
       case 'linkGeneration':
-        return await linkGeneration(event);
+        result = await linkGeneration(event);
+        break;
       
       default:
-        return {
+        result = {
           success: false,
           error: '未知的操作类型'
         };
     }
+    
+    // 统一返回结构
+    return { result };
   } catch (error) {
     console.error('云函数执行错误:', error);
+    console.error('错误堆栈:', error.stack);
+    console.error('错误消息:', error.message);
+    console.error('错误代码:', error.code);
+    
+    return {
+      result: {
+        success: false,
+        error: error.message || '服务器内部错误',
+        code: error.code
+      }
+    };
+  }
+};
+  } catch (error) {
+    console.error('云函数执行错误:', error);
+    console.error('错误堆栈:', error.stack);
+    console.error('错误消息:', error.message);
+    console.error('错误代码:', error.code);
+    
     return {
       success: false,
-      error: '服务器内部错误'
+      error: error.message || '服务器内部错误',
+      code: error.code
     };
   }
 };
