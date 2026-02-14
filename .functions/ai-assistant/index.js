@@ -1,8 +1,14 @@
 const cloud = require('@cloudbase/node-sdk');
 
+const app = cloud.init({
+  env: cloud.getEnv()
+});
+
+const db = app.database();
+const _ = db.command;
+
 // 模型管理相关函数
 async function getModels(userId) {
-  const db = cloud.database();
   try {
     const result = await db.collection('llm_models')
       .where({
@@ -29,7 +35,6 @@ async function getModels(userId) {
 }
 
 async function addModel(data) {
-  const db = cloud.database();
   try {
     const now = Date.now();
     const modelData = {
@@ -58,7 +63,6 @@ async function addModel(data) {
 }
 
 async function updateModel(data) {
-  const db = cloud.database();
   try {
     const updateData = {
       ...data,
@@ -85,7 +89,6 @@ async function updateModel(data) {
 }
 
 async function deleteModel(data) {
-  const db = cloud.database();
   try {
     await db.collection('llm_models')
       .doc(data.modelId || data._id)
@@ -105,7 +108,6 @@ async function deleteModel(data) {
 
 // 技能管理相关函数
 async function getSkills(userId) {
-  const db = cloud.database();
   try {
     console.log('获取技能列表，userId:', userId);
     
@@ -235,7 +237,6 @@ async function getSkills(userId) {
 }
 
 async function addSkill(data) {
-  const db = cloud.database();
   try {
     const now = Date.now();
     const skillData = {
@@ -264,7 +265,6 @@ async function addSkill(data) {
 }
 
 async function updateSkill(data) {
-  const db = cloud.database();
   try {
     const updateData = {
       ...data,
@@ -291,7 +291,6 @@ async function updateSkill(data) {
 }
 
 async function deleteSkill(data) {
-  const db = cloud.database();
   try {
     await db.collection('Skill')
       .doc(data.skillId || data._id)
@@ -311,7 +310,6 @@ async function deleteSkill(data) {
 
 // AI配置管理相关函数
 async function getAIConfig(userId) {
-  const db = cloud.database();
   try {
     const result = await db.collection('AIConfig')
       .where({ userId })
@@ -345,7 +343,6 @@ async function getAIConfig(userId) {
 }
 
 async function saveAIConfig(data) {
-  const db = cloud.database();
   try {
     const now = Date.now();
     const configData = {
@@ -394,7 +391,6 @@ async function saveAIConfig(data) {
 
 // 对话管理相关函数
 async function saveConversation(data) {
-  const db = cloud.database();
   try {
     const now = Date.now();
     const conversationData = {
@@ -430,7 +426,6 @@ async function saveConversation(data) {
 }
 
 async function getConversations(userId) {
-  const db = cloud.database();
   try {
     const result = await db.collection('Conversation')
       .where({ userId })
@@ -451,7 +446,6 @@ async function getConversations(userId) {
 }
 
 async function getConversation(conversationId) {
-  const db = cloud.database();
   try {
     const result = await db.collection('Conversation')
       .doc(conversationId)
@@ -472,7 +466,6 @@ async function getConversation(conversationId) {
 
 // 消息管理相关函数
 async function saveMessage(data) {
-  const db = cloud.database();
   try {
     const now = Date.now();
     const messageData = {
@@ -507,7 +500,6 @@ async function saveMessage(data) {
 }
 
 async function getMessages(conversationId) {
-  const db = cloud.database();
   try {
     const result = await db.collection('Message')
       .where({ conversationId })
@@ -549,7 +541,6 @@ async function generateAIResponse(event) {
     // 获取用户配置的模型
     let modelConfig = null;
     if (finalModelId) {
-      const db = cloud.database();
       try {
         const modelResult = await db.collection('llm_models')
           .doc(finalModelId)
