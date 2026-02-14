@@ -253,10 +253,28 @@ export default function AgentList(props) {
       // 确保最终列表包含所有4个内置Agent
       const finalAgents = [...defaultAgents];
 
-      // 如果数据库加载成功，添加用户Agent
-      if (dbLoadSuccess && allAgents.length > defaultAgents.length) {
-        const userAgents = allAgents.filter(agent => !agent.isBuiltIn);
-        finalAgents.push(...userAgents);
+      // 如果数据库加载成功，合并用户Agent和更新的内置Agent
+      if (dbLoadSuccess && allAgents.length > 0) {
+        allAgents.forEach(dbAgent => {
+          // 查找是否有相同ID的内置Agent
+          const builtInIndex = finalAgents.findIndex(agent => agent._id === dbAgent._id);
+          if (builtInIndex >= 0) {
+            // 如果数据库中有更新的内置Agent数据，用数据库数据覆盖内置Agent
+            console.log(`更新内置Agent: ${dbAgent.name} (ID: ${dbAgent._id})`);
+            finalAgents[builtInIndex] = {
+              ...finalAgents[builtInIndex],
+              ...dbAgent,
+              // 保留内置Agent的固定ID和图标
+              _id: finalAgents[builtInIndex]._id,
+              icon: finalAgents[builtInIndex].icon,
+              isBuiltIn: true
+            };
+          } else if (!dbAgent.isBuiltIn) {
+            // 添加用户Agent
+            console.log(`添加用户Agent: ${dbAgent.name}`);
+            finalAgents.push(dbAgent);
+          }
+        });
       }
       console.log(`最终Agent列表: ${finalAgents.length} 个`);
       finalAgents.forEach((agent, index) => {
@@ -342,8 +360,7 @@ export default function AgentList(props) {
     props.$w.utils.navigateTo({
       pageId: 'agent-edit',
       params: {
-        mode: 'edit',
-        agentId: agentId
+        id: agentId
       }
     });
   };

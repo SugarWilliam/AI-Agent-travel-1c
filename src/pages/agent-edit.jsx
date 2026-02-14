@@ -306,7 +306,25 @@ export default function AgentEdit(props) {
     try {
       const tcb = await props.$w.cloud.getCloudInstance();
       const db = tcb.database();
-      const result = await db.collection('Agent').doc(id).get();
+
+      // 先尝试从数据库加载
+      let result;
+      try {
+        result = await db.collection('Agent').doc(id).get();
+      } catch (dbError) {
+        console.warn('从数据库加载 Agent 失败，尝试查询:', dbError.message);
+        // 如果 doc 查询失败，尝试用 where 查询
+        try {
+          result = await db.collection('Agent').where({
+            _id: id
+          }).get();
+        } catch (whereError) {
+          console.warn('where 查询也失败:', whereError.message);
+          result = {
+            data: []
+          };
+        }
+      }
       if (result.data && result.data.length > 0) {
         const agent = result.data[0];
         setAgentName(agent.name || '');
@@ -323,12 +341,20 @@ export default function AgentEdit(props) {
         setMcpServers(agent.mcpServers || []);
         setUsageCount(agent.usageCount || 0);
         setCreatedAt(agent.createdAt || new Date().toLocaleDateString());
+      } else {
+        // 如果数据库中没有找到，可能是内置 Agent，使用默认配置
+        console.log('数据库中未找到 Agent，可能是内置 Agent');
+        // 这里可以添加内置 Agent 的默认配置
+        toast({
+          title: '提示',
+          description: '使用默认配置编辑内置 Agent'
+        });
       }
     } catch (error) {
       console.error('加载 Agent 数据失败:', error);
       toast({
         title: '加载失败',
-        description: '无法加载 Agent 数据',
+        description: '无法加载 Agent 数据，使用默认配置',
         variant: 'destructive'
       });
     }
@@ -441,6 +467,8 @@ export default function AgentEdit(props) {
       const tcb = await props.$w.cloud.getCloudInstance();
       const db = tcb.database();
       const agentData = {
+        _id: agentId,
+        // 保存 ID，用于后续匹配
         name: agentName,
         description: agentDescription,
         icon: agentIcon,
@@ -470,8 +498,37 @@ export default function AgentEdit(props) {
       // 第三步：保存或更新 Agent
       if (isEditMode && agentId) {
         console.log('更新现有 Agent:', agentId);
-        const updateResult = await db.collection('Agent').doc(agentId).update(agentData);
-        console.log('Agent 更新成功:', updateResult);
+        try {
+          // 先尝试用 doc 更新
+          const updateResult = await db.collection('Agent').doc(agentId).update(agentData);
+          console.log('Agent 更新成功:', updateResult);
+        } catch (docError) {
+          console.warn('doc 更新失败，尝试用 where 查询后更新:', docError.message);
+          // 如果 doc 更新失败，尝试用 where 查询后更新
+          try {
+            const queryResult = await db.collection('Agent').where({
+              _id: agentId
+            }).get();
+            if (queryResult.data && queryResult.data.length > 0) {
+              // 更新所有匹配的记录（通常只有一条）
+              for (const agent of queryResult.data) {
+                await db.collection('Agent').doc(agent._id).update(agentData);
+              }
+              console.log('Agent 更新成功（通过 where 查询）');
+            } else {
+              // 如果数据库中没有，添加新记录
+              console.log('数据库中未找到 Agent，创建新记录');
+              const result = await db.collection('Agent').add({
+                ...agentData,
+                _id: agentId
+              });
+              console.log('Agent 创建成功，ID:', result.id);
+            }
+          } catch (whereError) {
+            console.error('where 查询和更新也失败:', whereError.message);
+            throw whereError;
+          }
+        }
       } else {
         console.log('创建新 Agent');
         const result = await db.collection('Agent').add(agentData);
