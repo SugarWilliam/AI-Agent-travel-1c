@@ -269,7 +269,8 @@ export default function AgentEdit(props) {
   const [agentDescription, setAgentDescription] = useState(defaultAgentTemplate.description);
   const [agentIcon, setAgentIcon] = useState(defaultAgentTemplate.icon);
   const [agentColor, setAgentColor] = useState(defaultAgentTemplate.color);
-  const [agentType, setAgentType] = useState('built-in');
+  const [agentType, setAgentType] = useState('custom');
+  const [isBuiltIn, setIsBuiltIn] = useState(false);
   const [selectedModel, setSelectedModel] = useState(defaultAgentTemplate.model);
   const [skills, setSkills] = useState(defaultAgentTemplate.skills);
   const [rules, setRules] = useState(defaultAgentTemplate.rules);
@@ -313,6 +314,7 @@ export default function AgentEdit(props) {
         setAgentIcon(agent.icon || 'Bot');
         setAgentColor(agent.color || 'from-blue-500 to-purple-500');
         setAgentType(agent.agentType || 'custom');
+        setIsBuiltIn(agent.isBuiltIn || false);
         setSelectedModel(agent.model || 'gpt-4');
         setSkills(agent.skills || []);
         setRules(agent.rules || []);
@@ -336,6 +338,7 @@ export default function AgentEdit(props) {
   const loadDefaultTemplate = () => {
     setAgentName(defaultAgentTemplate.name);
     setAgentDescription(defaultAgentTemplate.description);
+    setIsBuiltIn(false);
     setAgentIcon(defaultAgentTemplate.icon);
     setAgentColor(defaultAgentTemplate.color);
     setAgentType('custom');
@@ -448,7 +451,7 @@ export default function AgentEdit(props) {
         updatedAt: new Date().toISOString(),
         status: 'active',
         outputFormats: [],
-        isBuiltIn: false,
+        isBuiltIn: isBuiltIn,
         capabilities: [],
         systemPrompt: '',
         temperature: 0.7,

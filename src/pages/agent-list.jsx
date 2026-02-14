@@ -52,6 +52,7 @@ export default function AgentList(props) {
     _id: '1',
     name: '规划助手',
     description: '专业的行程规划助手，根据用户需求生成详细的旅行行程安排',
+    agentType: 'built-in',
     model: 'GPT-4',
     skills: ['行程规划', '路线优化', '时间安排'],
     rules: ['安全优先', '时间合理', '交通便利'],
@@ -64,11 +65,19 @@ export default function AgentList(props) {
     icon: 'Route',
     color: 'from-orange-500 to-pink-500',
     createdAt: '2024-01-15T10:00:00.000Z',
-    isBuiltIn: true
+    updatedAt: new Date().toISOString(),
+    isBuiltIn: true,
+    capabilities: [],
+    systemPrompt: '',
+    temperature: 0.7,
+    maxTokens: 4096,
+    priority: 0,
+    config: {}
   }, {
     _id: '2',
     name: '解说助手',
     description: '提供专业的景点解说和文化背景介绍，让旅行更有深度',
+    agentType: 'built-in',
     model: 'GPT-4',
     skills: ['景点解说', '文化介绍', '历史背景'],
     rules: ['内容准确', '生动有趣', '文化尊重'],
@@ -81,11 +90,19 @@ export default function AgentList(props) {
     icon: 'BookOpen',
     color: 'from-yellow-500 to-orange-500',
     createdAt: '2024-01-20T14:30:00.000Z',
-    isBuiltIn: true
+    updatedAt: new Date().toISOString(),
+    isBuiltIn: true,
+    capabilities: [],
+    systemPrompt: '',
+    temperature: 0.7,
+    maxTokens: 4096,
+    priority: 0,
+    config: {}
   }, {
     _id: '3',
     name: '拍照助手',
     description: '提供专业的拍照建议和技巧，帮助用户拍出更好的旅行照片',
+    agentType: 'built-in',
     model: 'GPT-3.5',
     skills: ['拍照技巧', '构图建议', '光线运用'],
     rules: ['实用性强', '易于理解'],
@@ -98,11 +115,19 @@ export default function AgentList(props) {
     icon: 'Camera',
     color: 'from-purple-500 to-pink-500',
     createdAt: '2024-02-10T11:20:00.000Z',
-    isBuiltIn: true
+    updatedAt: new Date().toISOString(),
+    isBuiltIn: true,
+    capabilities: [],
+    systemPrompt: '',
+    temperature: 0.7,
+    maxTokens: 4096,
+    priority: 0,
+    config: {}
   }, {
     _id: '4',
     name: '推荐助手',
     description: '根据用户偏好和实时数据，推荐最适合的旅行目的地和活动',
+    agentType: 'built-in',
     model: 'GPT-4',
     skills: ['目的地推荐', '活动推荐', '个性化匹配'],
     rules: ['个性化', '实时更新', '精准匹配'],
@@ -115,7 +140,14 @@ export default function AgentList(props) {
     icon: 'Sparkles',
     color: 'from-teal-500 to-green-500',
     createdAt: '2024-02-01T09:15:00.000Z',
-    isBuiltIn: true
+    updatedAt: new Date().toISOString(),
+    isBuiltIn: true,
+    capabilities: [],
+    systemPrompt: '',
+    temperature: 0.7,
+    maxTokens: 4096,
+    priority: 0,
+    config: {}
   }];
 
   // 加载Agent列表
@@ -186,7 +218,7 @@ export default function AgentList(props) {
           const dbAgents = result.data.map(agent => ({
             ...agent,
             icon: getIconComponent(agent.icon || 'Bot'),
-            isBuiltIn: false,
+            isBuiltIn: agent.isBuiltIn || false,
             status: agent.status || 'enabled'
           }));
           dbAgentCount = dbAgents.length;
@@ -304,7 +336,16 @@ export default function AgentList(props) {
         name: `${agent.name} (副本)`,
         _id: Date.now().toString(),
         isBuiltIn: false,
-        usageCount: 0
+        usageCount: 0,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        outputFormats: agent.outputFormats || [],
+        capabilities: agent.capabilities || [],
+        systemPrompt: agent.systemPrompt || '',
+        temperature: agent.temperature || 0.7,
+        maxTokens: agent.maxTokens || 4096,
+        priority: agent.priority || 0,
+        config: agent.config || {}
       };
       const tcb = await props.$w.cloud.getCloudInstance();
       const db = tcb.database();
