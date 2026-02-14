@@ -195,16 +195,22 @@ export default function AIAssistant(props) {
         message: messageContent,
         conversationId: conversationId
       });
-      const result = await props.$w.cloud.callFunction({
-        name: 'ai-assistant',
-        data: {
-          action: 'generate',
-          userId: props.$w.auth.currentUser?.userId || 'anonymous',
-          message: messageContent,
-          conversationId: conversationId
-        }
-      });
-      console.log('云函数返回结果:', result);
+      let result;
+      try {
+        result = await props.$w.cloud.callFunction({
+          name: 'ai-assistant',
+          data: {
+            action: 'generate',
+            userId: props.$w.auth.currentUser?.userId || 'anonymous',
+            message: messageContent,
+            conversationId: conversationId
+          }
+        });
+        console.log('云函数返回结果:', result);
+      } catch (cloudError) {
+        console.error('云函数调用失败:', cloudError);
+        throw new Error(cloudError.message || '云函数调用失败');
+      }
       if (result && result.success) {
         const aiResponse = {
           id: (Date.now() + 1).toString(),
@@ -230,19 +236,27 @@ export default function AIAssistant(props) {
         stack: error.stack
       });
       let errorMessage = error.message || '请稍后重试';
+      let showRetry = false;
       if (error.message && error.message.includes('network')) {
         errorMessage = '网络连接异常，请检查网络设置后重试';
+        showRetry = true;
       } else if (error.message && error.message.includes('timeout')) {
         errorMessage = '请求超时，请稍后重试';
+        showRetry = true;
       } else if (error.code === 'FUNCTION_NOT_FOUND') {
         errorMessage = '云函数不存在，请联系管理员';
       } else if (error.code === 'PERMISSION_DENIED') {
         errorMessage = '权限不足，请联系管理员';
+      } else if (error.message && error.message.includes('云函数调用失败')) {
+        errorMessage = '云函数调用失败，正在使用本地响应';
       }
       toast({
         title: 'AI响应失败',
         description: errorMessage,
-        variant: 'destructive'
+        variant: 'destructive',
+        action: showRetry ? <Button onClick={handleSend} size="sm" variant="outline" className="ml-2">
+            重试
+          </Button> : undefined
       });
 
       // 失败时使用本地响应
@@ -493,27 +507,35 @@ export default function AIAssistant(props) {
                             {file.name}
                           </div>)}
                       </div>}
-                    <p className="text-sm whitespace-pre-wrap leading-relaxed" style={{
+                    <div className="text-sm whitespace-pre-wrap leading-relaxed" style={{
                   fontFamily: 'Quicksand, sans-serif'
                 }}>
                       {message.content}
-                    </p>
+                    </div>
                     {/* 显示结构化数据 */}
                     {message.data && message.data.itinerary && <div className="mt-3 pt-3 border-t border-gray-100">
                         <div className="text-xs font-semibold text-gray-500 mb-2">📅 行程安排</div>
-                        {message.data.itinerary.map((day, idx) => <div key={idx} className="bg-gray-50 rounded-lg p-2 mb-2">
-                            <div className="font-medium text-sm text-gray-700">第{day.day}天</div>
-                            <div className="text-xs text-gray-500 mt-1">{day.summary}</div>
+                        {Array.isArray(message.data.itinerary) && message.data.itinerary.map((day, idx) => <div key={idx} className="bg-gray-50 rounded-lg p-2 mb-2">
+                            <div className="font-medium text-sm text-gray-700">第{day.day || idx + 1}天</div>
+                            <div className="text-xs text-gray-500 mt-1">{day.summary || day.date || ''}</div>
                           </div>)}
                       </div>}
                     {message.data && message.data.weather && <div className="mt-3 pt-3 border-t border-gray-100">
                         <div className="text-xs font-semibold text-gray-500 mb-2">🌤️ 天气预报</div>
                         <div className="flex gap-2 overflow-x-auto">
-                          {message.data.weather.map((day, idx) => <div key={idx} className="bg-gray-50 rounded-lg p-2 min-w-[80px]">
-                              <div className="text-xs text-gray-500">{day.date}</div>
-                              <div className="text-lg">{day.icon}</div>
-                              <div className="text-sm font-medium">{day.temperature}</div>
+                          {Array.isArray(message.data.weather) && message.data.weather.map((day, idx) => <div key={idx} className="bg-gray-50 rounded-lg p-2 min-w-[80px]">
+                              <div className="text-xs text-gray-500">{day.date || ''}</div>
+                              <div className="text-lg">{day.icon || '☀️'}</div>
+                              <div className="text-sm font-medium">{day.temperature || ''}</div>
                             </div>)}
+                        </div>
+                      </div>}
+                    {message.data && message.data.plan && <div className="mt-3 pt-3 border-t border-gray-100">
+                        <div className="text-xs font-semibold text-gray-500 mb-2">📋 旅行计划</div>
+                        <div className="bg-gray-50 rounded-lg p-2">
+                          <div className="text-xs text-gray-600">目的地：{message.data.plan.destination || ''}</div>
+                          <div className="text-xs text-gray-600">日期：{message.data.plan.startDate || ''} - {message.data.plan.endDate || ''}</div>
+                          <div className="text-xs text-gray-600">预算：{message.data.plan.budget || ''}</div>
                         </div>
                       </div>}
                   </div>

@@ -311,6 +311,14 @@ async function saveConversation(data) {
     };
   } catch (error) {
     console.error('保存对话失败:', error);
+    // 如果集合不存在，返回成功但数据为空
+    if (error.message && error.message.includes('not exist')) {
+      console.warn('Conversation集合不存在，跳过保存对话');
+      return {
+        success: true,
+        data: conversationData
+      };
+    }
     return {
       success: false,
       error: '保存对话失败'
@@ -380,6 +388,14 @@ async function saveMessage(data) {
     };
   } catch (error) {
     console.error('保存消息失败:', error);
+    // 如果集合不存在，返回成功但数据为空
+    if (error.message && error.message.includes('not exist')) {
+      console.warn('Message集合不存在，跳过保存消息');
+      return {
+        success: true,
+        data: messageData
+      };
+    }
     return {
       success: false,
       error: '保存消息失败'
@@ -417,32 +433,44 @@ async function generateAIResponse(event) {
     let modelConfig = null;
     if (modelId) {
       const db = cloud.database();
-      const modelResult = await db.collection('llm_models')
-        .doc(modelId)
-        .get();
-      if (modelResult.data && modelResult.data.length > 0) {
-        modelConfig = modelResult.data[0];
+      try {
+        const modelResult = await db.collection('llm_models')
+          .doc(modelId)
+          .get();
+        if (modelResult.data && modelResult.data.length > 0) {
+          modelConfig = modelResult.data[0];
+        }
+      } catch (modelError) {
+        console.warn('获取模型配置失败，使用默认模型:', modelError.message);
       }
     }
     
     // 模拟AI响应生成
     const response = generateMockResponse(message, modelConfig);
     
-    // 保存用户消息
-    await saveMessage({
-      conversationId,
-      userId,
-      role: 'user',
-      content: message
-    });
+    // 尝试保存用户消息（如果失败不影响响应）
+    try {
+      await saveMessage({
+        conversationId,
+        userId,
+        role: 'user',
+        content: message
+      });
+    } catch (saveError) {
+      console.warn('保存用户消息失败:', saveError.message);
+    }
     
-    // 保存AI响应
-    await saveMessage({
-      conversationId,
-      userId,
-      role: 'assistant',
-      content: response
-    });
+    // 尝试保存AI响应（如果失败不影响响应）
+    try {
+      await saveMessage({
+        conversationId,
+        userId,
+        role: 'assistant',
+        content: response
+      });
+    } catch (saveError) {
+      console.warn('保存AI响应失败:', saveError.message);
+    }
     
     return {
       success: true,
