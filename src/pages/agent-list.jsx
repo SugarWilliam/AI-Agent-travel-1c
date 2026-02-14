@@ -276,7 +276,10 @@ export default function AgentList(props) {
         toast({
           title: '网络提示',
           description: `网络连接异常，正在使用离线Agent配置 (${defaultAgents.length} 个内置Agent)`,
-          variant: 'destructive'
+          variant: 'destructive',
+          action: <Button onClick={loadAgents} size="sm" variant="outline" className="ml-2">
+              重试
+            </Button>
         });
       }
     } catch (error) {

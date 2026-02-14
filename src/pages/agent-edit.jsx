@@ -496,6 +496,7 @@ export default function AgentEdit(props) {
         stack: error.stack
       });
       let errorMessage = error.message || '未知错误';
+      let showRetry = false;
 
       // 根据错误类型提供更友好的提示
       if (error.message && error.message.includes('not exist')) {
@@ -506,15 +507,23 @@ export default function AgentEdit(props) {
         errorMessage = '数据库集合不存在，正在尝试自动创建...';
       } else if (error.message && error.message.includes('network')) {
         errorMessage = '网络连接异常，请检查网络设置后重试';
+        showRetry = true;
       } else if (error.message && error.message.includes('timeout')) {
         errorMessage = '请求超时，请稍后重试';
+        showRetry = true;
       } else if (error.code === 'PERMISSION_DENIED') {
         errorMessage = '权限不足，请联系管理员';
+      } else if (error.code === 'NETWORK_ERROR') {
+        errorMessage = '网络连接异常，请检查网络设置后重试';
+        showRetry = true;
       }
       toast({
         title: t.saveFailed,
         description: errorMessage,
-        variant: 'destructive'
+        variant: 'destructive',
+        action: showRetry ? <Button onClick={handleSave} size="sm" variant="outline" className="ml-2">
+            重试
+          </Button> : undefined
       });
     }
   };
