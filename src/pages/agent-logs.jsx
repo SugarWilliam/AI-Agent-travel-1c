@@ -238,7 +238,7 @@ export default function AgentLogs(props) {
   return <div className="min-h-screen bg-gradient-to-br from-orange-50 via-pink-50 to-yellow-50">
       {/* Header */}
       <div className="bg-white/80 backdrop-blur-sm border-b border-orange-100 sticky top-0 z-10">
-        <div className="max-w-7xl mx-auto px-4 py-4">
+        <div className="max-w-full sm:max-w-7xl mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <button onClick={() => props.$w.utils.navigateBack()} className="p-2 hover:bg-orange-100 rounded-lg transition-colors">
@@ -266,7 +266,7 @@ export default function AgentLogs(props) {
       </div>
 
       {/* Stats Cards */}
-      <div className="max-w-7xl mx-auto px-4 py-6">
+      <div className="max-w-full sm:max-w-7xl mx-auto px-4 py-6">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
           <div className="bg-white rounded-2xl shadow-lg p-6">
             <div className="flex items-center justify-between mb-2">
@@ -332,7 +332,7 @@ export default function AgentLogs(props) {
       </div>
 
       {/* Search and Filter */}
-      <div className="max-w-7xl mx-auto px-4 pb-6">
+      <div className="max-w-full sm:max-w-7xl mx-auto px-4 pb-6">
         <div className="bg-white rounded-2xl shadow-lg p-6">
           <div className="flex flex-col lg:flex-row gap-4">
             <div className="flex-1 relative">
@@ -363,7 +363,7 @@ export default function AgentLogs(props) {
       </div>
 
       {/* Log List */}
-      <div className="max-w-7xl mx-auto px-4 pb-8">
+      <div className="max-w-full sm:max-w-7xl mx-auto px-4 pb-8">
         {isLoading ? <div className="flex items-center justify-center py-12">
             <div className="animate-spin rounded-full h-12 w-12 border-4 border-orange-500 border-t-transparent"></div>
           </div> : filteredLogs.length === 0 ? <div className="bg-white rounded-2xl shadow-lg p-12 text-center">
@@ -448,7 +448,7 @@ export default function AgentLogs(props) {
 
       {/* Detail Modal */}
       {showDetail && selectedLog && <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-full sm:max-w-2xl w-full max-h-[90vh] overflow-y-auto">
             <div className="sticky top-0 bg-white border-b border-gray-200 p-6">
               <div className="flex items-center justify-between">
                 <h2 className="text-xl font-bold text-gray-800" style={{

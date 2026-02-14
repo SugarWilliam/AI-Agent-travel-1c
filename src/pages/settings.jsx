@@ -228,7 +228,7 @@ export default function Settings(props) {
   return <div className={`min-h-screen pb-24 ${darkMode ? 'bg-gray-900' : 'bg-[#FFF9F0]'}`}>
       {/* Header */}
       <div className="bg-gradient-to-r from-[#FF6B6B] to-[#4ECDC4] p-4 pt-12">
-        <div className="max-w-lg mx-auto flex items-center gap-3">
+        <div className="max-w-full sm:max-w-lg mx-auto flex items-center gap-3">
           <button onClick={handleBack} className="bg-white/90 backdrop-blur-sm rounded-full p-2 shadow-lg">
             <ArrowLeft className="w-6 h-6 text-[#2D3436]" />
           </button>
@@ -240,7 +240,7 @@ export default function Settings(props) {
         </div>
       </div>
 
-      <div className="max-w-lg mx-auto px-4 mt-6 space-y-6">
+      <div className="max-w-full sm:max-w-lg mx-auto px-4 mt-6 space-y-6">
         {settingsGroups.map((group, groupIdx) => <div key={groupIdx}>
             <h3 className={`text-sm font-semibold mb-3 px-2 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`} style={{
           fontFamily: 'Quicksand, sans-serif'

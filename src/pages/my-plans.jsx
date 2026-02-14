@@ -242,7 +242,7 @@ export default function MyPlans(props) {
   }}>
       {/* Header */}
       <div className="bg-white/80 backdrop-blur-sm sticky top-0 z-10 border-b border-gray-100">
-        <div className="max-w-4xl mx-auto px-4 py-4">
+        <div className="max-w-full sm:max-w-4xl mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <button onClick={() => navigateTo({
@@ -270,7 +270,7 @@ export default function MyPlans(props) {
       </div>
 
       {/* Search and Filter */}
-      <div className="max-w-4xl mx-auto px-4 py-4">
+      <div className="max-w-full sm:max-w-4xl mx-auto px-4 py-4">
         <div className="flex gap-3">
           <div className="flex-1 relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
@@ -291,7 +291,7 @@ export default function MyPlans(props) {
       </div>
 
       {/* Plans List */}
-      <div className="max-w-4xl mx-auto px-4">
+      <div className="max-w-full sm:max-w-4xl mx-auto px-4">
         {isLoading ? <div className="flex items-center justify-center py-12">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#FF6B6B]"></div>
           </div> : filteredPlans.length === 0 ? <div className="text-center py-12">

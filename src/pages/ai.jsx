@@ -423,7 +423,7 @@ export default function AIAssistant(props) {
   return <div className={`min-h-screen flex flex-col ${darkMode ? 'bg-gray-900' : 'bg-[#FFF9F0]'}`}>
       {/* Header */}
       <div className="bg-gradient-to-r from-[#FF6B6B] to-[#4ECDC4] p-4 pt-12">
-        <div className="max-w-2xl mx-auto flex items-center justify-between">
+        <div className="max-w-full sm:max-w-2xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-3">
             <button onClick={handleBack} className="bg-white/90 backdrop-blur-sm rounded-full p-2 shadow-lg">
               <ArrowLeft className="w-6 h-6 text-[#2D3436]" />
@@ -461,7 +461,7 @@ export default function AIAssistant(props) {
       </div>
 
       {/* Quick Actions */}
-      <div className="max-w-2xl mx-auto px-4 py-3">
+      <div className="max-w-full sm:max-w-2xl mx-auto px-4 py-3">
         <div className="flex gap-2 overflow-x-auto pb-2">
           {quickActions.map((action, idx) => <button key={idx} onClick={() => setInput(action.action)} className={`flex items-center gap-2 rounded-full px-4 py-2 shadow-md hover:shadow-lg transition-all whitespace-nowrap ${darkMode ? 'bg-gray-800' : 'bg-white'}`}>
               <action.icon className="w-4 h-4 text-[#FF6B6B]" />
@@ -475,7 +475,7 @@ export default function AIAssistant(props) {
       </div>
 
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto p-4 max-w-2xl mx-auto w-full">
+      <div className="flex-1 overflow-y-auto p-4 max-w-full sm:max-w-2xl mx-auto w-full">
         <div className="space-y-4">
           {messages.map(message => <div key={message.id} className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}>
               <div className={`max-w-[80%] rounded-2xl p-4 ${message.role === 'user' ? 'bg-[#FF6B6B] text-white' : darkMode ? 'bg-gray-800 text-gray-200 shadow-md' : 'bg-white text-gray-800 shadow-md'}`}>
@@ -558,7 +558,7 @@ export default function AIAssistant(props) {
       </div>
 
       {/* Uploaded Files Preview */}
-      {(uploadedImages.length > 0 || uploadedFiles.length > 0) && <div className="max-w-2xl mx-auto px-4 py-2">
+      {(uploadedImages.length > 0 || uploadedFiles.length > 0) && <div className="max-w-full sm:max-w-2xl mx-auto px-4 py-2">
           <div className="bg-white rounded-xl p-3 shadow-md">
             <div className="flex flex-wrap gap-2">
               {uploadedImages.map((img, idx) => <div key={idx} className="relative">
@@ -579,7 +579,7 @@ export default function AIAssistant(props) {
         </div>}
 
       {/* Input */}
-      <div className="bg-white border-t p-4 max-w-2xl mx-auto w-full">
+      <div className="bg-white border-t p-4 max-w-full sm:max-w-2xl mx-auto w-full">
         <div className="flex gap-2 mb-2">
           <label className="cursor-pointer">
             <input type="file" accept="image/*" multiple onChange={handleImageUpload} className="hidden" />
@@ -616,7 +616,7 @@ export default function AIAssistant(props) {
 
       {/* Output Options Modal */}
       {showOutputOptions && <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl p-6 max-w-md w-full">
+          <div className="bg-white rounded-2xl p-6 max-w-full sm:max-w-md w-full">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-bold text-[#2D3436]" style={{
             fontFamily: 'Nunito, sans-serif'

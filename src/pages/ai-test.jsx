@@ -372,7 +372,7 @@ export default function AITest(props) {
   return <div className={`min-h-screen flex flex-col ${darkMode ? 'bg-gray-900' : 'bg-[#FFF9F0]'}`}>
       {/* Header */}
       <div className="bg-gradient-to-r from-[#FF6B6B] to-[#4ECDC4] p-4 pt-12">
-        <div className="max-w-2xl mx-auto flex items-center gap-3">
+        <div className="max-w-full sm:max-w-2xl mx-auto flex items-center gap-3">
           <button onClick={handleBack} className="bg-white/90 backdrop-blur-sm rounded-full p-2 shadow-lg">
             <ArrowLeft className="w-6 h-6 text-[#2D3436]" />
           </button>
@@ -387,7 +387,7 @@ export default function AITest(props) {
         </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto p-4 max-w-2xl mx-auto w-full">
+      <div className="flex-1 overflow-y-auto p-4 max-w-full sm:max-w-2xl mx-auto w-full">
         {/* 测试统计 */}
         {testResults.length > 0 && <div className={`rounded-xl p-4 shadow-md mb-4 ${darkMode ? 'bg-gray-800' : 'bg-white'}`}>
             <div className="flex items-center justify-between mb-3">

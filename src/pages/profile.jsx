@@ -82,7 +82,7 @@ export default function Profile(props) {
   return <div className="min-h-screen bg-[#FFF9F0] pb-24">
       {/* Header */}
       <div className="bg-gradient-to-br from-[#FF6B6B] via-[#FF8E8E] to-[#4ECDC4] p-6 pt-12">
-        <div className="max-w-lg mx-auto">
+        <div className="max-w-full sm:max-w-lg mx-auto">
           <div className="flex items-center justify-between mb-6">
             <h1 className="text-2xl font-bold text-white" style={{
             fontFamily: 'Nunito, sans-serif'
@@ -119,7 +119,7 @@ export default function Profile(props) {
       </div>
 
       {/* Stats Cards */}
-      <div className="max-w-lg mx-auto px-4 -mt-6">
+      <div className="max-w-full sm:max-w-lg mx-auto px-4 -mt-6">
         <div className="bg-white rounded-2xl shadow-lg p-4">
           <div className="grid grid-cols-4 gap-3">
             {stats.map((stat, idx) => {
@@ -141,7 +141,7 @@ export default function Profile(props) {
       </div>
 
       {/* Menu Items */}
-      <div className="max-w-lg mx-auto px-4 mt-6">
+      <div className="max-w-full sm:max-w-lg mx-auto px-4 mt-6">
         <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
           {menuItems.map(item => {
           const Icon = item.icon;
@@ -168,7 +168,7 @@ export default function Profile(props) {
       </div>
 
       {/* Recent Activity */}
-      <div className="max-w-lg mx-auto px-4 mt-6">
+      <div className="max-w-full sm:max-w-lg mx-auto px-4 mt-6">
         <h3 className="text-lg font-bold text-[#2D3436] mb-3" style={{
         fontFamily: 'Nunito, sans-serif'
       }}>
@@ -209,7 +209,7 @@ export default function Profile(props) {
       </div>
 
       {/* Logout Button */}
-      <div className="max-w-lg mx-auto px-4 mt-6">
+      <div className="max-w-full sm:max-w-lg mx-auto px-4 mt-6">
         <Button onClick={handleLogout} variant="outline" className="w-full border-red-200 text-red-500 hover:bg-red-50 rounded-xl h-12 font-semibold">
           <LogOut className="w-5 h-5 mr-2" />
           退出登录

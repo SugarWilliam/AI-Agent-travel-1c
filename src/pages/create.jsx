@@ -163,7 +163,7 @@ export default function Create(props) {
   return <div className="min-h-screen bg-[#FFF9F0] pb-24">
       {/* Header */}
       <div className="bg-gradient-to-r from-[#FF6B6B] to-[#4ECDC4] p-4 pt-12">
-        <div className="max-w-lg mx-auto flex items-center justify-between">
+        <div className="max-w-full sm:max-w-lg mx-auto flex items-center justify-between">
           <div className="flex items-center gap-3">
             <button onClick={handleBack} className="bg-white/90 backdrop-blur-sm rounded-full p-2 shadow-lg">
               <ArrowLeft className="w-6 h-6 text-[#2D3436]" />
@@ -181,7 +181,7 @@ export default function Create(props) {
         </div>
       </div>
 
-      <div className="max-w-lg mx-auto px-4 mt-6">
+      <div className="max-w-full sm:max-w-lg mx-auto px-4 mt-6">
         {/* Cover Image */}
         <div className="relative h-48 rounded-2xl overflow-hidden mb-6 shadow-lg">
           <img src={coverImage} alt="Cover" className="w-full h-full object-cover" />

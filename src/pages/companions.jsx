@@ -205,7 +205,7 @@ export default function Companions(props) {
   return <div className="min-h-screen bg-gradient-to-br from-[#FFF9F0] to-[#FFE4E1] pb-20">
       {/* Header */}
       <div className="bg-gradient-to-r from-[#FF6B6B] to-[#FF8E8E] text-white p-4 pt-12">
-        <div className="max-w-lg mx-auto">
+        <div className="max-w-full sm:max-w-lg mx-auto">
           <div className="flex items-center justify-between mb-4">
             <button onClick={() => navigateTo({
             pageId: 'home',
@@ -228,7 +228,7 @@ export default function Companions(props) {
         </div>
       </div>
 
-      <div className="max-w-lg mx-auto p-4">
+      <div className="max-w-full sm:max-w-lg mx-auto p-4">
         {/* Stats */}
         <div className={`rounded-2xl p-4 shadow-lg mb-4 ${darkMode ? 'bg-gray-800' : 'bg-white'}`}>
           <div className="flex items-center justify-between">
@@ -331,7 +331,7 @@ export default function Companions(props) {
 
       {/* Add Companion Modal */}
       {showAddModal && <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-          <div className={`rounded-2xl p-6 w-full max-w-md ${darkMode ? 'bg-gray-800' : 'bg-white'}`}>
+          <div className={`rounded-2xl p-6 w-full max-w-full sm:max-w-md ${darkMode ? 'bg-gray-800' : 'bg-white'}`}>
             <h2 className="text-xl font-bold mb-4" style={{
           fontFamily: 'Nunito, sans-serif'
         }}>
@@ -406,7 +406,7 @@ export default function Companions(props) {
 
       {/* Delete Confirm Modal */}
       {showDeleteConfirm && selectedCompanion && <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-2xl p-6 w-full max-w-sm">
+          <div className="bg-white rounded-2xl p-6 w-full max-w-full sm:max-w-sm">
             <div className="text-center">
               <div className="bg-red-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
                 <Trash2 className="w-8 h-8 text-red-500" />

@@ -205,7 +205,7 @@ export default function Home(props) {
   return <div className={`min-h-screen pb-24 ${darkMode ? 'bg-gray-900' : 'bg-[#FFF9F0]'}`}>
       {/* Header */}
       <div className="bg-gradient-to-r from-[#FF6B6B] to-[#4ECDC4] p-6 pt-12">
-        <div className="max-w-lg mx-auto flex items-center justify-between">
+        <div className="max-w-full sm:max-w-lg mx-auto flex items-center justify-between">
           <div>
             <h1 className="text-3xl font-bold text-white mb-2" style={{
             fontFamily: 'Nunito, sans-serif'
@@ -223,7 +223,7 @@ export default function Home(props) {
       </div>
 
       {/* Search Bar */}
-      <div className="max-w-lg mx-auto px-4 -mt-6">
+      <div className="max-w-full sm:max-w-lg mx-auto px-4 -mt-6">
         <div className={`rounded-2xl shadow-lg p-4 flex items-center gap-3 ${darkMode ? 'bg-gray-800' : 'bg-white'}`}>
           <Search className={`w-5 h-5 ${darkMode ? 'text-gray-400' : 'text-gray-400'}`} />
           <Input placeholder={t.searchPlaceholder} value={searchQuery} onChange={e => setSearchQuery(e.target.value)} className={`border-0 focus-visible:ring-0 text-base ${darkMode ? 'text-white' : ''}`} />
@@ -231,7 +231,7 @@ export default function Home(props) {
       </div>
 
       {/* Quick Actions */}
-      <div className="max-w-lg mx-auto px-4 mt-6">
+      <div className="max-w-full sm:max-w-lg mx-auto px-4 mt-6">
         <div className="flex gap-3">
           <Button onClick={handleCreatePlan} className="flex-1 bg-[#FF6B6B] hover:bg-[#FF5252] text-white rounded-2xl h-14 text-base font-semibold shadow-lg shadow-[#FF6B6B]/30">
             <Plus className="w-5 h-5 mr-2" />
@@ -248,7 +248,7 @@ export default function Home(props) {
       </div>
 
       {/* Plans List */}
-      <div className="max-w-lg mx-auto px-4 mt-8">
+      <div className="max-w-full sm:max-w-lg mx-auto px-4 mt-8">
         <h2 className={`text-xl font-bold mb-4 ${darkMode ? 'text-white' : 'text-[#2D3436]'}`} style={{
         fontFamily: 'Nunito, sans-serif'
       }}>

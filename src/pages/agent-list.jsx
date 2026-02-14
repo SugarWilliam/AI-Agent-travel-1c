@@ -412,7 +412,7 @@ export default function AgentList(props) {
   return <div className={`min-h-screen ${darkMode ? 'bg-gray-900' : 'bg-gradient-to-br from-amber-50 via-orange-50 to-rose-50'}`}>
       {/* Header */}
       <div className={`backdrop-blur-sm border-b ${darkMode ? 'bg-gray-800/80 border-gray-700' : 'bg-white/80 border-gray-200'}`}>
-        <div className="max-w-7xl mx-auto px-4 py-6">
+        <div className="max-w-full sm:max-w-7xl mx-auto px-4 py-6">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
               <button onClick={() => props.$w.utils.navigateBack()} className={`p-2 rounded-xl transition-colors ${darkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-100'}`}>
@@ -443,7 +443,7 @@ export default function AgentList(props) {
       </div>
 
       {/* Error Message */}
-      {error && <div className="max-w-7xl mx-auto px-4 py-4">
+      {error && <div className="max-w-full sm:max-w-7xl mx-auto px-4 py-4">
           <div className="bg-gradient-to-r from-red-50 to-orange-50 border-l-4 border-red-500 rounded-xl p-5 shadow-sm">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-4">
@@ -465,7 +465,7 @@ export default function AgentList(props) {
         </div>}
 
       {/* Search and Filter */}
-      <div className="max-w-7xl mx-auto px-4 py-6">
+      <div className="max-w-full sm:max-w-7xl mx-auto px-4 py-6">
         <div className={`rounded-2xl shadow-lg p-6 mb-6 ${darkMode ? 'bg-gray-800' : 'bg-white'}`}>
           <div className="flex flex-col sm:flex-row gap-4">
             <div className="flex-1 relative">
@@ -496,7 +496,7 @@ export default function AgentList(props) {
       </div>
 
       {/* Agent List */}
-      <div className="max-w-7xl mx-auto px-4 pb-8">
+      <div className="max-w-full sm:max-w-7xl mx-auto px-4 pb-8">
         {isLoading ? <div className="flex items-center justify-center py-12">
             <div className="animate-spin rounded-full h-12 w-12 border-4 border-orange-500 border-t-transparent"></div>
           </div> : filteredAgents.length === 0 ? <div className={`rounded-2xl shadow-lg p-12 text-center ${darkMode ? 'bg-gray-800' : 'bg-white'}`}>

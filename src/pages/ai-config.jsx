@@ -707,7 +707,7 @@ export default function AIConfig(props) {
   return <div className={`min-h-screen flex flex-col ${darkMode ? 'bg-gray-900' : 'bg-[#FFF9F0]'}`}>
       {/* Header */}
       <div className="bg-gradient-to-r from-[#FF6B6B] to-[#4ECDC4] p-4 pt-12">
-        <div className="max-w-7xl mx-auto flex items-center justify-between">
+        <div className="max-w-full sm:max-w-7xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-3">
             <button onClick={handleBack} className="bg-white/90 backdrop-blur-sm rounded-full p-2 shadow-lg">
               <ArrowLeft className="w-6 h-6 text-[#2D3436]" />
@@ -725,7 +725,7 @@ export default function AIConfig(props) {
       </div>
 
       {/* Main Content Area */}
-      <div className="flex-1 flex max-w-7xl mx-auto w-full">
+      <div className="flex-1 flex max-w-full sm:max-w-7xl mx-auto w-full">
         {/* Left Sidebar Navigation */}
         <div className={`w-64 shadow-lg ${darkMode ? 'bg-gray-800' : 'bg-white'}`}>
           <div className="p-4">

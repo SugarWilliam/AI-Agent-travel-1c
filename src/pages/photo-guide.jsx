@@ -538,7 +538,7 @@ export default function PhotoGuide(props) {
 
       {/* 筛选弹窗 */}
       {showFilterModal && <div className="fixed inset-0 bg-black/50 z-50 flex items-end justify-center">
-          <div className="bg-white w-full max-w-lg rounded-t-3xl p-6 animate-slide-up">
+          <div className="bg-white w-full max-w-full sm:max-w-lg rounded-t-3xl p-6 animate-slide-up">
             <div className="flex items-center justify-between mb-6">
               <h3 className="text-lg font-bold text-[#2D3436]" style={{
             fontFamily: 'Nunito, sans-serif'
@@ -616,7 +616,7 @@ export default function PhotoGuide(props) {
 
       {/* 穿搭建议弹窗 */}
       {showOutfitModal && <div className="fixed inset-0 bg-black/50 z-50 flex items-end justify-center">
-          <div className="bg-white w-full max-w-lg rounded-t-3xl p-6 animate-slide-up max-h-[80vh] overflow-y-auto">
+          <div className="bg-white w-full max-w-full sm:max-w-lg rounded-t-3xl p-6 animate-slide-up max-h-[80vh] overflow-y-auto">
             <div className="flex items-center justify-between mb-6">
               <h3 className="text-lg font-bold text-[#2D3436]" style={{
             fontFamily: 'Nunito, sans-serif'

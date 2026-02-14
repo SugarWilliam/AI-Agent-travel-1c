@@ -827,7 +827,7 @@ export default function Detail(props) {
       </div>
 
       {/* Content */}
-      <div className="max-w-lg mx-auto px-4 -mt-4 relative">
+      <div className="max-w-full sm:max-w-lg mx-auto px-4 -mt-4 relative">
         <div className="bg-white rounded-2xl shadow-lg p-4">
           {/* Info Cards */}
           <div className="grid grid-cols-3 gap-3 mb-4">

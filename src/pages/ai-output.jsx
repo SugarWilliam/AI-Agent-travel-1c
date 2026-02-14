@@ -622,7 +622,7 @@ export default function AIOutput(props) {
   return <div className={`min-h-screen flex flex-col ${darkMode ? 'bg-gray-900' : 'bg-[#FFF9F0]'}`}>
       {/* Header */}
       <div className="bg-gradient-to-r from-[#FF6B6B] to-[#4ECDC4] p-4 pt-12">
-        <div className="max-w-2xl mx-auto flex items-center gap-3">
+        <div className="max-w-full sm:max-w-2xl mx-auto flex items-center gap-3">
           <button onClick={handleBack} className="bg-white/90 backdrop-blur-sm rounded-full p-2 shadow-lg">
             <ArrowLeft className="w-6 h-6 text-[#2D3436]" />
           </button>
@@ -638,7 +638,7 @@ export default function AIOutput(props) {
       </div>
 
       {/* Tabs */}
-      <div className="max-w-2xl mx-auto px-4 mt-4">
+      <div className="max-w-full sm:max-w-2xl mx-auto px-4 mt-4">
         <div className={`flex gap-2 rounded-xl p-1 shadow-md overflow-x-auto ${darkMode ? 'bg-gray-800' : 'bg-white'}`}>
           {tabs.map(tab => <button key={tab.id} onClick={() => setActiveTab(tab.id)} className={`flex items-center gap-2 py-2 px-3 rounded-lg transition-all whitespace-nowrap ${activeTab === tab.id ? 'bg-[#FF6B6B] text-white' : darkMode ? 'text-gray-300 hover:bg-gray-700' : 'text-gray-600 hover:bg-gray-100'}`}>
               <tab.icon className="w-4 h-4" />
@@ -648,7 +648,7 @@ export default function AIOutput(props) {
       </div>
 
       {/* Content */}
-      <div className="flex-1 overflow-y-auto p-4 max-w-2xl mx-auto w-full">
+      <div className="flex-1 overflow-y-auto p-4 max-w-full sm:max-w-2xl mx-auto w-full">
         {/* 攻略 Tab */}
         {activeTab === 'document' && <div className="space-y-4">
             <div className="bg-white rounded-xl p-4 shadow-md">

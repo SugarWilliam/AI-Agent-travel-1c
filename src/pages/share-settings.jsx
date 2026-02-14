@@ -118,7 +118,7 @@ export default function ShareSettings(props) {
   return <div className="min-h-screen bg-gradient-to-br from-[#FFF9F0] to-[#FFE4E1] pb-20">
       {/* Header */}
       <div className="bg-gradient-to-r from-[#FF6B6B] to-[#FF8E8E] text-white p-4 pt-12">
-        <div className="max-w-lg mx-auto">
+        <div className="max-w-full sm:max-w-lg mx-auto">
           <div className="flex items-center justify-between mb-4">
             <button onClick={() => navigateTo({
             pageId: 'home',
@@ -141,7 +141,7 @@ export default function ShareSettings(props) {
         </div>
       </div>
 
-      <div className="max-w-lg mx-auto p-4">
+      <div className="max-w-full sm:max-w-lg mx-auto p-4">
         {/* Share Content */}
         <div className="bg-white rounded-2xl p-4 shadow-lg mb-4">
           <div className="flex items-center gap-2 mb-4">
