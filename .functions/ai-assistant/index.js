@@ -45,9 +45,7 @@ async function addModel(data) {
       status: data.status || 'active'
     };
     
-    await db.collection('llm_models').add({
-      data: modelData
-    });
+    await db.collection('llm_models').add(modelData);
     
     return {
       success: true,
@@ -71,9 +69,7 @@ async function updateModel(data) {
     
     await db.collection('llm_models')
       .doc(data._id)
-      .update({
-        data: updateData
-      });
+      .update(updateData);
     
     return {
       success: true,
@@ -247,9 +243,7 @@ async function addSkill(data) {
       enabled: data.enabled !== false
     };
     
-    await db.collection('Skill').add({
-      data: skillData
-    });
+    await db.collection('Skill').add(skillData);
     
     return {
       success: true,
@@ -273,9 +267,7 @@ async function updateSkill(data) {
     
     await db.collection('Skill')
       .doc(data._id)
-      .update({
-        data: updateData
-      });
+      .update(updateData);
     
     return {
       success: true,
@@ -369,11 +361,11 @@ async function saveAIConfig(data) {
       // 更新现有配置
       await db.collection('AIConfig')
         .doc(existing.data[0]._id)
-        .update({ data: configData });
+        .update(configData);
     } else {
       // 创建新配置
       configData.createdAt = now;
-      await db.collection('AIConfig').add({ data: configData });
+      await db.collection('AIConfig').add(configData);
     }
     
     return {
@@ -400,9 +392,7 @@ async function saveConversation(data) {
       updatedAt: now
     };
     
-    await db.collection('Conversation').add({
-      data: conversationData
-    });
+    await db.collection('Conversation').add(conversationData);
     
     return {
       success: true,
@@ -474,9 +464,7 @@ async function saveMessage(data) {
       createdAt: now
     };
     
-    await db.collection('Message').add({
-      data: messageData
-    });
+    await db.collection('Message').add(messageData);
     
     return {
       success: true,
