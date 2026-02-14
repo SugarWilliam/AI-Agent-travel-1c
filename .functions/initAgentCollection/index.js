@@ -10,8 +10,21 @@ exports.main = async (event, context) => {
   
   try {
     // 检查集合是否存在
-    const collections = await db.listCollections();
-    const agentCollectionExists = collections.some(col => col.name === 'Agent');
+    const collectionsResult = await db.listCollections();
+    console.log('集合列表查询结果:', JSON.stringify(collectionsResult));
+    
+    // 处理不同的返回结构
+    const collections = collectionsResult.collections || collectionsResult || [];
+    console.log('集合列表:', JSON.stringify(collections));
+    
+    // 安全检查集合是否存在
+    const agentCollectionExists = collections.some(col => {
+      if (!col) return false;
+      const collectionName = col.name || col.collectionName || col._id;
+      console.log('检查集合:', collectionName);
+      return collectionName === 'Agent';
+    });
+    console.log('Agent 集合是否存在:', agentCollectionExists);
     
     if (!agentCollectionExists) {
       // 创建 Agent 集合

@@ -421,7 +421,7 @@ export default function AIConfig(props) {
         const result = await db.collection('AIConfig').doc(id).get();
         agent = result.data[0];
       }
-      if (agent) {
+      if (agent && agent.name) {
         setEditingAgent(agent);
         setAgentName(agent.name || '');
         setAgentDescription(agent.description || '');
@@ -432,23 +432,30 @@ export default function AIConfig(props) {
         setRagEnabled(agent.ragEnabled || false);
         // 转换 ragSources 为带 enabled 属性的对象数组
         const ragSourcesWithEnabled = (agent.ragSources || []).map(source => ({
-          name: typeof source === 'string' ? source : source.name,
+          name: typeof source === 'string' ? source : source && source.name ? source.name : '',
           enabled: true
-        }));
+        })).filter(s => s.name);
         setRagSources(ragSourcesWithEnabled);
         // 转换 rules 为带 enabled 属性的对象数组
         const rulesWithEnabled = (agent.rules || []).map(rule => ({
-          name: typeof rule === 'string' ? rule : rule.name,
+          name: typeof rule === 'string' ? rule : rule && rule.name ? rule.name : '',
           enabled: true
-        }));
+        })).filter(r => r.name);
         setRules(rulesWithEnabled);
         // 转换 mcpServers 为带 enabled 属性的对象数组
         const mcpServersWithEnabled = (agent.mcpServers || []).map(server => ({
-          name: typeof server === 'string' ? server : server.name,
-          url: server.url || '',
+          name: typeof server === 'string' ? server : server && server.name ? server.name : '',
+          url: server && server.url ? server.url : '',
           enabled: true
-        }));
+        })).filter(s => s.name);
         setMcpServers(mcpServersWithEnabled);
+      } else {
+        console.warn('Agent 数据无效或缺少 name 属性:', agent);
+        toast({
+          title: '加载失败',
+          description: 'Agent 数据无效',
+          variant: 'destructive'
+        });
       }
     } catch (error) {
       console.error('加载Agent配置失败:', error);
