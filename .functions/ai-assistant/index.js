@@ -1226,10 +1226,8 @@ exports.main = async (event, context) => {
   if (!action) {
     console.error('缺少 action 参数');
     return {
-      result: {
-        success: false,
-        error: '缺少 action 参数'
-      }
+      success: false,
+      error: '缺少 action 参数'
     };
   }
   
@@ -1346,7 +1344,7 @@ exports.main = async (event, context) => {
     }
     
     // 统一返回结构
-    return result;
+    return { result };
   } catch (error) {
     console.error('云函数执行错误:', error);
     console.error('错误堆栈:', error.stack);
@@ -1354,9 +1352,11 @@ exports.main = async (event, context) => {
     console.error('错误代码:', error.code);
     
     return {
-      success: false,
-      error: error.message || '服务器内部错误',
-      code: error.code
+      result: {
+        success: false,
+        error: error.message || '服务器内部错误',
+        code: error.code
+      }
     };
   }
 };
