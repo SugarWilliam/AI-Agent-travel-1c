@@ -73,6 +73,7 @@ export function SkillManager({
   const loadSkills = async () => {
     try {
       setLoading(true);
+      console.log('开始加载技能列表...');
       const result = await $w.cloud.callFunction({
         name: 'ai-assistant',
         data: {
@@ -80,12 +81,16 @@ export function SkillManager({
           userId: $w.auth.currentUser?.userId || 'anonymous'
         }
       });
-      if (result.result.success) {
+      console.log('云函数返回结果:', result);
+      if (result.result && result.result.success) {
+        console.log('技能列表加载成功，数量:', result.result.data.length);
         setSkills(result.result.data);
       } else {
+        const errorMsg = result.result?.error || '无法加载技能列表';
+        console.error('技能列表加载失败:', errorMsg);
         toast({
           title: '加载失败',
-          description: result.result.error || '无法加载技能列表',
+          description: errorMsg,
           variant: 'destructive'
         });
       }
@@ -93,7 +98,7 @@ export function SkillManager({
       console.error('加载技能失败:', error);
       toast({
         title: '加载失败',
-        description: '网络错误，请重试',
+        description: error.message || '网络错误，请重试',
         variant: 'destructive'
       });
     } finally {
