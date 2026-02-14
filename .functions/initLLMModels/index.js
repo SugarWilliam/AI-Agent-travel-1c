@@ -29,14 +29,13 @@ exports.main = async (event, context) => {
   try {
     // 检查是否已经初始化过
     console.log('检查现有模型数据...');
-    const existingCount = await db.collection('llm_models').count();
+    const existingModels = await db.collection('llm_models').limit(1).get();
     
-    if (existingCount.total > 0) {
-      console.log(`LLM 模型数据已存在，共 ${existingCount.total} 个模型，跳过初始化`);
+    if (existingModels.data && existingModels.data.length > 0) {
+      console.log(`LLM 模型数据已存在，跳过初始化`);
       return {
         success: true,
         message: 'LLM 模型数据已存在',
-        count: existingCount.total,
         skipped: true
       };
     }
@@ -445,11 +444,7 @@ exports.main = async (event, context) => {
     console.log(`准备插入 ${models.length} 个模型...`);
     const result = await db.collection('llm_models').add(models);
     
-    if (!result || !result.ids || result.ids.length === 0) {
-      throw new Error('插入模型数据失败：未返回有效的 ID 列表');
-    }
-    
-    console.log('成功初始化 LLM 模型数据:', result.ids.length, '个模型');
+    console.log('成功初始化 LLM 模型数据:', models.length, '个模型');
     
     // 按提供商分组统计
     const providerStats = {};
@@ -463,7 +458,7 @@ exports.main = async (event, context) => {
     return {
       success: true,
       message: 'LLM 模型数据初始化成功',
-      count: result.ids.length,
+      count: models.length,
       providerStats,
       models: models.map(m => ({
         id: m.modelId,
